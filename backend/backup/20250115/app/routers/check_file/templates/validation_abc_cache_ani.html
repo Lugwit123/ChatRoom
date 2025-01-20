@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Alembic Viewer</title>
+    <link rel="stylesheet" href="/check_file/static/style.css">
+    <script>
+        let jsonData = {};
+        let SERVER_IP = {};
+    </script>
+    <script>
+        jsonData = {{ json_data|tojson|safe }};
+        SERVER_IP = {{SERVER_IP}}
+        console.log(jsonData);
+    </script>
+    <script src="/check_file/static/script.js" defer></script>
+    <link rel="icon" href="/check_file/static/favicon.ico" type="image/x-icon">
+</head>
+<body>
+    <div class="page-title-section" style="display: flex; flex-direction: row; align-items: center; padding: 20px;">
+        <!-- 图片 -->
+        <img src="/check_file/static/alembic.png" alt="Alembic 检查反馈" style="width: 200px; height: auto; max-height:8vh;" />
+        
+        <div id="main-info">
+            <div>Alembic 检查反馈</div>
+            <div>制作人：***</div>
+            <div>上传时间：2024-11-22</div>
+        </div>
+    
+        <!-- 弹性间距 -->
+        <div style="flex-grow: 1;"></div>
+    
+        <!-- 提示信息 -->
+        <div class="tip">
+            ★红色标记部分是有问题的<br>比如没有面集或者有名称空间(":")</div>
+    </div>
+    
+    <div id="tabs" class="tabs">
+        <!-- 示例标签 -->
+        <button class="tab-button active" data-index="0">Tab 1</button>
+        <button class="tab-button" data-index="1">Tab 2</button>
+    </div>
+    <div id="current-path" class="current-path">
+        <div style="font-size: 1.5vw;">后端返回检查结果 文件路径: </div>
+        <div class="jsonFilePathCss" id="json-path">{{ json_file_path }}</div>
+        <button id="copy-json-path" class="action-button">复制路径</button>
+        <button id="open-json-folder" class="action-button">打开文件夹</button>
+    </div>
+    <div id="tab-contents" class="tab-contents">
+        <!-- 示例标签内容 -->
+        <div class="tab-content active" data-index="0">
+            <table id="main-table">
+                <thead>
+                    <tr>
+                        <th>几何名称</th>
+                        <th>面数</th>
+                        <th>面集名称</th>
+                        <th>面索引</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 示例数据 -->
+                    <tr>
+                        <td>示例几何1</td>
+                        <td>150</td>
+                        <td>示例面集A</td>
+                        <td>0-149</td>
+                    </tr>
+                    <tr>
+                        <td>示例几何2</td>
+                        <td>300</td>
+                        <td>示例面集B</td>
+                        <td>150-449</td>
+                    </tr>
+                </tbody>
+            </table>
+            <!-- 元数据部分 -->
+            <div class="meta-data">
+                <!-- Maya 镜头文件 -->
+                <div class="path-info">
+                    <button class="action-button copy-button" data-copy="H:\path\to\path\to\path\to\path\to\shot.ma">复制路径</button>
+                    <button class="action-button open-button" data-open="H:\path\to\path\to\path\to\path\to\shot.ma">打开文件夹</button>
+                    <span>Maya 镜头文件: </span>
+                    <span class="path-value">H:\path\to\path\to\path\to\path\to\shot.ma</span>
+                    
+                </div>
+                <!-- Maya 资产文件 -->
+                <div class="path-info">
+                    <button class="action-button copy-button" data-copy="H:\path\to\path\to\path\to\path\to\asset.ma">复制路径</button>
+                    <button class="action-button open-button" data-open="H:\path\to\path\to\path\to\path\to\asset.ma">打开文件夹</button>
+                    <span style="font-size: 12px;">Maya 资产文件: </span>
+                    <span class="path-value">H:\path\to\path\to\path\to\path\to\asset.ma</span>
+                    
+                </div>
+                <!-- 打开 abc 所在文件夹 -->
+                <div class="path-info">
+                    <button class="action-button copy-button" data-copy="H:\path\to\path\to\path\to\path\to\file1.abc">复制路径</button>
+                    <button class="action-button open-button" data-open="H:\path\to\path\to\path\to\path\to\file1.abc">打开文件夹</button>
+                    <span>abc 文件路径: </span>
+                    <span class="path-value">H:\path\to\path\to\path\to\path\to\file1.abc</span>
+                    
+                </div>
+            </div>
+        </div>
+        <!-- 其他标签内容（示例） -->
+        <div class="tab-content" data-index="1">
+            <p>这是 Tab 2 的内容。</p>
+        </div>
+    </div>
+</body>
+</html>

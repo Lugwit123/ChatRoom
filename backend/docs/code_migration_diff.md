@@ -1,0 +1,441 @@
+# 代码迁移差异分析报告
+
+生成时间: 2025-01-11 23:10:36
+
+## 丢失的函数和方法
+
+- async `get_current_user_response` (function) - 在文件 `dependencies.py` 第 11 行
+- `ensure_directory` (function) - 在文件 `move_files.py` 第 8 行
+- `create_init_file` (function) - 在文件 `move_files.py` 第 14 行
+- `create_directories` (function) - 在文件 `move_files.py` 第 21 行
+- `copy_file_with_backup` (function) - 在文件 `move_files.py` 第 43 行
+- `move_files` (function) - 在文件 `move_files.py` 第 63 行
+- `update_imports` (function) - 在文件 `move_files.py` 第 86 行
+- `validate_input` (function) - 在文件 `routers\check_file\abc_router.py` 第 29 行
+- async `root` (function) - 在文件 `routers\check_file\abc_router.py` 第 33 行
+- async `show_results` (function) - 在文件 `routers\check_file\abc_router.py` 第 40 行
+- async `generate_path` (function) - 在文件 `routers\check_file\abc_router.py` 第 77 行
+- async `list_check_files` (function) - 在文件 `routers\check_file\abc_router.py` 第 101 行
+- `UserInDatabase.get_group_names` (method) - 在文件 `schemas.py` 第 119 行
+- `get_group_names` (function) - 在文件 `schemas.py` 第 119 行
+- `MessageBase.serialize_timestamp` (method) - 在文件 `schemas.py` 第 285 行
+- `MessageBase.add_status` (method) - 在文件 `schemas.py` 第 289 行
+- `add_status` (function) - 在文件 `schemas.py` 第 289 行
+- `DeleteMessagesRequest.parse_message_ids` (method) - 在文件 `schemas.py` 第 329 行
+- `parse_message_ids` (function) - 在文件 `schemas.py` 第 329 行
+- `GroupChatMessage.serialize_timestamp` (method) - 在文件 `schemas.py` 第 445 行
+- `SelfPrivateChatMessage.serialize_timestamp` (method) - 在文件 `schemas.py` 第 469 行
+- `serialize_timestamp` (function) - 在文件 `schemas.py` 第 469 行
+- async `UserResponse.get_recent_message_ids` (method) - 在文件 `user_database.py` 第 167 行
+- async `get_recent_message_ids` (function) - 在文件 `user_database.py` 第 167 行
+- async `UserResponse.get_all_message_ids` (method) - 在文件 `user_database.py` 第 179 行
+- async `get_all_message_ids` (function) - 在文件 `user_database.py` 第 179 行
+- `UserResponse.safe_id` (method) - 在文件 `user_database.py` 第 191 行
+- `safe_id` (function) - 在文件 `user_database.py` 第 191 行
+- `UserResponse.safe_username` (method) - 在文件 `user_database.py` 第 195 行
+- `safe_username` (function) - 在文件 `user_database.py` 第 195 行
+- async `init_message_types` (function) - 在文件 `user_database.py` 第 204 行
+- async `create_tables` (function) - 在文件 `user_database.py` 第 260 行
+- `validate_username` (function) - 在文件 `user_database.py` 第 270 行
+- `validate_nickname` (function) - 在文件 `user_database.py` 第 275 行
+- async `insert_group` (function) - 在文件 `user_database.py` 第 280 行
+- async `get_group_by_name` (function) - 在文件 `user_database.py` 第 296 行
+- async `insert_user` (function) - 在文件 `user_database.py` 第 303 行
+- async `background_message_ids_updater` (function) - 在文件 `user_database.py` 第 413 行
+- async `update_user_message_ids` (function) - 在文件 `user_database.py` 第 442 行
+- async `insert_message` (function) - 在文件 `user_database.py` 第 467 行
+- async `fetch_all_users` (function) - 在文件 `user_database.py` 第 534 行
+- async `verify_user` (function) - 在文件 `user_database.py` 第 576 行
+- async `is_user_admin` (function) - 在文件 `user_database.py` 第 588 行
+- async `get_user_by_id` (function) - 在文件 `user_database.py` 第 597 行
+- async `fetch_messages` (function) - 在文件 `user_database.py` 第 619 行
+- async `fetch_group_messages` (function) - 在文件 `user_database.py` 第 674 行
+- async `get_all_groups_info` (function) - 在文件 `user_database.py` 第 765 行
+- async `delete_user` (function) - 在文件 `user_database.py` 第 777 行
+- async `load_initial_users` (function) - 在文件 `user_database.py` 第 792 行
+- async `load_initial_messages` (function) - 在文件 `user_database.py` 第 832 行
+- async `update_messages_status` (function) - 在文件 `user_database.py` 第 906 行
+- async `update_group_messages_status` (function) - 在文件 `user_database.py` 第 926 行
+- async `fetch_unread_count` (function) - 在文件 `user_database.py` 第 949 行
+- async `fetch_user_or_group` (function) - 在文件 `user_database.py` 第 969 行
+- async `get_all_groups_response` (function) - 在文件 `user_database.py` 第 1002 行
+- async `get_group_members` (function) - 在文件 `user_database.py` 第 1027 行
+- async `fetch_users_by_condition` (function) - 在文件 `user_database.py` 第 1050 行
+- async `update_user_last_message` (function) - 在文件 `user_database.py` 第 1086 行
+- async `process_message_updates` (function) - 在文件 `user_database.py` 第 1094 行
+- async `update_all_message_ids` (function) - 在文件 `user_database.py` 第 1173 行
+- async `start_background_tasks` (function) - 在文件 `user_database.py` 第 1213 行
+- `get_column_value` (function) - 在文件 `user_database.py` 第 1221 行
+- `convert_message_status` (function) - 在文件 `user_database.py` 第 1230 行
+- `create_message_base` (function) - 在文件 `user_database.py` 第 1237 行
+- `get_current_time` (function) - 在文件 `utils.py` 第 12 行
+
+## 新增的函数和方法
+
+- async `ConnectionManager.send_notification` (method) - 在文件 `core\connection_manager.py` 第 212 行
+- async `send_notification` (function) - 在文件 `core\connection_manager.py` 第 212 行
+- async `ConnectionManager.send_chat_history` (method) - 在文件 `core\connection_manager.py` 第 227 行
+- async `send_chat_history` (function) - 在文件 `core\connection_manager.py` 第 227 行
+- async `ConnectionManager.join_group` (method) - 在文件 `core\connection_manager.py` 第 241 行
+- async `join_group` (function) - 在文件 `core\connection_manager.py` 第 241 行
+- `_compile_drop_table` (function) - 在文件 `db\database.py` 第 27 行
+- async `init_db` (function) - 在文件 `db\database.py` 第 55 行
+- async `get_session` (function) - 在文件 `db\database.py` 第 63 行
+- async `get_async_session` (function) - 在文件 `db\database.py` 第 71 行
+- async `get_unread_message_count` (function) - 在文件 `db\database.py` 第 141 行
+- `BaseRepository.__init__` (method) - 在文件 `db\repositories\base.py` 第 18 行
+- async `BaseRepository.get` (method) - 在文件 `db\repositories\base.py` 第 21 行
+- async `get` (function) - 在文件 `db\repositories\base.py` 第 21 行
+- async `BaseRepository.get_by_field` (method) - 在文件 `db\repositories\base.py` 第 27 行
+- async `get_by_field` (function) - 在文件 `db\repositories\base.py` 第 27 行
+- async `BaseRepository.get_multi` (method) - 在文件 `db\repositories\base.py` 第 33 行
+- async `get_multi` (function) - 在文件 `db\repositories\base.py` 第 33 行
+- async `BaseRepository.create` (method) - 在文件 `db\repositories\base.py` 第 45 行
+- async `create` (function) - 在文件 `db\repositories\base.py` 第 45 行
+- async `BaseRepository.update` (method) - 在文件 `db\repositories\base.py` 第 53 行
+- async `update` (function) - 在文件 `db\repositories\base.py` 第 53 行
+- async `BaseRepository.remove` (method) - 在文件 `db\repositories\base.py` 第 74 行
+- async `remove` (function) - 在文件 `db\repositories\base.py` 第 74 行
+- async `BaseRepository.count` (method) - 在文件 `db\repositories\base.py` 第 82 行
+- async `count` (function) - 在文件 `db\repositories\base.py` 第 82 行
+- async `BaseRepository.exists` (method) - 在文件 `db\repositories\base.py` 第 87 行
+- async `exists` (function) - 在文件 `db\repositories\base.py` 第 87 行
+- `GroupRepository.__init__` (method) - 在文件 `db\repositories\group.py` 第 16 行
+- async `GroupRepository.get_by_name` (method) - 在文件 `db\repositories\group.py` 第 19 行
+- async `get_by_name` (function) - 在文件 `db\repositories\group.py` 第 19 行
+- async `GroupRepository.get_user_groups` (method) - 在文件 `db\repositories\group.py` 第 23 行
+- async `get_user_groups` (function) - 在文件 `db\repositories\group.py` 第 23 行
+- async `GroupRepository.add_user_to_group` (method) - 在文件 `db\repositories\group.py` 第 36 行
+- async `add_user_to_group` (function) - 在文件 `db\repositories\group.py` 第 36 行
+- async `GroupRepository.remove_user_from_group` (method) - 在文件 `db\repositories\group.py` 第 62 行
+- async `remove_user_from_group` (function) - 在文件 `db\repositories\group.py` 第 62 行
+- async `GroupRepository.get_group_users` (method) - 在文件 `db\repositories\group.py` 第 92 行
+- async `get_group_users` (function) - 在文件 `db\repositories\group.py` 第 92 行
+- `MessageRepository.__init__` (method) - 在文件 `db\repositories\message.py` 第 18 行
+- async `MessageRepository.create_message` (method) - 在文件 `db\repositories\message.py` 第 21 行
+- async `create_message` (function) - 在文件 `db\repositories\message.py` 第 21 行
+- async `MessageRepository.create_group_message` (method) - 在文件 `db\repositories\message.py` 第 50 行
+- async `create_group_message` (function) - 在文件 `db\repositories\message.py` 第 50 行
+- async `MessageRepository.get_private_messages` (method) - 在文件 `db\repositories\message.py` 第 80 行
+- async `get_private_messages` (function) - 在文件 `db\repositories\message.py` 第 80 行
+- async `MessageRepository.get_group_messages` (method) - 在文件 `db\repositories\message.py` 第 109 行
+- async `get_group_messages` (function) - 在文件 `db\repositories\message.py` 第 109 行
+- async `MessageRepository.get_user_messages` (method) - 在文件 `db\repositories\message.py` 第 128 行
+- async `get_user_messages` (function) - 在文件 `db\repositories\message.py` 第 128 行
+- async `MessageRepository.delete_messages` (method) - 在文件 `db\repositories\message.py` 第 150 行
+- async `MessageRepository.get_latest_messages` (method) - 在文件 `db\repositories\message.py` 第 176 行
+- async `get_latest_messages` (function) - 在文件 `db\repositories\message.py` 第 176 行
+- `UserRepository.__init__` (method) - 在文件 `db\repositories\user.py` 第 50 行
+- async `UserRepository.get_by_username` (method) - 在文件 `db\repositories\user.py` 第 53 行
+- async `get_by_username` (function) - 在文件 `db\repositories\user.py` 第 53 行
+- async `UserRepository.get_by_email` (method) - 在文件 `db\repositories\user.py` 第 57 行
+- async `get_by_email` (function) - 在文件 `db\repositories\user.py` 第 57 行
+- `UserRepository.verify_password` (method) - 在文件 `db\repositories\user.py` 第 61 行
+- `verify_password` (function) - 在文件 `db\repositories\user.py` 第 61 行
+- `UserRepository.get_password_hash` (method) - 在文件 `db\repositories\user.py` 第 65 行
+- `get_password_hash` (function) - 在文件 `db\repositories\user.py` 第 65 行
+- async `UserRepository.authenticate` (method) - 在文件 `db\repositories\user.py` 第 69 行
+- async `authenticate` (function) - 在文件 `db\repositories\user.py` 第 69 行
+- async `UserRepository.create_with_groups` (method) - 在文件 `db\repositories\user.py` 第 78 行
+- async `create_with_groups` (function) - 在文件 `db\repositories\user.py` 第 78 行
+- async `UserRepository.update_message_ids` (method) - 在文件 `db\repositories\user.py` 第 110 行
+- async `UserRepository.set_online_status` (method) - 在文件 `db\repositories\user.py` 第 128 行
+- async `set_online_status` (function) - 在文件 `db\repositories\user.py` 第 128 行
+- async `UserRepository.get_registered_users` (method) - 在文件 `db\repositories\user.py` 第 149 行
+- async `get_registered_users` (function) - 在文件 `db\repositories\user.py` 第 149 行
+- `MessageBase.__init__` (method) - 在文件 `db\schemas.py` 第 184 行
+- `create_group_message_table` (function) - 在文件 `db\schemas.py` 第 252 行
+- `get_group_message_table_name` (function) - 在文件 `db\schemas.py` 第 278 行
+- async `check_file` (function) - 在文件 `routers\check_file.py` 第 21 行
+- async `get_check_file_result` (function) - 在文件 `routers\check_file.py` 第 33 行
+- async `get_user_devices` (function) - 在文件 `routers\device_routes.py` 第 10 行
+- async `update_device_status` (function) - 在文件 `routers\device_routes.py` 第 28 行
+- async `remove_device` (function) - 在文件 `routers\device_routes.py` 第 46 行
+- async `file_server` (function) - 在文件 `routers\file_routes.py` 第 18 行
+- `file_server_old` (function) - 在文件 `routers\file_routes.py` 第 55 行
+- `ConnectionManager._get_lan_ip` (method) - 在文件 `services\connection.py` 第 51 行
+- `_get_lan_ip` (function) - 在文件 `services\connection.py` 第 51 行
+- async `ConnectionManager.broadcast_user_status` (method) - 在文件 `services\connection.py` 第 333 行
+- async `broadcast_user_status` (function) - 在文件 `services\connection.py` 第 333 行
+
+## 移动的函数和方法
+
+- `ConnectionManager.__init__` (method):
+  - 从: `connection_manager.py` 第 38 行
+  - 到: `services\connection.py` 第 39 行
+- async `ConnectionManager.broadcast` (method):
+  - 从: `connection_manager.py` 第 251 行
+  - 到: `services\connection.py` 第 296 行
+- async `ConnectionManager.broadcast_to_group` (method):
+  - 从: `connection_manager.py` 第 232 行
+  - 到: `services\connection.py` 第 277 行
+- async `ConnectionManager.broadcast_user_list` (method):
+  - 从: `connection_manager.py` 第 108 行
+  - 到: `services\connection.py` 第 148 行
+- async `ConnectionManager.connect` (method):
+  - 从: `connection_manager.py` 第 48 行
+  - 到: `services\connection.py` 第 75 行
+- async `ConnectionManager.disconnect` (method):
+  - 从: `connection_manager.py` 第 76 行
+  - 到: `services\connection.py` 第 117 行
+- `ConnectionManager.get_groups` (method):
+  - 从: `connection_manager.py` 第 102 行
+  - 到: `services\connection.py` 第 142 行
+- async `ConnectionManager.get_user` (method):
+  - 从: `connection_manager.py` 第 228 行
+  - 到: `services\connection.py` 第 273 行
+- `ConnectionManager.get_username` (method):
+  - 从: `connection_manager.py` 第 95 行
+  - 到: `services\connection.py` 第 135 行
+- async `ConnectionManager.send_group_message` (method):
+  - 从: `connection_manager.py` 第 214 行
+  - 到: `services\connection.py` 第 259 行
+- async `ConnectionManager.send_message` (method):
+  - 从: `connection_manager.py` 第 270 行
+  - 到: `services\connection.py` 第 315 行
+- async `ConnectionManager.send_system_message` (method):
+  - 从: `connection_manager.py` 第 279 行
+  - 到: `services\connection.py` 第 324 行
+- async `ConnectionManager.send_with_retry` (method):
+  - 从: `connection_manager.py` 第 167 行
+  - 到: `services\connection.py` 第 207 行
+- `MessageHandlers.__init__` (method):
+  - 从: `message_handlers.py` 第 24 行
+  - 到: `core\websocket\handlers.py` 第 24 行
+- async `MessageHandlers.broadcast_user_status_change` (method):
+  - 从: `message_handlers.py` 第 344 行
+  - 到: `core\websocket\handlers.py` 第 343 行
+- async `MessageHandlers.handle_connect` (method):
+  - 从: `message_handlers.py` 第 36 行
+  - 到: `core\websocket\handlers.py` 第 36 行
+- async `MessageHandlers.handle_disconnect` (method):
+  - 从: `message_handlers.py` 第 94 行
+  - 到: `core\websocket\handlers.py` 第 94 行
+- async `MessageHandlers.handle_get_users` (method):
+  - 从: `message_handlers.py` 第 202 行
+  - 到: `core\websocket\handlers.py` 第 201 行
+- async `MessageHandlers.handle_group_message` (method):
+  - 从: `message_handlers.py` 第 169 行
+  - 到: `core\websocket\handlers.py` 第 169 行
+- async `MessageHandlers.handle_message` (method):
+  - 从: `message_handlers.py` 第 104 行
+  - 到: `core\websocket\handlers.py` 第 104 行
+- async `MessageHandlers.handle_private_message` (method):
+  - 从: `message_handlers.py` 第 160 行
+  - 到: `core\websocket\handlers.py` 第 160 行
+- async `MessageHandlers.handle_validation` (method):
+  - 从: `message_handlers.py` 第 147 行
+  - 到: `core\websocket\handlers.py` 第 147 行
+- async `MessageHandlers.send_chat_histories` (method):
+  - 从: `message_handlers.py` 第 300 行
+  - 到: `core\websocket\handlers.py` 第 299 行
+- async `MessageHandlers.send_initial_data` (method):
+  - 从: `message_handlers.py` 第 254 行
+  - 到: `core\websocket\handlers.py` 第 253 行
+- `MessageHandlers.setup_socketio_handlers` (method):
+  - 从: `message_handlers.py` 第 29 行
+  - 到: `core\websocket\handlers.py` 第 29 行
+- `__init__` (function):
+  - 从: `message_handlers.py` 第 24 行
+  - 到: `services\connection.py` 第 39 行
+- `add_check_file_static` (function):
+  - 从: `routers\check_file\config.py` 第 21 行
+  - 到: `routers\check_file.py` 第 13 行
+- async `authenticate_token` (function):
+  - 从: `authenticate.py` 第 46 行
+  - 到: `core\auth.py` 第 57 行
+- async `authenticate_user` (function):
+  - 从: `backend_main.py` 第 81 行
+  - 到: `main.py` 第 90 行
+- async `batch_delete_users` (function):
+  - 从: `backend_main.py` 第 649 行
+  - 到: `main.py` 第 666 行
+- async `broadcast` (function):
+  - 从: `connection_manager.py` 第 251 行
+  - 到: `services\connection.py` 第 296 行
+- async `broadcast_to_group` (function):
+  - 从: `connection_manager.py` 第 232 行
+  - 到: `services\connection.py` 第 277 行
+- async `broadcast_user_list` (function):
+  - 从: `connection_manager.py` 第 108 行
+  - 到: `services\connection.py` 第 148 行
+- async `broadcast_user_status_change` (function):
+  - 从: `message_handlers.py` 第 344 行
+  - 到: `core\websocket\handlers.py` 第 343 行
+- async `cleanup_cache` (function):
+  - 从: `authenticate.py` 第 106 行
+  - 到: `core\auth.py` 第 121 行
+- async `cleanup_devices` (function):
+  - 从: `backend_main.py` 第 730 行
+  - 到: `main.py` 第 734 行
+- async `connect` (function):
+  - 从: `connection_manager.py` 第 48 行
+  - 到: `services\connection.py` 第 75 行
+- `create_access_token` (function):
+  - 从: `authenticate.py` 第 85 行
+  - 到: `core\auth.py` 第 100 行
+- async `custom_swagger_ui_html` (function):
+  - 从: `backend_main.py` 第 149 行
+  - 到: `main.py` 第 159 行
+- `decode_token` (function):
+  - 从: `authenticate.py` 第 24 行
+  - 到: `core\auth.py` 第 26 行
+- async `delete_messages` (function):
+  - 从: `user_database.py` 第 1253 行
+  - 到: `routers\message_routes.py` 第 45 行
+- async `delete_user_endpoint` (function):
+  - 从: `backend_main.py` 第 276 行
+  - 到: `main.py` 第 300 行
+- async `disconnect` (function):
+  - 从: `connection_manager.py` 第 76 行
+  - 到: `services\connection.py` 第 117 行
+- async `fetch_registered_users` (function):
+  - 从: `user_database.py` 第 552 行
+  - 到: `db\repositories\user.py` 第 38 行
+- async `fetch_user` (function):
+  - 从: `user_database.py` 第 358 行
+  - 到: `db\repositories\user.py` 第 18 行
+- async `general_exception_handler` (function):
+  - 从: `exception_handlers.py` 第 10 行
+  - 到: `core\exception_handlers.py` 第 12 行
+- `generate_random_string` (function):
+  - 从: `utils.py` 第 9 行
+  - 到: `utils\utils.py` 第 4 行
+- async `get_all_groups_endpoint` (function):
+  - 从: `backend_main.py` 第 363 行
+  - 到: `main.py` 第 400 行
+- async `get_announcement` (function):
+  - 从: `backend_main.py` 第 442 行
+  - 到: `main.py` 第 473 行
+- `get_avatar_index` (function):
+  - 从: `utils.py` 第 6 行
+  - 到: `utils\utils.py` 第 9 行
+- async `get_chat_history` (function):
+  - 从: `user_database.py` 第 722 行
+  - 到: `db\database.py` 第 160 行
+- async `get_check_result` (function):
+  - 从: `backend_main.py` 第 631 行
+  - 到: `main.py` 第 648 行
+- async `get_content_type_id` (function):
+  - 从: `user_database.py` 第 245 行
+  - 到: `main.py` 第 489 行
+- async `get_current_user_db` (function):
+  - 从: `dependencies.py` 第 24 行
+  - 到: `core\auth.py` 第 96 行
+- `get_encoding_info` (function):
+  - 从: `encoding_utils.py` 第 34 行
+  - 到: `utils\encoding_utils.py` 第 34 行
+- async `get_groups` (function):
+  - 从: `backend_main.py` 第 377 行
+  - 到: `main.py` 第 414 行
+- `get_groups` (function):
+  - 从: `connection_manager.py` 第 102 行
+  - 到: `services\connection.py` 第 142 行
+- async `get_members_of_group` (function):
+  - 从: `backend_main.py` 第 400 行
+  - 到: `main.py` 第 437 行
+- async `get_message_type_id` (function):
+  - 从: `user_database.py` 第 234 行
+  - 到: `main.py` 第 481 行
+- async `get_messages` (function):
+  - 从: `backend_main.py` 第 540 行
+  - 到: `main.py` 第 590 行
+- async `get_user` (function):
+  - 从: `connection_manager.py` 第 228 行
+  - 到: `services\connection.py` 第 273 行
+- async `get_user_list` (function):
+  - 从: `backend_main.py` 第 317 行
+  - 到: `main.py` 第 339 行
+- `get_username` (function):
+  - 从: `connection_manager.py` 第 95 行
+  - 到: `services\connection.py` 第 135 行
+- async `handle_connect` (function):
+  - 从: `message_handlers.py` 第 36 行
+  - 到: `core\websocket\handlers.py` 第 36 行
+- async `handle_disconnect` (function):
+  - 从: `message_handlers.py` 第 94 行
+  - 到: `core\websocket\handlers.py` 第 94 行
+- async `handle_get_users` (function):
+  - 从: `message_handlers.py` 第 202 行
+  - 到: `core\websocket\handlers.py` 第 201 行
+- async `handle_group_message` (function):
+  - 从: `message_handlers.py` 第 169 行
+  - 到: `core\websocket\handlers.py` 第 169 行
+- async `handle_message` (function):
+  - 从: `message_handlers.py` 第 104 行
+  - 到: `core\websocket\handlers.py` 第 104 行
+- async `handle_private_message` (function):
+  - 从: `message_handlers.py` 第 160 行
+  - 到: `core\websocket\handlers.py` 第 160 行
+- async `handle_validation` (function):
+  - 从: `message_handlers.py` 第 147 行
+  - 到: `core\websocket\handlers.py` 第 147 行
+- async `http_exception_handler` (function):
+  - 从: `exception_handlers.py` 第 6 行
+  - 到: `core\exception_handlers.py` 第 8 行
+- async `login` (function):
+  - 从: `backend_main.py` 第 226 行
+  - 到: `main.py` 第 250 行
+- async `main` (function):
+  - 从: `backend_main.py` 第 749 行
+  - 到: `main.py` 第 753 行
+- async `message_clicked` (function):
+  - 从: `backend_main.py` 第 698 行
+  - 到: `main.py` 第 702 行
+- `parse_indices` (function):
+  - 从: `message_routes.py` 第 14 行
+  - 到: `routers\message_routes.py` 第 14 行
+- `print_encoding_info` (function):
+  - 从: `encoding_utils.py` 第 47 行
+  - 到: `utils\encoding_utils.py` 第 47 行
+- `read_root` (function):
+  - 从: `backend_main.py` 第 271 行
+  - 到: `main.py` 第 295 行
+- async `register` (function):
+  - 从: `backend_main.py` 第 162 行
+  - 到: `main.py` 第 172 行
+- async `send_chat_histories` (function):
+  - 从: `message_handlers.py` 第 300 行
+  - 到: `core\websocket\handlers.py` 第 299 行
+- async `send_group_message` (function):
+  - 从: `connection_manager.py` 第 214 行
+  - 到: `services\connection.py` 第 259 行
+- async `send_initial_data` (function):
+  - 从: `message_handlers.py` 第 254 行
+  - 到: `core\websocket\handlers.py` 第 253 行
+- async `send_message` (function):
+  - 从: `connection_manager.py` 第 270 行
+  - 到: `services\connection.py` 第 315 行
+- async `send_system_message` (function):
+  - 从: `connection_manager.py` 第 279 行
+  - 到: `services\connection.py` 第 324 行
+- async `send_with_retry` (function):
+  - 从: `connection_manager.py` 第 167 行
+  - 到: `services\connection.py` 第 207 行
+- async `set_user_online_status` (function):
+  - 从: `user_database.py` 第 750 行
+  - 到: `db\repositories\user.py` 第 25 行
+- `setup_encoding` (function):
+  - 从: `encoding_utils.py` 第 13 行
+  - 到: `utils\encoding_utils.py` 第 13 行
+- `setup_logging` (function):
+  - 从: `logging_config.py` 第 5 行
+  - 到: `core\logging.py` 第 6 行
+- `setup_socketio_handlers` (function):
+  - 从: `message_handlers.py` 第 29 行
+  - 到: `core\websocket\handlers.py` 第 29 行
+- `start_cleanup_task` (function):
+  - 从: `authenticate.py` 第 123 行
+  - 到: `core\auth.py` 第 138 行
+- async `startup_event` (function):
+  - 从: `backend_main.py` 第 722 行
+  - 到: `main.py` 第 726 行
+- async `update_message_ids` (function):
+  - 从: `user_database.py` 第 1135 行
+  - 到: `db\repositories\user.py` 第 110 行
+- async `uploads` (function):
+  - 从: `backend_main.py` 第 607 行
+  - 到: `main.py` 第 624 行
+- async `verify_token` (function):
+  - 从: `backend_main.py` 第 704 行
+  - 到: `main.py` 第 708 行

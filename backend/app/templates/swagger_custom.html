@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>聊天室API</title>
+  <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+  <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.17.14/swagger-ui.css" >
+  <style>
+    html {
+      box-sizing: border-box;
+      overflow: -moz-scrollbars-vertical;
+      overflow-y: scroll;
+    }
+    *, *:before, *:after {
+      box-sizing: inherit;
+    }
+    body {
+      margin:0;
+      background: #fafafa;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="swagger-ui"></div>
+
+  <script src="https://unpkg.com/swagger-ui-dist@5.17.14/swagger-ui-bundle.js"> </script>
+  <script src="https://unpkg.com/swagger-ui-dist@5.17.14/swagger-ui-standalone-preset.js"> </script>
+  <script>
+    function getStoredToken() {
+      const token = localStorage.getItem('swagger_token');
+      console.log("[Token Debug] Retrieved token from storage:", token);
+      return token;
+    }
+
+    function saveToken(token) {
+      if (token) {
+        console.log("[Token Debug] Saving new token:", token);
+        localStorage.setItem('swagger_token', token);
+      } else {
+        console.log("[Token Debug] Attempted to save null/undefined token");
+      }
+    }
+
+    function initSwaggerUI() {
+      if (typeof SwaggerUIBundle === 'undefined') {
+        console.error("[Swagger Debug] SwaggerUIBundle is not loaded yet");
+        setTimeout(initSwaggerUI, 100);
+        return;
+      }
+
+      try {
+        console.log("[Swagger Debug] Initializing Swagger UI");
+        const token = getStoredToken();
+
+        const ui = SwaggerUIBundle({
+          url: "/openapi.json",
+          dom_id: '#swagger-ui',
+          presets: [
+            SwaggerUIBundle.presets.apis,
+            SwaggerUIStandalonePreset
+          ],
+          layout: "BaseLayout",
+          deepLinking: true,
+          persistAuthorization: true,
+          oauth2RedirectUrl: window.location.origin + "/oauth2-redirect.html",
+          requestInterceptor: (req) => {
+            console.log("[Request Debug] Outgoing request:", req);
+            if (token) {
+              req.headers["Authorization"] = `Bearer ${token}`;
+            }
+            return req;
+          },
+          responseInterceptor: (res) => {
+            console.log("[Response Debug] Incoming response:", res);
+            if (res.url === "/api/auth/login") {
+              try {
+                const data = JSON.parse(res.text);
+                if (data.access_token) {
+                  saveToken(data.access_token);
+                }
+              } catch (e) {
+                console.error("[Error Debug] Failed to parse login response:", e);
+              }
+            }
+            return res;
+          }
+        });
+
+        // 监听认证状态变化
+        ui.getSystem().getStore().subscribe(() => {
+          const state = ui.getState();
+          const auth = state.get("auth");
+          const authorized = auth.get("authorized");
+          
+          if (authorized) {
+            const newToken = authorized.getIn(["OAuth2PasswordBearer", "value"]);
+            if (newToken) {
+              saveToken(newToken);
+            }
+          }
+        });
+
+      } catch (error) {
+        console.error("[Error Debug] Error initializing Swagger UI:", error);
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initSwaggerUI);
+    } else {
+      initSwaggerUI();
+    }
+  </script>
+</body>
+</html>

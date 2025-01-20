@@ -1,0 +1,821 @@
+2024-11-07 15:27:55,792 - ERROR - 
+
+    [
+        "你好",
+        "世界",
+        {
+            "你好": "世界"
+        },
+        [
+            "你好",
+            "<built-in function print>"
+        ]
+    ],
+    55
+   2024-11-07 15:27:55----code_context : lprint((u'你好', u'世界', {u'你好': u'世界'}, (u'你好', print)), 55, end='\n\n') 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:393, , -fn: <module>, 
+>>callBy:None
+2024-11-07 15:27:55,793 - ERROR - 
+
+    "你好"
+   2024-11-07 15:27:55----code_context : lprint(u'你好', end='\n\n') 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:394, , -fn: <module>, 
+>>callBy:None
+2024-11-07 15:27:55,798 - ERROR - 
+
+    [
+        1,
+        2,
+        "Hello"
+    ]
+   2024-11-07 15:27:55----code_context : lprint << 1 << 2 << "Hello"<<lprint.End; 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:398, , -fn: <module>, 
+>>callBy:None
+2024-11-07 15:27:55,798 - ERROR - 
+
+    [
+        2,
+        3,
+        "Hello",
+        2,
+        "array('i', [1, 2, 3, 4, 5])",
+        "Hello"
+    ]
+   2024-11-07 15:27:55----code_context : lprint << 2 << array.array('i', [1, 2, 3, 4, 5]) << "Hello"<<lprint.End; 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:401, , -fn: <module>, 
+>>callBy:None
+2024-11-14 15:50:58,061 - INFO - 
+    [
+        "你好",
+        "世界",
+        {
+            "你好": "世界"
+        },
+        [
+            "你好",
+            "<built-in function print>"
+        ]
+    ],
+    55   2024-11-14 15:50:58----code_context : lprint((u'你好', u'世界', {u'你好': u'世界'}, (u'你好', print)), 55, end='
+
+') 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:394, , -fn: <module>, 
+>>callBy:None
+2024-11-14 15:50:58,063 - INFO - 
+    "你
+好"   2024-11-14 15:50:58----code_context : lprint(u'你
+好', end='
+
+') 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:395, , -fn: <module>, 
+>>callBy:None
+2024-11-14 15:50:58,063 - INFO - 
+    [
+        1,
+        2,
+        "He
+llo"
+    ]   2024-11-14 15:50:58----code_context : lprint << 1 << 2 << "He
+llo"<<lprint.End; 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:399, , -fn: <module>, 
+>>callBy:None
+2024-11-14 15:50:58,064 - INFO - 
+    [
+        2,
+        3,
+        "Hello",
+        2,
+        "array('i', [1, 2, 3, 4, 5])",
+        "Hello"
+    ]   2024-11-14 15:50:58----code_context : lprint << 2 << array.array('i', [1, 2, 3, 4, 5]) << "Hello"<<lprint.End; 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:402, , -fn: <module>, 
+>>callBy:None
+2024-11-14 15:51:05,038 - INFO - 
+    [
+        "你好",
+        "世界",
+        {
+            "你好": "世界"
+        },
+        [
+            "你好",
+            "<built-in function print>"
+        ]
+    ],
+    55   2024-11-14 15:51:05----code_context : lprint((u'你好', u'世界', {u'你好': u'世界'}, (u'你好', print)), 55, end='
+
+') 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:394, , -fn: <module>, 
+>>callBy:None
+2024-11-14 15:51:05,039 - INFO - 
+    "你
+好"   2024-11-14 15:51:05----code_context : lprint(u'你
+好', end='
+
+') 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:395, , -fn: <module>, 
+>>callBy:None
+2024-11-14 15:51:05,040 - INFO - 
+    [
+        1,
+        2,
+        "He
+llo"
+    ]   2024-11-14 15:51:05----code_context : lprint << 1 << 2 << "He
+llo"<<lprint.End; 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:399, , -fn: <module>, 
+>>callBy:None
+2024-11-14 15:51:05,040 - INFO - 
+    [
+        2,
+        3,
+        "Hello",
+        2,
+        "array('i', [1, 2, 3, 4, 5])",
+        "Hello"
+    ]   2024-11-14 15:51:05----code_context : lprint << 2 << array.array('i', [1, 2, 3, 4, 5]) << "Hello"<<lprint.End; 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:402, , -fn: <module>, 
+>>callBy:None
+2025-01-11 14:11:43,674 - WARNING - 
+    [
+        "你好",
+        "世界",
+        {
+            "你好": "世界"
+        },
+        [
+            "你好",
+            "<built-in function print>"
+        ]
+    ],
+    55   2025-01-11 14:11:43----code
+2025-01-11 14:12:27,758 - DEBUG - Attempting to acquire lock 2013925607248 on D:\TD_Depot\Temp\message_log.json.lock
+2025-01-11 14:12:27,759 - DEBUG - Lock 2013925607248 acquired on D:\TD_Depot\Temp\message_log.json.lock
+2025-01-11 14:12:27,759 - DEBUG - Attempting to release lock 2013925607248 on D:\TD_Depot\Temp\message_log.json.lock
+2025-01-11 14:12:27,759 - DEBUG - Lock 2013925607248 released on D:\TD_Depot\Temp\message_log.json.lock
+2025-01-11 14:12:27,760 - DEBUG - Attempting to acquire lock 2013923069648 on D:\TD_Depot\Temp\message_log.json.lock
+2025-01-11 14:12:27,760 - DEBUG - Lock 2013923069648 acquired on D:\TD_Depot\Temp\message_log.json.lock
+2025-01-11 14:12:27,761 - DEBUG - Attempting to release lock 2013923069648 on D:\TD_Depot\Temp\message_log.json.lock
+2025-01-11 14:12:27,762 - DEBUG - Lock 2013923069648 released on D:\TD_Depot\Temp\message_log.json.lock
+2025-01-11 14:12:27,762 - WARNING - 
+    [
+        "你好",
+        "世界",
+        {
+            "你好": "世界"
+        },
+        [
+            "你好",
+            "<built-in function print>"
+        ]
+    ],
+    55   2025-01-11 14:12:27----code
+2025-01-11 14:12:27,762 - WARNING - 
+    123   2025-01-11 14:12:27----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:403, -fn: <module>, 
+callBy:None
+2025-01-11 14:12:36,447 - DEBUG - Attempting to acquire lock 1501854518992 on D:\TD_Depot\Temp\message_log.json.lock
+2025-01-11 14:12:36,447 - DEBUG - Lock 1501854518992 acquired on D:\TD_Depot\Temp\message_log.json.lock
+2025-01-11 14:12:36,448 - DEBUG - Attempting to release lock 1501854518992 on D:\TD_Depot\Temp\message_log.json.lock
+2025-01-11 14:12:36,448 - DEBUG - Lock 1501854518992 released on D:\TD_Depot\Temp\message_log.json.lock
+2025-01-11 14:12:36,448 - DEBUG - Attempting to acquire lock 1501855806544 on D:\TD_Depot\Temp\message_log.json.lock
+2025-01-11 14:12:36,449 - DEBUG - Lock 1501855806544 acquired on D:\TD_Depot\Temp\message_log.json.lock
+2025-01-11 14:12:36,450 - DEBUG - Attempting to release lock 1501855806544 on D:\TD_Depot\Temp\message_log.json.lock
+2025-01-11 14:12:36,450 - DEBUG - Lock 1501855806544 released on D:\TD_Depot\Temp\message_log.json.lock
+2025-01-11 14:12:36,450 - WARNING - 
+    [
+        "你好",
+        "世界",
+        {
+            "你好": "世界"
+        },
+        [
+            "你好",
+            "<built-in function print>"
+        ]
+    ],
+    55   2025-01-11 14:12:36----code
+2025-01-11 14:12:36,450 - WARNING - 
+    123   2025-01-11 14:12:36----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:403, -fn: <module>, 
+callBy:None
+2025-01-11 14:12:51,216 - WARNING - 
+    123   2025-01-11 14:12:51----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:403, -fn: <module>, 
+callBy:None
+2025-01-11 14:12:52,132 - WARNING - 
+    123   2025-01-11 14:12:52----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:403, -fn: <module>, 
+callBy:None
+2025-01-11 14:12:58,802 - WARNING - 
+    123   2025-01-11 14:12:58----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:403, -fn: <module>, 
+callBy:None
+2025-01-11 14:13:13,195 - WARNING - 
+    123   2025-01-11 14:13:13----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:403, -fn: <module>, 
+callBy:None
+2025-01-11 14:13:14,578 - WARNING - 
+    123   2025-01-11 14:13:14----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:403, -fn: <module>, 
+callBy:None
+2025-01-11 14:15:17,102 - WARNING - 
+    123   2025-01-11 14:15:17----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:403, -fn: <module>, 
+callBy:None
+2025-01-11 14:15:50,680 - WARNING - 
+    123   2025-01-11 14:15:50----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:403, -fn: <module>, 
+callBy:None
+2025-01-11 14:16:02,846 - WARNING - 
+    123   2025-01-11 14:16:02----code_context : lprint(123) 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:403, -fn: <module>, 
+callBy:None
+2025-01-11 14:16:12,907 - WARNING - 
+    123   2025-01-11 14:16:12----code_context : lprint(123) 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:403, -fn: <module>, 
+callBy:None
+2025-01-11 14:18:01,012 - WARNING - 
+    123   2025-01-11 14:17:29----code_context : lprint(123) 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:403, -fn: <module>, 
+callBy:None
+2025-01-11 14:18:29,735 - WARNING - 
+    123   2025-01-11 14:18:29----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:404, -fn: <module>, 
+callBy:None
+2025-01-11 14:18:31,612 - WARNING - 
+    123   2025-01-11 14:18:31----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:404, -fn: <module>, 
+callBy:None
+2025-01-11 14:18:58,841 - WARNING - 
+    123   2025-01-11 14:18:58----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:404, -fn: <module>, 
+callBy:None
+2025-01-11 14:19:03,135 - WARNING - 
+    123   2025-01-11 14:19:03----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:404, -fn: <module>, 
+callBy:None
+2025-01-11 14:19:07,016 - WARNING - 
+    123   2025-01-11 14:19:07----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:404, -fn: <module>, 
+callBy:None
+2025-01-11 14:19:13,300 - WARNING - 
+    123   2025-01-11 14:19:13----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:404, -fn: <module>, 
+callBy:None
+2025-01-11 14:20:23,112 - INFO - 
+    123   2025-01-11 14:20:23----code_context : lprint(123,level=1) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:405, -fn: <module>, 
+callBy:None
+2025-01-11 14:21:37,682 - WARNING - 
+    123   2025-01-11 14:21:37----code_context : lprint(123,level=1) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:404, -fn: <module>, 
+callBy:None
+2025-01-11 14:21:39,236 - WARNING - 
+    123   2025-01-11 14:21:39----code_context : lprint(123,level=1) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:404, -fn: <module>, 
+callBy:None
+2025-01-11 14:21:40,675 - WARNING - 
+    123   2025-01-11 14:21:40----code_context : lprint(123,level=1) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:404, -fn: <module>, 
+callBy:None
+2025-01-11 14:21:46,055 - WARNING - 
+    123   2025-01-11 14:21:46----code_context : lprint(123,level=1) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:404, -fn: <module>, 
+callBy:None
+2025-01-11 14:21:46,834 - WARNING - 
+    123   2025-01-11 14:21:46----code_context : lprint(123,level=1) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:404, -fn: <module>, 
+callBy:None
+2025-01-11 14:21:47,369 - WARNING - 
+    123   2025-01-11 14:21:47----code_context : lprint(123,level=1) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:404, -fn: <module>, 
+callBy:None
+2025-01-11 14:21:47,840 - WARNING - 
+    123   2025-01-11 14:21:47----code_context : lprint(123,level=1) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:404, -fn: <module>, 
+callBy:None
+2025-01-11 14:21:56,064 - WARNING - 
+    123   2025-01-11 14:21:56----code_context : lprint(123,level=1) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:404, -fn: <module>, 
+callBy:None
+2025-01-11 14:21:56,819 - WARNING - 
+    123   2025-01-11 14:21:56----code_context : lprint(123,level=1) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:404, -fn: <module>, 
+callBy:None
+2025-01-11 14:22:29,614 - WARNING - 
+    [
+        "你好",
+        "世界",
+        {
+            "你好": "世界"
+        },
+        [
+            "你好",
+            "<built-in function print>"
+        ]
+    ],
+    55   2025-01-11 14:22:29----code_context : lprint((u'你好', u'世界', {u'你好': u'世界'}, (u'你好', print)), 55) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:403, -fn: <module>, 
+callBy:None
+2025-01-11 14:22:29,614 - WARNING - 
+    123   2025-01-11 14:22:29----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:404, -fn: <module>, 
+callBy:None
+2025-01-11 14:22:30,323 - WARNING - 
+    [
+        "你好",
+        "世界",
+        {
+            "你好": "世界"
+        },
+        [
+            "你好",
+            "<built-in function print>"
+        ]
+    ],
+    55   2025-01-11 14:22:30----code_context : lprint((u'你好', u'世界', {u'你好': u'世界'}, (u'你好', print)), 55) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:403, -fn: <module>, 
+callBy:None
+2025-01-11 14:22:30,323 - WARNING - 
+    123   2025-01-11 14:22:30----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:404, -fn: <module>, 
+callBy:None
+2025-01-11 14:22:30,981 - WARNING - 
+    [
+        "你好",
+        "世界",
+        {
+            "你好": "世界"
+        },
+        [
+            "你好",
+            "<built-in function print>"
+        ]
+    ],
+    55   2025-01-11 14:22:30----code_context : lprint((u'你好', u'世界', {u'你好': u'世界'}, (u'你好', print)), 55) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:403, -fn: <module>, 
+callBy:None
+2025-01-11 14:22:30,981 - WARNING - 
+    123   2025-01-11 14:22:30----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:404, -fn: <module>, 
+callBy:None
+2025-01-11 14:22:35,063 - WARNING - 
+    [
+        "你好",
+        "世界",
+        {
+            "你好": "世界"
+        },
+        [
+            "你好",
+            "<built-in function print>"
+        ]
+    ]   2025-01-11 14:22:35----code_context : lprint((u'你好', u'世界', {u'你好': u'世界'}, (u'你好', print)), ) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:403, -fn: <module>, 
+callBy:None
+2025-01-11 14:22:35,063 - WARNING - 
+    123   2025-01-11 14:22:35----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:404, -fn: <module>, 
+callBy:None
+2025-01-11 14:22:35,759 - WARNING - 
+    [
+        "你好",
+        "世界",
+        {
+            "你好": "世界"
+        },
+        [
+            "你好",
+            "<built-in function print>"
+        ]
+    ]   2025-01-11 14:22:35----code_context : lprint((u'你好', u'世界', {u'你好': u'世界'}, (u'你好', print)), ) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:403, -fn: <module>, 
+callBy:None
+2025-01-11 14:22:35,760 - WARNING - 
+    123   2025-01-11 14:22:35----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:404, -fn: <module>, 
+callBy:None
+2025-01-11 14:22:46,677 - WARNING - 
+    [
+        "你好",
+        "世界",
+        {
+            "你好": "世界"
+        },
+        [
+            "你好",
+            "<built-in function print>"
+        ]
+    ],
+    55   2025-01-11 14:22:46----code_context : lprint((u'你好', u'世界', {u'你好': u'世界'}, (u'你好', print)), 55,end='
+
+') 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:403, -fn: <module>, 
+callBy:None
+2025-01-11 14:22:46,677 - WARNING - 
+    123   2025-01-11 14:22:46----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:404, -fn: <module>, 
+callBy:None
+2025-01-11 14:22:47,339 - WARNING - 
+    [
+        "你好",
+        "世界",
+        {
+            "你好": "世界"
+        },
+        [
+            "你好",
+            "<built-in function print>"
+        ]
+    ],
+    55   2025-01-11 14:22:47----code_context : lprint((u'你好', u'世界', {u'你好': u'世界'}, (u'你好', print)), 55,end='
+
+') 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:403, -fn: <module>, 
+callBy:None
+2025-01-11 14:22:47,339 - WARNING - 
+    123   2025-01-11 14:22:47----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:404, -fn: <module>, 
+callBy:None
+2025-01-11 14:22:48,096 - WARNING - 
+    [
+        "你好",
+        "世界",
+        {
+            "你好": "世界"
+        },
+        [
+            "你好",
+            "<built-in function print>"
+        ]
+    ],
+    55   2025-01-11 14:22:48----code_context : lprint((u'你好', u'世界', {u'你好': u'世界'}, (u'你好', print)), 55,end='
+
+') 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:403, -fn: <module>, 
+callBy:None
+2025-01-11 14:22:48,097 - WARNING - 
+    123   2025-01-11 14:22:48----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:404, -fn: <module>, 
+callBy:None
+2025-01-11 14:22:48,466 - WARNING - 
+    [
+        "你好",
+        "世界",
+        {
+            "你好": "世界"
+        },
+        [
+            "你好",
+            "<built-in function print>"
+        ]
+    ],
+    55   2025-01-11 14:22:48----code_context : lprint((u'你好', u'世界', {u'你好': u'世界'}, (u'你好', print)), 55,end='
+
+') 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:403, -fn: <module>, 
+callBy:None
+2025-01-11 14:22:48,467 - WARNING - 
+    123   2025-01-11 14:22:48----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:404, -fn: <module>, 
+callBy:None
+2025-01-11 14:22:48,720 - WARNING - 
+    [
+        "你好",
+        "世界",
+        {
+            "你好": "世界"
+        },
+        [
+            "你好",
+            "<built-in function print>"
+        ]
+    ],
+    55   2025-01-11 14:22:48----code_context : lprint((u'你好', u'世界', {u'你好': u'世界'}, (u'你好', print)), 55,end='
+
+') 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:403, -fn: <module>, 
+callBy:None
+2025-01-11 14:22:48,721 - WARNING - 
+    123   2025-01-11 14:22:48----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:404, -fn: <module>, 
+callBy:None
+2025-01-11 14:22:48,818 - WARNING - 
+    [
+        "你好",
+        "世界",
+        {
+            "你好": "世界"
+        },
+        [
+            "你好",
+            "<built-in function print>"
+        ]
+    ],
+    55   2025-01-11 14:22:48----code_context : lprint((u'你好', u'世界', {u'你好': u'世界'}, (u'你好', print)), 55,end='
+
+') 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:403, -fn: <module>, 
+callBy:None
+2025-01-11 14:22:48,819 - WARNING - 
+    123   2025-01-11 14:22:48----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:404, -fn: <module>, 
+callBy:None
+2025-01-11 14:22:49,043 - WARNING - 
+    [
+        "你好",
+        "世界",
+        {
+            "你好": "世界"
+        },
+        [
+            "你好",
+            "<built-in function print>"
+        ]
+    ],
+    55   2025-01-11 14:22:49----code_context : lprint((u'你好', u'世界', {u'你好': u'世界'}, (u'你好', print)), 55,end='
+
+') 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:403, -fn: <module>, 
+callBy:None
+2025-01-11 14:22:49,044 - WARNING - 
+    123   2025-01-11 14:22:49----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:404, -fn: <module>, 
+callBy:None
+2025-01-11 14:22:49,244 - WARNING - 
+    [
+        "你好",
+        "世界",
+        {
+            "你好": "世界"
+        },
+        [
+            "你好",
+            "<built-in function print>"
+        ]
+    ],
+    55   2025-01-11 14:22:49----code_context : lprint((u'你好', u'世界', {u'你好': u'世界'}, (u'你好', print)), 55,end='
+
+') 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:403, -fn: <module>, 
+callBy:None
+2025-01-11 14:22:49,245 - WARNING - 
+    123   2025-01-11 14:22:49----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:404, -fn: <module>, 
+callBy:None
+2025-01-11 14:25:05,968 - WARNING - This is a warning message
+2025-01-11 14:25:05,968 - WARNING - 
+    [
+        "你好",
+        "世界",
+        {
+            "你好": "世界"
+        },
+        [
+            "你好",
+            "<built-in function print>"
+        ]
+    ],
+    55   2025-01-11 14:25:05----code_context : lprint((u'你好', u'世界', {u'你好': u'世界'}, (u'你好', print)), 55,end='
+
+') 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:403, -fn: <module>, 
+callBy:None
+2025-01-11 14:25:05,968 - WARNING - This is a warning message
+2025-01-11 14:25:05,968 - WARNING - 
+    123   2025-01-11 14:25:05----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:404, -fn: <module>, 
+callBy:None
+2025-01-11 14:25:06,869 - WARNING - This is a warning message
+2025-01-11 14:25:06,869 - WARNING - 
+    [
+        "你好",
+        "世界",
+        {
+            "你好": "世界"
+        },
+        [
+            "你好",
+            "<built-in function print>"
+        ]
+    ],
+    55   2025-01-11 14:25:06----code_context : lprint((u'你好', u'世界', {u'你好': u'世界'}, (u'你好', print)), 55,end='
+
+') 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:403, -fn: <module>, 
+callBy:None
+2025-01-11 14:25:06,869 - WARNING - This is a warning message
+2025-01-11 14:25:06,870 - WARNING - 
+    123   2025-01-11 14:25:06----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:404, -fn: <module>, 
+callBy:None
+2025-01-11 14:25:07,578 - WARNING - This is a warning message
+2025-01-11 14:25:07,578 - WARNING - 
+    [
+        "你好",
+        "世界",
+        {
+            "你好": "世界"
+        },
+        [
+            "你好",
+            "<built-in function print>"
+        ]
+    ],
+    55   2025-01-11 14:25:07----code_context : lprint((u'你好', u'世界', {u'你好': u'世界'}, (u'你好', print)), 55,end='
+
+') 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:403, -fn: <module>, 
+callBy:None
+2025-01-11 14:25:07,578 - WARNING - This is a warning message
+2025-01-11 14:25:07,578 - WARNING - 
+    123   2025-01-11 14:25:07----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:404, -fn: <module>, 
+callBy:None
+2025-01-11 14:25:08,200 - WARNING - This is a warning message
+2025-01-11 14:25:08,200 - WARNING - 
+    [
+        "你好",
+        "世界",
+        {
+            "你好": "世界"
+        },
+        [
+            "你好",
+            "<built-in function print>"
+        ]
+    ],
+    55   2025-01-11 14:25:08----code_context : lprint((u'你好', u'世界', {u'你好': u'世界'}, (u'你好', print)), 55,end='
+
+') 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:403, -fn: <module>, 
+callBy:None
+2025-01-11 14:25:08,201 - WARNING - This is a warning message
+2025-01-11 14:25:08,201 - WARNING - 
+    123   2025-01-11 14:25:08----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:404, -fn: <module>, 
+callBy:None
+2025-01-11 14:25:15,572 - ERROR - This is a warning message
+2025-01-11 14:25:15,572 - WARNING - 
+    [
+        "你好",
+        "世界",
+        {
+            "你好": "世界"
+        },
+        [
+            "你好",
+            "<built-in function print>"
+        ]
+    ],
+    55   2025-01-11 14:25:15----code_context : lprint((u'你好', u'世界', {u'你好': u'世界'}, (u'你好', print)), 55,end='
+
+') 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:403, -fn: <module>, 
+callBy:None
+2025-01-11 14:25:15,573 - ERROR - This is a warning message
+2025-01-11 14:25:15,573 - WARNING - 
+    123   2025-01-11 14:25:15----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:404, -fn: <module>, 
+callBy:None
+2025-01-11 14:25:16,320 - ERROR - This is a warning message
+2025-01-11 14:25:16,320 - WARNING - 
+    [
+        "你好",
+        "世界",
+        {
+            "你好": "世界"
+        },
+        [
+            "你好",
+            "<built-in function print>"
+        ]
+    ],
+    55   2025-01-11 14:25:16----code_context : lprint((u'你好', u'世界', {u'你好': u'世界'}, (u'你好', print)), 55,end='
+
+') 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:403, -fn: <module>, 
+callBy:None
+2025-01-11 14:25:16,321 - ERROR - This is a warning message
+2025-01-11 14:25:16,321 - WARNING - 
+    123   2025-01-11 14:25:16----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:404, -fn: <module>, 
+callBy:None
+2025-01-11 14:25:17,101 - ERROR - This is a warning message
+2025-01-11 14:25:17,101 - WARNING - 
+    [
+        "你好",
+        "世界",
+        {
+            "你好": "世界"
+        },
+        [
+            "你好",
+            "<built-in function print>"
+        ]
+    ],
+    55   2025-01-11 14:25:17----code_context : lprint((u'你好', u'世界', {u'你好': u'世界'}, (u'你好', print)), 55,end='
+
+') 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:403, -fn: <module>, 
+callBy:None
+2025-01-11 14:25:17,102 - ERROR - This is a warning message
+2025-01-11 14:25:17,102 - WARNING - 
+    123   2025-01-11 14:25:17----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:404, -fn: <module>, 
+callBy:None
+2025-01-11 14:27:07,031 - ERROR - This is a warning message
+2025-01-11 14:27:07,031 - WARNING - 
+    [
+        "你好",
+        "世界",
+        {
+            "你好": "世界"
+        },
+        [
+            "你好",
+            "<built-in function print>"
+        ]
+    ],
+    55   2025-01-11 14:27:07----code_context : lprint((u'你好', u'世界', {u'你好': u'世界'}, (u'你好', print)), 55,end='
+
+') 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:405, -fn: <module>, 
+callBy:None
+2025-01-11 14:27:07,032 - ERROR - This is a warning message
+2025-01-11 14:27:07,032 - WARNING - 
+    123   2025-01-11 14:27:07----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:406, -fn: <module>, 
+callBy:None
+2025-01-11 14:27:09,119 - ERROR - This is a warning message
+2025-01-11 14:27:09,119 - WARNING - 
+    [
+        "你好",
+        "世界",
+        {
+            "你好": "世界"
+        },
+        [
+            "你好",
+            "<built-in function print>"
+        ]
+    ],
+    55   2025-01-11 14:27:09----code_context : lprint((u'你好', u'世界', {u'你好': u'世界'}, (u'你好', print)), 55,end='
+
+') 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:405, -fn: <module>, 
+callBy:None
+2025-01-11 14:27:09,119 - ERROR - This is a warning message
+2025-01-11 14:27:09,119 - WARNING - 
+    123   2025-01-11 14:27:09----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:406, -fn: <module>, 
+callBy:None
+2025-01-11 14:27:28,866 - ERROR - This is a warning message
+2025-01-11 14:27:28,873 - ERROR - This is a warning message
+2025-01-11 14:27:28,873 - WARNING - 
+    [
+        "你好",
+        "世界",
+        {
+            "你好": "世界"
+        },
+        [
+            "你好",
+            "<built-in function print>"
+        ]
+    ],
+    55   2025-01-11 14:27:28----code_context : lprint((u'你好', u'世界', {u'你好': u'世界'}, (u'你好', print)), 55,end='
+
+') 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:405, -fn: <module>, 
+callBy:None
+2025-01-11 14:27:28,874 - ERROR - This is a warning message
+2025-01-11 14:27:28,874 - WARNING - 
+    123   2025-01-11 14:27:28----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:406, -fn: <module>, 
+callBy:None
+2025-01-11 14:27:29,593 - ERROR - This is a warning message
+2025-01-11 14:27:29,600 - ERROR - This is a warning message
+2025-01-11 14:27:29,601 - WARNING - 
+    [
+        "你好",
+        "世界",
+        {
+            "你好": "世界"
+        },
+        [
+            "你好",
+            "<built-in function print>"
+        ]
+    ],
+    55   2025-01-11 14:27:29----code_context : lprint((u'你好', u'世界', {u'你好': u'世界'}, (u'你好', print)), 55,end='
+
+') 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:405, -fn: <module>, 
+callBy:None
+2025-01-11 14:27:29,601 - ERROR - This is a warning message
+2025-01-11 14:27:29,601 - WARNING - 
+    123   2025-01-11 14:27:29----code_context : lprint(123) 
+File: d:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module\l_src\usualFunc.py:406, -fn: <module>, 
+callBy:None

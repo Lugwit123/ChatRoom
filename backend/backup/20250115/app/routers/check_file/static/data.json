@@ -1,0 +1,638 @@
+[
+    {
+        "abc_path": "h:\\Test\\06.CFX\\ep001\\ep001_sc001_shot0010\\ep001_sc001_shot0010_nvzhuhuafu_cfx.abc",
+        "tab_name": "ep001_sc001_shot0010_nvzhuhuafu_cfx.abc",
+        "table_data": [
+            {
+                "geometry_name": "C_NvZhuHuaFu_Clothes001_1_GeoShape",
+                "num_faces": 2128,
+                "faceset_name": "C_NvZhuHuaFu_Clothes001_1",
+                "face_indices": "0:2127",
+                "has_issue": false
+            },
+            {
+                "geometry_name": "C_NvZhuHuaFu_Clothes001_3_GeoShape",
+                "num_faces": 6560,
+                "faceset_name": "C_NvZhuHuaFu_Clothes001_3",
+                "face_indices": "0:6559",
+                "has_issue": false
+            },
+            {
+                "geometry_name": "C_NvZhuHuaFu_Clothes002_GeoShape",
+                "num_faces": 5928,
+                "faceset_name": "C_NvZhuHuaFu_Clothes002",
+                "face_indices": "0:5927",
+                "has_issue": false
+            },
+            {
+                "geometry_name": "C_NvZhuHuaFu_FaShi002_GeoShape",
+                "num_faces": 2010,
+                "faceset_name": "C_NvZhuHuaFu_FaShi002",
+                "face_indices": "0:2009",
+                "has_issue": false
+            },
+            {
+                "geometry_name": "C_NvZhuHuaFu_FaShi003_GeoShape",
+                "num_faces": 2010,
+                "faceset_name": "C_NvZhuHuaFu_FaShi003",
+                "face_indices": "0:2009",
+                "has_issue": false
+            },
+            {
+                "geometry_name": "C_NvZhuHuaFu_FaShi004_GeoShape",
+                "num_faces": 11268,
+                "faceset_name": "C_NvZhuHuaFu_FaShi004",
+                "face_indices": "0:11267",
+                "has_issue": false
+            }
+        ],
+        "has_issue": false,
+        "error": null,
+        "meta_data": {}
+    },
+    {
+        "abc_path": "H:\\Test\\06.CFX\\ep001\\ep001_sc001_shot0010\\ep001_sc001_shot0010_ZhangSan_cfx.abc",
+        "tab_name": "ep001_sc001_shot0010_ZhangSan_cfx.abc",
+        "table_data": [
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth00Shape1",
+                "num_faces": 4672,
+                "faceset_name": "No face sets",
+                "face_indices": "",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth002Shape",
+                "num_faces": 4672,
+                "faceset_name": "No face sets",
+                "face_indices": "",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth003Shape",
+                "num_faces": 15696,
+                "faceset_name": "C_ZhaoGuoShiBingYi_Rig3:MI_C_ZhaoGuoShiBingYi_Cloth003_1002_Inst",
+                "face_indices": "0:8783",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth003Shape",
+                "num_faces": 15696,
+                "faceset_name": "C_ZhaoGuoShiBingYi_Rig3:MI_C_ZhaoGuoShiBingYi_Cloth003_1005_Inst",
+                "face_indices": "8784:15695",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth007Shape",
+                "num_faces": 113572,
+                "faceset_name": "C_ZhaoGuoShiBingYi_Rig3:MI_C_ZhaoGuoShiBingYi_Cloth007_1001_Inst",
+                "face_indices": "0:6355",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth007Shape",
+                "num_faces": 113572,
+                "faceset_name": "C_ZhaoGuoShiBingYi_Rig3:MI_C_ZhaoGuoShiBingYi_Cloth007_1003_Inst",
+                "face_indices": "6356:36331",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth007Shape",
+                "num_faces": 113572,
+                "faceset_name": "C_ZhaoGuoShiBingYi_Rig3:MI_C_ZhaoGuoShiBingYi_Cloth007_1004_Inst",
+                "face_indices": "36332:113571",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth008Shape",
+                "num_faces": 108316,
+                "faceset_name": "C_ZhaoGuoShiBingYi_Rig3:MI_C_ZhaoGuoShiBingYi_Cloth008_1001_Inst",
+                "face_indices": "0:2475",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth008Shape",
+                "num_faces": 108316,
+                "faceset_name": "C_ZhaoGuoShiBingYi_Rig3:MI_C_ZhaoGuoShiBingYi_Cloth008_1003_Inst",
+                "face_indices": "2476:35291",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth008Shape",
+                "num_faces": 108316,
+                "faceset_name": "C_ZhaoGuoShiBingYi_Rig3:MI_C_ZhaoGuoShiBingYi_Cloth008_1004_Inst",
+                "face_indices": "35292:108315",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth009Shape",
+                "num_faces": 16128,
+                "faceset_name": "No face sets",
+                "face_indices": "",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth010Shape",
+                "num_faces": 18816,
+                "faceset_name": "No face sets",
+                "face_indices": "",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth0Shape1",
+                "num_faces": 9856,
+                "faceset_name": "No face sets",
+                "face_indices": "",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_HairShape",
+                "num_faces": 90752,
+                "faceset_name": "C_ZhaoGuoShiBingYi_Rig3:MI_C_ZhaoGuoShiBingYi_Hair_Inst",
+                "face_indices": "0:90751",
+                "has_issue": true
+            }
+        ],
+        "has_issue": true,
+        "error": null,
+        "meta_data": {}
+    },
+    {
+        "abc_path": "C:/Users/qqfeng/output.abc",
+        "tab_name": "output.abc",
+        "table_data": [
+            {
+                "geometry_name": "C_NvZhuHuaFu_Clothes001_1_GeoShape",
+                "num_faces": 2128,
+                "faceset_name": "C_NvZhuHuaFu_Clothes001_1",
+                "face_indices": "0:2127",
+                "has_issue": false
+            },
+            {
+                "geometry_name": "C_NvZhuHuaFu_Clothes001_3_GeoShape",
+                "num_faces": 6560,
+                "faceset_name": "C_NvZhuHuaFu_Clothes001_3",
+                "face_indices": "0:6559",
+                "has_issue": false
+            },
+            {
+                "geometry_name": "C_NvZhuHuaFu_Clothes002_GeoShape",
+                "num_faces": 5928,
+                "faceset_name": "C_NvZhuHuaFu_Clothes002",
+                "face_indices": "0:5927",
+                "has_issue": false
+            },
+            {
+                "geometry_name": "C_NvZhuHuaFu_FaShi002_GeoShape",
+                "num_faces": 2010,
+                "faceset_name": "C_NvZhuHuaFu_FaShi002",
+                "face_indices": "0:2009",
+                "has_issue": false
+            },
+            {
+                "geometry_name": "C_NvZhuHuaFu_FaShi003_GeoShape",
+                "num_faces": 2010,
+                "faceset_name": "C_NvZhuHuaFu_FaShi003",
+                "face_indices": "0:2009",
+                "has_issue": false
+            },
+            {
+                "geometry_name": "C_NvZhuHuaFu_FaShi004_GeoShape",
+                "num_faces": 11268,
+                "faceset_name": "C_NvZhuHuaFu_FaShi004",
+                "face_indices": "0:11267",
+                "has_issue": false
+            }
+        ],
+        "has_issue": false,
+        "error": null,
+        "meta_data": {
+            "maya_shot_file": "H:/Test/5.Anima final/EP001/ani/ma/ep010_sc001_shot0010_anim.ma",
+            "maya_asset_file": "H:/Test/4.Assets/Char/C_nvzhuhuafu/Rig/C_nvzhuhuafu_Rig.ma"
+        }
+    },
+    {
+        "abc_path": "h:\\Test\\06.CFX\\ep001\\ep001_sc001_shot0010\\ep001_sc001_shot0010_nvzhuhuafu_cfx.abc",
+        "tab_name": "ep001_sc001_shot0010_nvzhuhuafu_cfx.abc",
+        "table_data": [
+            {
+                "geometry_name": "C_NvZhuHuaFu_Clothes001_1_GeoShape",
+                "num_faces": 2128,
+                "faceset_name": "C_NvZhuHuaFu_Clothes001_1",
+                "face_indices": "0:2127",
+                "has_issue": false
+            },
+            {
+                "geometry_name": "C_NvZhuHuaFu_Clothes001_3_GeoShape",
+                "num_faces": 6560,
+                "faceset_name": "C_NvZhuHuaFu_Clothes001_3",
+                "face_indices": "0:6559",
+                "has_issue": false
+            },
+            {
+                "geometry_name": "C_NvZhuHuaFu_Clothes002_GeoShape",
+                "num_faces": 5928,
+                "faceset_name": "C_NvZhuHuaFu_Clothes002",
+                "face_indices": "0:5927",
+                "has_issue": false
+            },
+            {
+                "geometry_name": "C_NvZhuHuaFu_FaShi002_GeoShape",
+                "num_faces": 2010,
+                "faceset_name": "C_NvZhuHuaFu_FaShi002",
+                "face_indices": "0:2009",
+                "has_issue": false
+            },
+            {
+                "geometry_name": "C_NvZhuHuaFu_FaShi003_GeoShape",
+                "num_faces": 2010,
+                "faceset_name": "C_NvZhuHuaFu_FaShi003",
+                "face_indices": "0:2009",
+                "has_issue": false
+            },
+            {
+                "geometry_name": "C_NvZhuHuaFu_FaShi004_GeoShape",
+                "num_faces": 11268,
+                "faceset_name": "C_NvZhuHuaFu_FaShi004",
+                "face_indices": "0:11267",
+                "has_issue": false
+            }
+        ],
+        "has_issue": false,
+        "error": null,
+        "meta_data": {}
+    },
+    {
+        "abc_path": "H:\\Test\\06.CFX\\ep001\\ep001_sc001_shot0010\\ep001_sc001_shot0010_ZhangSan_cfx.abc",
+        "tab_name": "ep001_sc001_shot0010_ZhangSan_cfx.abc",
+        "table_data": [
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth00Shape1",
+                "num_faces": 4672,
+                "faceset_name": "No face sets",
+                "face_indices": "",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth002Shape",
+                "num_faces": 4672,
+                "faceset_name": "No face sets",
+                "face_indices": "",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth003Shape",
+                "num_faces": 15696,
+                "faceset_name": "C_ZhaoGuoShiBingYi_Rig3:MI_C_ZhaoGuoShiBingYi_Cloth003_1002_Inst",
+                "face_indices": "0:8783",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth003Shape",
+                "num_faces": 15696,
+                "faceset_name": "C_ZhaoGuoShiBingYi_Rig3:MI_C_ZhaoGuoShiBingYi_Cloth003_1005_Inst",
+                "face_indices": "8784:15695",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth007Shape",
+                "num_faces": 113572,
+                "faceset_name": "C_ZhaoGuoShiBingYi_Rig3:MI_C_ZhaoGuoShiBingYi_Cloth007_1001_Inst",
+                "face_indices": "0:6355",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth007Shape",
+                "num_faces": 113572,
+                "faceset_name": "C_ZhaoGuoShiBingYi_Rig3:MI_C_ZhaoGuoShiBingYi_Cloth007_1003_Inst",
+                "face_indices": "6356:36331",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth007Shape",
+                "num_faces": 113572,
+                "faceset_name": "C_ZhaoGuoShiBingYi_Rig3:MI_C_ZhaoGuoShiBingYi_Cloth007_1004_Inst",
+                "face_indices": "36332:113571",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth008Shape",
+                "num_faces": 108316,
+                "faceset_name": "C_ZhaoGuoShiBingYi_Rig3:MI_C_ZhaoGuoShiBingYi_Cloth008_1001_Inst",
+                "face_indices": "0:2475",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth008Shape",
+                "num_faces": 108316,
+                "faceset_name": "C_ZhaoGuoShiBingYi_Rig3:MI_C_ZhaoGuoShiBingYi_Cloth008_1003_Inst",
+                "face_indices": "2476:35291",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth008Shape",
+                "num_faces": 108316,
+                "faceset_name": "C_ZhaoGuoShiBingYi_Rig3:MI_C_ZhaoGuoShiBingYi_Cloth008_1004_Inst",
+                "face_indices": "35292:108315",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth009Shape",
+                "num_faces": 16128,
+                "faceset_name": "No face sets",
+                "face_indices": "",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth010Shape",
+                "num_faces": 18816,
+                "faceset_name": "No face sets",
+                "face_indices": "",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth0Shape1",
+                "num_faces": 9856,
+                "faceset_name": "No face sets",
+                "face_indices": "",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_HairShape",
+                "num_faces": 90752,
+                "faceset_name": "C_ZhaoGuoShiBingYi_Rig3:MI_C_ZhaoGuoShiBingYi_Hair_Inst",
+                "face_indices": "0:90751",
+                "has_issue": true
+            }
+        ],
+        "has_issue": true,
+        "error": null,
+        "meta_data": {}
+    },
+    {
+        "abc_path": "C:/Users/qqfeng/output.abc",
+        "tab_name": "output.abc",
+        "table_data": [
+            {
+                "geometry_name": "C_NvZhuHuaFu_Clothes001_1_GeoShape",
+                "num_faces": 2128,
+                "faceset_name": "C_NvZhuHuaFu_Clothes001_1",
+                "face_indices": "0:2127",
+                "has_issue": false
+            },
+            {
+                "geometry_name": "C_NvZhuHuaFu_Clothes001_3_GeoShape",
+                "num_faces": 6560,
+                "faceset_name": "C_NvZhuHuaFu_Clothes001_3",
+                "face_indices": "0:6559",
+                "has_issue": false
+            },
+            {
+                "geometry_name": "C_NvZhuHuaFu_Clothes002_GeoShape",
+                "num_faces": 5928,
+                "faceset_name": "C_NvZhuHuaFu_Clothes002",
+                "face_indices": "0:5927",
+                "has_issue": false
+            },
+            {
+                "geometry_name": "C_NvZhuHuaFu_FaShi002_GeoShape",
+                "num_faces": 2010,
+                "faceset_name": "C_NvZhuHuaFu_FaShi002",
+                "face_indices": "0:2009",
+                "has_issue": false
+            },
+            {
+                "geometry_name": "C_NvZhuHuaFu_FaShi003_GeoShape",
+                "num_faces": 2010,
+                "faceset_name": "C_NvZhuHuaFu_FaShi003",
+                "face_indices": "0:2009",
+                "has_issue": false
+            },
+            {
+                "geometry_name": "C_NvZhuHuaFu_FaShi004_GeoShape",
+                "num_faces": 11268,
+                "faceset_name": "C_NvZhuHuaFu_FaShi004",
+                "face_indices": "0:11267",
+                "has_issue": false
+            }
+        ],
+        "has_issue": false,
+        "error": null,
+        "meta_data": {
+            "maya_shot_file": "H:/Test/5.Anima final/EP001/ani/ma/ep010_sc001_shot0010_anim.ma",
+            "maya_asset_file": "H:/Test/4.Assets/Char/C_nvzhuhuafu/Rig/C_nvzhuhuafu_Rig.ma"
+        }
+    },
+    {
+        "abc_path": "h:\\Test\\06.CFX\\ep001\\ep001_sc001_shot0010\\ep001_sc001_shot0010_nvzhuhuafu_cfx.abc",
+        "tab_name": "ep001_sc001_shot0010_nvzhuhuafu_cfx.abc",
+        "table_data": [
+            {
+                "geometry_name": "C_NvZhuHuaFu_Clothes001_1_GeoShape",
+                "num_faces": 2128,
+                "faceset_name": "C_NvZhuHuaFu_Clothes001_1",
+                "face_indices": "0:2127",
+                "has_issue": false
+            },
+            {
+                "geometry_name": "C_NvZhuHuaFu_Clothes001_3_GeoShape",
+                "num_faces": 6560,
+                "faceset_name": "C_NvZhuHuaFu_Clothes001_3",
+                "face_indices": "0:6559",
+                "has_issue": false
+            },
+            {
+                "geometry_name": "C_NvZhuHuaFu_Clothes002_GeoShape",
+                "num_faces": 5928,
+                "faceset_name": "C_NvZhuHuaFu_Clothes002",
+                "face_indices": "0:5927",
+                "has_issue": false
+            },
+            {
+                "geometry_name": "C_NvZhuHuaFu_FaShi002_GeoShape",
+                "num_faces": 2010,
+                "faceset_name": "C_NvZhuHuaFu_FaShi002",
+                "face_indices": "0:2009",
+                "has_issue": false
+            },
+            {
+                "geometry_name": "C_NvZhuHuaFu_FaShi003_GeoShape",
+                "num_faces": 2010,
+                "faceset_name": "C_NvZhuHuaFu_FaShi003",
+                "face_indices": "0:2009",
+                "has_issue": false
+            },
+            {
+                "geometry_name": "C_NvZhuHuaFu_FaShi004_GeoShape",
+                "num_faces": 11268,
+                "faceset_name": "C_NvZhuHuaFu_FaShi004",
+                "face_indices": "0:11267",
+                "has_issue": false
+            }
+        ],
+        "has_issue": false,
+        "error": null,
+        "meta_data": {}
+    },
+    {
+        "abc_path": "H:\\Test\\06.CFX\\ep001\\ep001_sc001_shot0010\\ep001_sc001_shot0010_ZhangSan_cfx.abc",
+        "tab_name": "ep001_sc001_shot0010_ZhangSan_cfx.abc",
+        "table_data": [
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth00Shape1",
+                "num_faces": 4672,
+                "faceset_name": "No face sets",
+                "face_indices": "",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth002Shape",
+                "num_faces": 4672,
+                "faceset_name": "No face sets",
+                "face_indices": "",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth003Shape",
+                "num_faces": 15696,
+                "faceset_name": "C_ZhaoGuoShiBingYi_Rig3:MI_C_ZhaoGuoShiBingYi_Cloth003_1002_Inst",
+                "face_indices": "0:8783",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth003Shape",
+                "num_faces": 15696,
+                "faceset_name": "C_ZhaoGuoShiBingYi_Rig3:MI_C_ZhaoGuoShiBingYi_Cloth003_1005_Inst",
+                "face_indices": "8784:15695",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth007Shape",
+                "num_faces": 113572,
+                "faceset_name": "C_ZhaoGuoShiBingYi_Rig3:MI_C_ZhaoGuoShiBingYi_Cloth007_1001_Inst",
+                "face_indices": "0:6355",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth007Shape",
+                "num_faces": 113572,
+                "faceset_name": "C_ZhaoGuoShiBingYi_Rig3:MI_C_ZhaoGuoShiBingYi_Cloth007_1003_Inst",
+                "face_indices": "6356:36331",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth007Shape",
+                "num_faces": 113572,
+                "faceset_name": "C_ZhaoGuoShiBingYi_Rig3:MI_C_ZhaoGuoShiBingYi_Cloth007_1004_Inst",
+                "face_indices": "36332:113571",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth008Shape",
+                "num_faces": 108316,
+                "faceset_name": "C_ZhaoGuoShiBingYi_Rig3:MI_C_ZhaoGuoShiBingYi_Cloth008_1001_Inst",
+                "face_indices": "0:2475",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth008Shape",
+                "num_faces": 108316,
+                "faceset_name": "C_ZhaoGuoShiBingYi_Rig3:MI_C_ZhaoGuoShiBingYi_Cloth008_1003_Inst",
+                "face_indices": "2476:35291",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth008Shape",
+                "num_faces": 108316,
+                "faceset_name": "C_ZhaoGuoShiBingYi_Rig3:MI_C_ZhaoGuoShiBingYi_Cloth008_1004_Inst",
+                "face_indices": "35292:108315",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth009Shape",
+                "num_faces": 16128,
+                "faceset_name": "No face sets",
+                "face_indices": "",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth010Shape",
+                "num_faces": 18816,
+                "faceset_name": "No face sets",
+                "face_indices": "",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_Cloth0Shape1",
+                "num_faces": 9856,
+                "faceset_name": "No face sets",
+                "face_indices": "",
+                "has_issue": true
+            },
+            {
+                "geometry_name": "C_ZhaoGuoShiBingYi_Rig3:C_ZhaoGuoShiBingYi_Mod_HairShape",
+                "num_faces": 90752,
+                "faceset_name": "C_ZhaoGuoShiBingYi_Rig3:MI_C_ZhaoGuoShiBingYi_Hair_Inst",
+                "face_indices": "0:90751",
+                "has_issue": true
+            }
+        ],
+        "has_issue": true,
+        "error": null,
+        "meta_data": {}
+    },
+    {
+        "abc_path": "C:/Users/qqfeng/output.abc",
+        "tab_name": "output.abc",
+        "table_data": [
+            {
+                "geometry_name": "C_NvZhuHuaFu_Clothes001_1_GeoShape",
+                "num_faces": 2128,
+                "faceset_name": "C_NvZhuHuaFu_Clothes001_1",
+                "face_indices": "0:2127",
+                "has_issue": false
+            },
+            {
+                "geometry_name": "C_NvZhuHuaFu_Clothes001_3_GeoShape",
+                "num_faces": 6560,
+                "faceset_name": "C_NvZhuHuaFu_Clothes001_3",
+                "face_indices": "0:6559",
+                "has_issue": false
+            },
+            {
+                "geometry_name": "C_NvZhuHuaFu_Clothes002_GeoShape",
+                "num_faces": 5928,
+                "faceset_name": "C_NvZhuHuaFu_Clothes002",
+                "face_indices": "0:5927",
+                "has_issue": false
+            },
+            {
+                "geometry_name": "C_NvZhuHuaFu_FaShi002_GeoShape",
+                "num_faces": 2010,
+                "faceset_name": "C_NvZhuHuaFu_FaShi002",
+                "face_indices": "0:2009",
+                "has_issue": false
+            },
+            {
+                "geometry_name": "C_NvZhuHuaFu_FaShi003_GeoShape",
+                "num_faces": 2010,
+                "faceset_name": "C_NvZhuHuaFu_FaShi003",
+                "face_indices": "0:2009",
+                "has_issue": false
+            },
+            {
+                "geometry_name": "C_NvZhuHuaFu_FaShi004_GeoShape",
+                "num_faces": 11268,
+                "faceset_name": "C_NvZhuHuaFu_FaShi004",
+                "face_indices": "0:11267",
+                "has_issue": false
+            }
+        ],
+        "has_issue": false,
+        "error": null,
+        "meta_data": {
+            "maya_shot_file": "H:/Test/5.Anima final/EP001/ani/ma/ep010_sc001_shot0010_anim.ma",
+            "maya_asset_file": "H:/Test/4.Assets/Char/C_nvzhuhuafu/Rig/C_nvzhuhuafu_Rig.ma"
+        }
+    }
+]

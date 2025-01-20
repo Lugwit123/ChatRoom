@@ -1,0 +1,20 @@
+[
+    {
+        "device_id": "device_admin01_pc",
+        "username": "admin01",
+        "device_name": "Admin PC",
+        "device_type": "windows",
+        "login_status": false,
+        "ip_address": "192.168.1.100",
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+    },
+    {
+        "device_id": "device_admin01_laptop",
+        "username": "admin01",
+        "device_name": "Admin Laptop",
+        "device_type": "windows",
+        "login_status": false,
+        "ip_address": "192.168.1.101",
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+    }
+]

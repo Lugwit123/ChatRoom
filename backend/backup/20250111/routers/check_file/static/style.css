@@ -1,0 +1,361 @@
+/* static/style.css */
+
+/* 设置全局暗色背景和字体颜色 */
+
+* {
+    background-color: #2b2b2b;
+    color: #ffffff;
+    font-size: clamp(15px,1.3vw,30px);
+}
+
+body html {
+    background-color: #2b2b2b;
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    font-size: 1.5vw;
+    height: 100%;
+}
+
+/* 设置字体大小随窗口缩放，但限制范围 */
+body {
+    font-size: calc(1vw + 0.5em); /* 基于视窗宽度动态调整字体大小 */
+    font-size: max(10px, min(12px, calc(1vw + 0.5em))); /* 限制字体大小范围为 12px 至 20px */
+}
+
+a {
+    color: #ffcc00 !important;
+    text-decoration: none;
+    background-color: rgb(0, 153, 255) !important;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+.page-title-section {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0 1em;
+    position: relative;
+    height: 1vh!important;
+}
+
+#main-info{
+    display: flex;
+    flex-direction: column;
+    font-size: 2vh !important;
+}
+
+#main-info > div {
+    font-size: 2vh !important;
+}
+
+
+
+.tip{
+    color: red;
+    position: absolute;
+    bottom: 0;
+    right: 20px;
+    font-size: 1.5vw;
+    text-align: right;
+}
+
+.tabs {
+    display: flex;
+    flex-wrap: wrap;
+    overflow-x: auto;
+    background-color: #1f1f1f;
+    padding: 0.1em;
+    border-bottom: 1px solid #444;
+}
+
+.tab-button {
+    background-color: #444;
+    color: #ffffff;
+    border: none;
+    padding: 0.5em 1em;
+    margin: 0.5em;
+    cursor: pointer;
+    border-radius: 0.5em;
+    flex: 1 0 auto;
+    font-size: 0.8em;
+}
+
+.tab-button.active {
+    border: 3px #ffcc00 solid;
+    font-weight: bold;
+    box-shadow: 0px 4px 6px rgba(255, 255, 255, 0.3);
+}
+
+.tab-button.has-issue {
+    background-color: #e74c3c;
+    color: #ffffff;
+}
+
+.tab-contents {
+    padding: 1em;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    color: #ffffff;
+}
+
+table thead th {
+    background-color: #444;
+    color: #ffffff;
+    padding: 0.1em;
+    text-align: left;
+}
+
+table tbody td {
+    border: 1px solid #555;
+    padding: 0.1em;
+    font-size: 0.7em;
+    font-weight: 300; /* 设置字体为细体 */
+}
+
+.error {
+    color: #e74c3c;
+}
+
+button{
+    padding: 0.2em 0.3em 0.2em 0.3em;
+    margin: 0;
+
+}
+
+/* 通用按钮样式 */
+button.action-button, 
+button.copy-button, 
+button.open-button,
+#copy-json-path,
+#open-json-folder {
+    background-color: #65297c;
+    color: #ffffff;
+    border: 2px solid #bb881b;
+    border-radius: 0.5em;
+    cursor: pointer;
+    font-size: 0.7em;
+    position: relative;
+    z-index: 10;
+    transition: all 0.2s ease;
+}
+
+button.action-button:hover, 
+button.copy-button:hover, 
+button.open-button:hover,
+#copy-json-path:hover,
+#open-json-folder:hover {
+    background-color: #7b3295;
+    border-color: #d4a149;
+}
+
+button.action-button:active, 
+button.copy-button:active, 
+button.open-button:active,
+#copy-json-path:active,
+#open-json-folder:active {
+    background-color: #522363;
+    border-color: #8e6615;
+}
+
+.action-button:disabled {
+    background-color: #555;
+    cursor: not-allowed;
+}
+
+/* 当前路径按钮特殊样式 */
+.current-path .action-button {
+    width: 80px;
+    padding: 0.5em 1em;
+}
+
+/* 添加额外的 UI 样式 */
+.path-info {
+    margin: 0.2em 0;
+    display: flex;
+    align-items: center;
+    padding: 0;
+}
+
+.path-info .action-button {
+    margin-right: 0.5em;
+    min-width:30px!important;
+}
+
+.path-info span {
+    display: inline-block;
+    margin-right: 1em;
+    font-size: 10px;
+    max-width: 80px;
+    min-width: 50px;
+}
+
+.path-value {
+    color: #ffcc00;
+    margin: 0;
+    min-width: 500px;
+    font-size: 15vw;
+}
+
+/* 当前路径显示样式 */
+.current-path {
+    background-color: #1f1f1f;
+    color: #ffffff;
+    padding: 0.5em;
+    margin: 0.5em;
+    font-size: 1em;
+    border-radius: 0.5em;
+    text-align: left;
+    display: grid;
+    grid-template-columns: 150px minmax(0, 50vw) 80px 80px;
+    gap: 1em;
+    align-items: center;
+}
+
+.current-path > div:first-child {
+    height: 20px;
+    font-size: 2vw;
+}
+
+.jsonFilePathCss {
+    color: #ffcc00;
+    margin: 0;
+    min-width: 500px;
+    font-size: 1.5vw;  /* 调整为更合适的大小 */
+}
+
+.current-path .action-button {
+    width: 80px;
+    padding: 0.5em 1em;
+    cursor: pointer;
+    white-space: nowrap;
+    background-color: #65297c;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    z-index: 10;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.current-path .action-button:hover {
+    background-color: #7b3295;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.current-path .action-button:active {
+    background-color: #522363;
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* 表格样式 */
+#main-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+#main-table th,
+#main-table td {
+    padding: 10px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+#main-table th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+}
+
+#main-table tr.issue {
+    background-color: rgba(255, 0, 0, 0.1);
+}
+
+#main-table tr:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* 媒体查询 */
+@media (max-width: 600px) {
+    body {
+        font-size: 12px; /* 设置最小字体大小 */
+    }
+}
+
+@media (min-width: 1200px) {
+    body {
+        font-size: 20px; /* 设置最大字体大小 */
+    }
+}
+
+/* 通知样式 */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    border-radius: 4px;
+    color: white;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease-in;
+}
+
+.notification.success {
+    background-color: #4CAF50;
+}
+
+.notification.error {
+    background-color: #f44336;
+}
+
+.notification.fade-out {
+    animation: fadeOut 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+}
+
+.action-button .open-folder{
+    margin-left: auto;
+}
+
+#json-path{
+    width: fit-content;
+    min-width: 500px;
+}

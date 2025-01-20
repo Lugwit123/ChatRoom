@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>我的网页标题</title>
+</head>
+<body>
+
+<script>
+    // 设置标题闪烁的内容
+    const originalTitle = document.title; // 保存原始标题
+    const flashTitle = "新消息提醒！";     // 闪烁标题
+
+    // 定义一个开关和定时器
+    let isFlashing = false;
+    let flashInterval;
+
+    // 启动闪烁功能
+    function startFlashing() {
+        // 如果已经在闪烁，则不再重复启动
+        if (flashInterval) return;
+
+        flashInterval = setInterval(() => {
+            document.title = isFlashing ? flashTitle : originalTitle;
+            isFlashing = !isFlashing; // 切换开关
+        }, 100); // 每1000毫秒（1秒）切换一次标题
+    }
+
+    // 停止闪烁
+    function stopFlashing() {
+        clearInterval(flashInterval); // 清除定时器
+        document.title = originalTitle; // 恢复原始标题
+        flashInterval = null;
+    }
+
+    // 示例：模拟10秒后停止闪烁
+    startFlashing();
+    setTimeout(stopFlashing, 10000);
+</script>
+
+</body>
+</html>

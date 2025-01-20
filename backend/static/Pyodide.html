@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Pyodide 加载进度与代码执行示例</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: auto;
+        }
+        #progressContainer {
+            width: 100%;
+            background-color: #f3f3f3;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-top: 20px;
+            height: 25px;
+            display: none; /* 初始隐藏 */
+        }
+        #progressBar {
+            width: 0%;
+            height: 100%;
+            background-color: #4caf50;
+            border-radius: 5px;
+            text-align: center;
+            color: white;
+            line-height: 25px;
+            transition: width 0.2s;
+        }
+        #spinner {
+            margin-top: 20px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 2s linear infinite;
+            display: none; /* 初始隐藏 */
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        #codeInput {
+            width: 100%;
+            height: 200px;
+            margin-top: 20px;
+            font-family: Consolas, "Courier New", monospace;
+            font-size: 14px;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: vertical;
+        }
+        #runButton {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #output {
+            white-space: pre-wrap;
+            background-color: #f9f9f9;
+            padding: 10px;
+            border: 1px solid #ddd;
+            margin-top: 20px;
+            height: 200px;
+            overflow-y: auto;
+            border-radius: 5px;
+        }
+    </style>
+    <!-- 引入 Pyodide -->
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
+</head>
+<body>
+    <h1>Pyodide 加载进度与代码执行示例</h1>
+    <div id="status">正在加载 Pyodide，请稍候...</div>
+    
+    <div id="progressContainer">
+        <div id="progressBar">0%</div>
+    </div>
+    
+    <div id="spinner"></div>
+    
+    <textarea id="codeInput" placeholder="在此输入您的 Python 代码，例如：
+import sys
+print('Python 版本:', sys.version)
+    "></textarea>
+    
+    <button id="runButton" disabled>运行 Python 代码</button>
+    <pre id="output"></pre>
+
+    <script>
+        // 获取页面元素
+        const statusElement = document.getElementById('status');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const spinner = document.getElementById('spinner');
+        const runButton = document.getElementById('runButton');
+        const outputElement = document.getElementById('output');
+        const codeInput = document.getElementById('codeInput');
+
+        // 显示进度条或旋转指示器
+        function showLoading(progressAvailable) {
+            if (progressAvailable) {
+                progressContainer.style.display = 'block';
+                spinner.style.display = 'none';
+            } else {
+                progressContainer.style.display = 'none';
+                spinner.style.display = 'block';
+            }
+        }
+
+        // 更新进度条
+        function updateProgress(loaded, total) {
+            if (total > 0) {
+                const percent = Math.floor((loaded / total) * 100);
+                progressBar.style.width = percent + '%';
+                progressBar.innerText = percent + '%';
+                statusElement.innerText = `加载 Pyodide 中... ${percent}%`;
+            } else {
+                // 无法获取总大小，显示旋转指示器
+                showLoading(false);
+            }
+        }
+
+        // 初始化 Pyodide
+        async function initializePyodide() {
+            try {
+                // 尝试显示进度条
+                showLoading(true);
+
+                const pyodide = await loadPyodide({
+                    indexURL: "https://cdn.jsdelivr.net/pyodide/v0.23.4/full/",
+                    stdout: (msg) => {
+                        outputElement.innerText += msg + '\n';
+                    },
+                    stderr: (msg) => {
+                        outputElement.innerText += msg + '\n';
+                    },
+                    progress: (loaded, total) => {
+                        if (total > 0) {
+                            updateProgress(loaded, total);
+                        } else {
+                            // 如果 total 无效，切换到旋转指示器
+                            showLoading(false);
+                        }
+                    }
+                });
+
+                // 加载完成后更新 UI
+                statusElement.innerText = 'Pyodide 加载完成。';
+                progressBar.style.width = '100%';
+                progressBar.innerText = '100%';
+                runButton.disabled = false;
+                progressContainer.style.display = 'none';
+                spinner.style.display = 'none';
+
+                // 绑定按钮点击事件
+                runButton.addEventListener('click', async () => {
+                    const code = codeInput.value.trim();
+                    if (!code) {
+                        outputElement.innerText = '请输入要运行的 Python 代码。';
+                        return;
+                    }
+
+                    outputElement.innerText = '正在运行 Python 代码...\n';
+                    try {
+                        // 清除之前的输出
+                        // outputElement.innerText = '正在运行 Python 代码...\n';
+                        // 运行用户输入的 Python 代码
+                        await pyodide.runPythonAsync(code);
+                        outputElement.innerText += '\n执行完成。\n';
+                    } catch (err) {
+                        outputElement.innerText += `\n运行错误: ${err}\n`;
+                    }
+                });
+
+            } catch (err) {
+                statusElement.innerText = 'Pyodide 加载失败，请刷新页面重试。';
+                progressContainer.style.display = 'none';
+                spinner.style.display = 'none';
+                console.error(err);
+            }
+        }
+
+        // 开始初始化
+        initializePyodide();
+    </script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+ [
+    {
+        "name": "asset_group",
+        "description": "资产组",
+        "owner": "admin01",
+        "admins": ["liujunlong"],
+        "members": ["julia01"],
+        "avatar": "",
+        "extra_data": {}
+    },
+    {
+        "name": "animation_group",
+        "description": "动画组",
+        "owner": "admin01",
+        "admins": [],
+        "members": [],
+        "avatar": "",
+        "extra_data": {}
+    },
+    {
+        "name": "effect_group",
+        "description": "特效组",
+        "owner": "admin01",
+        "admins": ["zhaiwenpeng"],
+        "members": ["zhangqunzhong"],
+        "avatar": "",
+        "extra_data": {}
+    },
+    {
+        "name": "solve_group",
+        "description": "解算组",
+        "owner": "system01",
+        "admins": ["OC5", "OC6"],
+        "members": ["admin01", "fengqingqing", "OC1", "OC2", "OC3", "OC4", "zhangqunzhong"],
+        "avatar": "",
+        "extra_data": {}
+    },
+    {
+        "name": "light_group",
+        "description": "灯光组",
+        "owner": "admin01",
+        "admins": ["tanglinyu"],
+        "members": ["zhangqunzhong"],
+        "avatar": "",
+        "extra_data": {}
+    }
+]

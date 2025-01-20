@@ -1,0 +1,33 @@
+
+
+    "开始socket连接"   2025-01-19 21:39:12----code_context : lprint("开始socket连接") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\manager.py:46, -fn: __init__, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\manager.py:296, ->code_context:->connection_manager = ConnectionManager(None, None)->fn:<module>
+
+
+    "D:\\TD_Depot\\Software\\Lugwit_syncPlug\\lugwit_insapp\\trayapp\\Lib\\ChatRoom\\backend"   2025-01-19 21:39:12----code_context : lprint(os.getcwd()) 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:91, -fn: <module>, None
+
+
+    "初始化Socket.IO服务器"   2025-01-19 21:39:12----code_context : lprint("初始化Socket.IO服务器") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:92, -fn: <module>, None
+
+
+    "开始socket连接"   2025-01-19 21:39:12----code_context : lprint("开始socket连接") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\manager.py:46, -fn: __init__, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:114, ->code_context:->connection_manager = ConnectionManager(->fn:<module>
+
+
+    "后端服务启动..."   2025-01-19 21:39:12----code_context : lprint("后端服务启动...") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:174, -fn: startup_event, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\starlette\routing.py:654, ->code_context:->await handler()->fn:startup
+
+
+    "已重置所有设备的在线状态为离线"   2025-01-19 21:39:12----code_context : lprint("已重置所有设备的在线状态为离线") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:165, -fn: init_device_status, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:177, ->code_context:->await init_device_status()->fn:startup_event
+
+
+    "所有初始化操作完成"   2025-01-19 21:39:12----code_context : lprint("所有初始化操作完成") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:179, -fn: startup_event, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\starlette\routing.py:654, ->code_context:->await handler()->fn:startup

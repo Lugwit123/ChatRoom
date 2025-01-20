@@ -1,0 +1,38 @@
+[
+    {
+        "device_id": "desktop_1",
+        "user_id": 1,
+        "device_name": "Windows Desktop",
+        "device_type": "desktop",
+        "login_status": false,
+        "ip_address": "192.168.1.100",
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "first_login": "2025-01-12T02:43:57+08:00",
+        "last_seen": "2025-01-12T02:43:57+08:00",
+        "login_count": 1
+    },
+    {
+        "device_id": "mobile_1",
+        "user_id": 1,
+        "device_name": "Android Phone",
+        "device_type": "mobile",
+        "login_status": false,
+        "ip_address": "192.168.1.101",
+        "user_agent": "Mozilla/5.0 (Linux; Android 10; SM-A505F)",
+        "first_login": "2025-01-12T02:43:57+08:00",
+        "last_seen": "2025-01-12T02:43:57+08:00",
+        "login_count": 1
+    },
+    {
+        "device_id": "desktop_2",
+        "user_id": 2,
+        "device_name": "MacBook Pro",
+        "device_type": "desktop",
+        "login_status": false,
+        "ip_address": "192.168.1.102",
+        "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)",
+        "first_login": "2025-01-12T02:43:57+08:00",
+        "last_seen": "2025-01-12T02:43:57+08:00",
+        "login_count": 1
+    }
+]

@@ -1,0 +1,342 @@
+{
+    "private_messages": [
+        {
+            "content": "你好，admin！",
+            "sender": "fengqingqing",
+            "recipient": "admin01",
+            "message_type": "private_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "content": "Hi，最近在做什么项目？",
+            "sender": "admin01",
+            "recipient": "fengqingqing",
+            "message_type": "private_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "content": "我在研究新的渲染方案",
+            "sender": "fengqingqing",
+            "recipient": "admin01",
+            "message_type": "private_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "content": "听起来很有趣，需要帮忙吗？",
+            "sender": "admin01",
+            "recipient": "fengqingqing",
+            "message_type": "private_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "content": "system01，我这边渲染农场连接不上了",
+            "sender": "fengqingqing",
+            "recipient": "system01",
+            "message_type": "private_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "content": "好的，我看一下。能发一下错误日志吗？",
+            "sender": "system01",
+            "recipient": "fengqingqing",
+            "message_type": "private_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "content": "已经发送到你的邮箱了",
+            "sender": "fengqingqing",
+            "recipient": "system01",
+            "message_type": "private_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "content": "检查了一下，是网络配置问题，我已经修复了",
+            "sender": "system01",
+            "recipient": "fengqingqing",
+            "message_type": "private_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "content": "太感谢了！现在可以正常连接了",
+            "sender": "fengqingqing",
+            "recipient": "system01",
+            "message_type": "private_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "content": "对了，最近准备升级一下渲染农场的系统",
+            "sender": "system01",
+            "recipient": "fengqingqing",
+            "message_type": "private_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "content": "什么时候升级？需要我们这边配合吗？",
+            "sender": "fengqingqing",
+            "recipient": "system01",
+            "message_type": "private_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "content": "计划这周六凌晨2点，升级期间渲染农场会暂停服务",
+            "sender": "system01",
+            "recipient": "fengqingqing",
+            "message_type": "private_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "content": "好的，我通知团队成员提前安排任务",
+            "sender": "fengqingqing",
+            "recipient": "system01",
+            "message_type": "private_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "content": "刘组长，新的资产模型已经上传完成了",
+            "sender": "julia01",
+            "recipient": "liujunlong",
+            "message_type": "private_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "content": "好的，我马上去检查一下",
+            "sender": "liujunlong",
+            "recipient": "julia01",
+            "message_type": "private_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "content": "张群众，OC3的渲染任务完成了吗？",
+            "sender": "tanglinyu",
+            "recipient": "zhangqunzhong",
+            "message_type": "private_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "content": "已经完成了，正在进行最后的检查",
+            "sender": "zhangqunzhong",
+            "recipient": "tanglinyu",
+            "message_type": "private_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "content": "需要我帮你review一下吗？",
+            "sender": "tanglinyu",
+            "recipient": "zhangqunzhong",
+            "message_type": "private_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "content": "好的，谢谢，我一会把结果发给你",
+            "sender": "zhangqunzhong",
+            "recipient": "tanglinyu",
+            "message_type": "private_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "content": "翟文鹏，明天的技术分享会准备得怎么样了？",
+            "sender": "admin01",
+            "recipient": "zhaiwenpeng",
+            "message_type": "private_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "content": "PPT已经做好了，主要讲解新的渲染优化方案",
+            "sender": "zhaiwenpeng",
+            "recipient": "admin01",
+            "message_type": "private_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "content": "记得把性能测试数据也加进去",
+            "sender": "admin01",
+            "recipient": "zhaiwenpeng",
+            "message_type": "private_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "content": "好的，我会补充上去",
+            "sender": "zhaiwenpeng",
+            "recipient": "admin01",
+            "message_type": "private_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "content": "系统检测到渲染节点5号机出现异常",
+            "sender": "OC5",
+            "recipient": "system01",
+            "message_type": "private_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "content": "已收到，正在处理中",
+            "sender": "system01",
+            "recipient": "OC5",
+            "message_type": "private_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "content": "唐组长，关于新场景的灯光方案我有一些想法",
+            "sender": "zhangqunzhong",
+            "recipient": "tanglinyu",
+            "message_type": "private_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "content": "好啊，明天上午我们详细讨论一下",
+            "sender": "tanglinyu",
+            "recipient": "zhangqunzhong",
+            "message_type": "private_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        }
+    ],
+    "group_messages": [
+        {
+            "group_name": "solve_group",
+            "sender": "system01",
+            "content": "欢迎来到解算组群聊！",
+            "message_type": "group_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "group_name": "solve_group",
+            "sender": "admin01",
+            "content": "大家注意，今天下午3点有技术评审会议",
+            "message_type": "group_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "group_name": "solve_group",
+            "sender": "fengqingqing",
+            "content": "收到，我把最新的优化方案准备一下",
+            "message_type": "group_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "group_name": "solve_group",
+            "sender": "zhangqunzhong",
+            "content": "好的，我这边也有一些性能测试数据要分享",
+            "message_type": "group_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "group_name": "asset_group",
+            "sender": "admin01",
+            "content": "欢迎来到资产组群聊！",
+            "message_type": "group_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "group_name": "asset_group",
+            "sender": "liujunlong",
+            "content": "资产组最近在处理哪些模型？",
+            "message_type": "group_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "group_name": "asset_group",
+            "sender": "julia01",
+            "content": "我正在处理新场景的道具模型",
+            "message_type": "group_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "group_name": "asset_group",
+            "sender": "liujunlong",
+            "content": "记得按照新的命名规范来组织文件",
+            "message_type": "group_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "group_name": "animation_group",
+            "sender": "admin01",
+            "content": "欢迎来到动画组！",
+            "message_type": "group_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "group_name": "effect_group",
+            "sender": "zhaiwenpeng",
+            "content": "特效组的新成员请先阅读置顶公告",
+            "message_type": "group_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "group_name": "effect_group",
+            "sender": "zhangqunzhong",
+            "content": "好的，我已经看完了",
+            "message_type": "group_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "group_name": "effect_group",
+            "sender": "zhaiwenpeng",
+            "content": "下周二开始新项目的特效制作",
+            "message_type": "group_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "group_name": "light_group",
+            "sender": "tanglinyu",
+            "content": "灯光组的周会时间改到每周三下午2点",
+            "message_type": "group_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "group_name": "light_group",
+            "sender": "zhangqunzhong",
+            "content": "收到，我把日程已经调整好了",
+            "message_type": "group_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        },
+        {
+            "group_name": "light_group",
+            "sender": "tanglinyu",
+            "content": "这周我们重点讨论新场景的氛围光",
+            "message_type": "group_chat",
+            "content_type": "plain_text",
+            "status": ["sent"]
+        }
+    ]
+}
