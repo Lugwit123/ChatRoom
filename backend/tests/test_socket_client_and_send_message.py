@@ -248,8 +248,8 @@ async def main():
             
         # 发送测试消息
         await client.send_private_message("你好!", "test_user")
-        await client.send_group_message("大家好!", "test_group")
-        await client.send_broadcast_message("这是一条广播消息")
+        # await client.send_group_message("大家好!", "test_group")
+        # await client.send_broadcast_message("这是一条广播消息")
         
         # 保持连接一段时间
         await asyncio.sleep(10)

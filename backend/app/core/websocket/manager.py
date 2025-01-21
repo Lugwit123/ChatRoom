@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 import traceback
-from typing import Dict, Set, List, Optional, TypeAlias, Any
+from typing import Dict, Set, List, Optional, TypeAlias, Any, Union
 import socketio
 import Lugwit_Module as LM
 from datetime import datetime
@@ -41,8 +41,9 @@ class ConnectionManager:
             sio: Socket.IO服务器实例
         """
         self.sio = sio
+        self._sid_to_user: Dict[str, str] = {}  # sid -> username
+        self._user_to_sids: Dict[str, Set[str]] = {}  # username -> set of sids
         self.active_connections: Dict[Username, ConnectionInfo] = {}  # username -> ConnectionInfo
-        self.sid_to_username: Dict[SID, Username] = {}  # sid -> username
         self.group_members: Dict[str, Set[Username]] = {}  # group -> members
         
     async def add_connection(self, sid: SID, username: Username, device_id: str, ip_address: str) -> bool:
@@ -65,7 +66,10 @@ class ConnectionManager:
                 device_id=device_id,
                 ip_address=ip_address
             )
-            self.sid_to_username[sid] = username
+            self._sid_to_user[sid] = username
+            if username not in self._user_to_sids:
+                self._user_to_sids[username] = set()
+            self._user_to_sids[username].add(sid)
             
             lprint(f"添加连接成功: sid={sid}, username={username}, device_id={device_id}")
             return True
@@ -83,16 +87,20 @@ class ConnectionManager:
         """
         try:
             # 获取用户名
-            username = self.sid_to_username.get(sid)
+            username = self._sid_to_user.get(sid)
             if not username:
                 return
                 
             # 清理连接信息
             if username in self.active_connections:
                 del self.active_connections[username]
-            if sid in self.sid_to_username:
-                del self.sid_to_username[sid]
-                
+            if sid in self._sid_to_user:
+                del self._sid_to_user[sid]
+            if username in self._user_to_sids:
+                self._user_to_sids[username].discard(sid)
+                if not self._user_to_sids[username]:  # 如果用户没有其他连接
+                    self._user_to_sids.pop(username)
+                    
             # 从群组中移除
             for members in self.group_members.values():
                 members.discard(username)
@@ -103,7 +111,7 @@ class ConnectionManager:
             lprint(f"移除连接失败: {str(e)}")
             lprint(traceback.format_exc())
             
-    def get_username_by_sid(self, sid: SID) -> Optional[Username]:
+    async def get_username_by_sid(self, sid: SID) -> Optional[Username]:
         """通过会话ID获取用户名
         
         Args:
@@ -112,9 +120,9 @@ class ConnectionManager:
         Returns:
             Optional[Username]: 用户名，如果不存在返回None
         """
-        return self.sid_to_username.get(sid)
+        return self._sid_to_user.get(sid)
         
-    def get_sid_by_username(self, username: Username) -> Optional[SID]:
+    async def get_sid_by_username(self, username: Username) -> Optional[SID]:
         """通过用户名获取会话ID
         
         Args:
@@ -123,8 +131,8 @@ class ConnectionManager:
         Returns:
             Optional[SID]: 会话ID，如果不存在返回None
         """
-        conn_info = self.active_connections.get(username)
-        return conn_info.sid if conn_info else None
+        sids = self._user_to_sids.get(username, set())
+        return next(iter(sids)) if sids else None
         
     def is_connected(self, username: Username) -> bool:
         """检查用户是否已连接
@@ -191,7 +199,7 @@ class ConnectionManager:
         try:
             if to:
                 # 发送给指定用户
-                sid = self.get_sid_by_username(to)
+                sid = await self.get_sid_by_username(to)
                 if sid:
                     await self.sio.emit(event, data, room=sid)
             else:
@@ -213,13 +221,21 @@ class ConnectionManager:
         try:
             members = self.get_group_members(group)
             for username in members:
-                sid = self.get_sid_by_username(username)
+                sid = await self.get_sid_by_username(username)
                 if sid:
                     await self.sio.emit(event, data, room=sid)
                     
         except Exception as e:
             lprint(f"发送群组事件失败: {str(e)}")
             lprint(traceback.format_exc())
+
+    async def is_user_online(self, username: Username) -> bool:
+        """检查用户是否在线"""
+        return username in self._user_to_sids and bool(self._user_to_sids[username])
+        
+    async def get_online_users(self) -> Set[str]:
+        """获取所有在线用户的用户名集合"""
+        return set(self._user_to_sids.keys())
 
 # 全局WebSocket连接管理器实例
 connection_manager = ConnectionManager(None)

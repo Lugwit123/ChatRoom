@@ -117,7 +117,11 @@ message_handlers = MessageHandlers(
     user_repo=user_repo,
     member_repo=member_repo
 )
+from app.domain.user.handlers import UserStatusHandler
 
+# 在应用初始化部分
+user_status_handler = UserStatusHandler(sio, connection_manager, user_repo)
+user_status_handler.register_handlers()
 # 注册消息处理器的事件处理函数
 message_handlers.register_handlers()
 
