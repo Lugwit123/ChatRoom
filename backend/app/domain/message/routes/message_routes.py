@@ -3,6 +3,7 @@
 定义所有与消息相关的API路由，包括消息的发送、接收、查询等功能
 """
 from fastapi import APIRouter, Depends
+from typing import Optional
 from ..facade.message_facade import MessageFacade
 from ..facade.dto.message_dto import MessageCreateDTO
 
@@ -30,6 +31,40 @@ async def send_message(message: MessageCreateDTO):
         ResponseDTO: 包含发送结果的响应
     """
     return await message_facade.send_message(message)
+
+@router.get("/list",
+    summary="获取消息列表",
+    description="获取指定用户或群组的消息列表",
+    response_description="消息列表")
+async def get_messages(user_id: str, group_id: Optional[str] = None):
+    """
+    获取消息列表API
+    
+    Args:
+        user_id: 用户ID
+        group_id: 群组ID，如果不提供则获取私聊消息
+        
+    Returns:
+        ResponseDTO: 包含消息列表的响应
+    """
+    return await message_facade.get_messages(user_id, group_id)
+
+@router.post("/read/{message_id}",
+    summary="标记消息已读",
+    description="标记指定消息为已读状态",
+    response_description="操作结果")
+async def mark_message_as_read(message_id: str, user_id: str):
+    """
+    标记消息已读API
+    
+    Args:
+        message_id: 消息ID
+        user_id: 用户ID
+        
+    Returns:
+        ResponseDTO: 操作结果响应
+    """
+    return await message_facade.mark_as_read(message_id, user_id)
 
 @router.post("/send/legacy",
     summary="发送消息(旧版)",
