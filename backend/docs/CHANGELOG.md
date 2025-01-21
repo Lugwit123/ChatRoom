@@ -184,3 +184,104 @@
 - 修复消息发送失败时的错误处理
 - 优化WebSocket连接管理
 - 完善消息归档逻辑
+
+## [Unreleased]
+
+### 删除
+- 删除了 `app/domain/message/service.py`，相关代码已迁移到 `internal/services` 目录
+- 删除了 `app/domain/message/repository.py`，相关代码已迁移到 `repositories` 目录
+- 删除了 `app/domain/message/routes` 目录，路由定义已整合到 `router.py`
+- 删除了 `app/domain/message/handlers.py`，相关代码将与 `internal/handlers/message_handler.py` 合并
+
+## [Unreleased]
+
+### 重构
+- 按照新的层级架构重组消息模块的文件结构：
+  - 移动 `enums.py` 到 `internal` 目录
+  - 移动 `models.py` 到 `internal` 目录
+  - 移动 `schemas.py` 到 `facade/dto` 目录
+  - 保存旧的 `handlers.py` 到 `internal/handlers/handlers_old.py` 以待合并
+
+### 删除
+- 删除了 `app/domain/message/service.py`，相关代码已迁移到 `internal/services` 目录
+- 删除了 `app/domain/message/repository.py`，相关代码已迁移到 `repositories` 目录
+- 删除了 `app/domain/message/routes` 目录，路由定义已整合到 `router.py`
+- 删除了 `app/domain/message/handlers.py`，相关代码将与 `internal/handlers/message_handler.py` 合并
+
+## [Unreleased]
+
+### 重构
+- 按照新的层级架构重组消息模块的文件结构：
+  - 移动 `enums.py` 到 `internal` 目录
+  - 移动 `models.py` 到 `internal` 目录
+  - 移动 `schemas.py` 到 `facade/dto` 目录
+  - 保存旧的 `handlers.py` 到 `internal/handlers/handlers_old.py` 以待合并
+
+- 重组用户模块的文件结构：
+  - 移动 `models.py` 到 `internal/models.py`
+  - 移动 `enums.py` 到 `internal/enums.py`
+  - 移动 `service.py` 到 `internal/services/user_service.py`
+  - 移动 `repository.py` 到 `repositories/user_repository.py`
+  - 移动 `schemas.py` 到 `facade/dto/user_dto.py`
+  - 移动 `handlers.py` 到 `internal/handlers/user_handler.py`
+
+- 重组群组模块的文件结构：
+  - 移动 `models.py` 到 `internal/models.py`
+  - 移动 `enums.py` 到 `internal/enums.py`
+  - 移动 `service.py` 到 `internal/services/group_service.py`
+  - 移动 `repository.py` 到 `repositories/group_repository.py`
+  - 移动 `schemas.py` 到 `facade/dto/group_dto.py`
+
+- 重组设备模块的文件结构：
+  - 移动 `models.py` 到 `internal/models.py`
+  - 移动 `service.py` 到 `internal/services/device_service.py`
+  - 移动 `repository.py` 到 `repositories/device_repository.py`
+  - 移动 `schemas.py` 到 `facade/dto/device_dto.py`
+
+### 删除
+- 删除了 `app/domain/message/service.py`，相关代码已迁移到 `internal/services` 目录
+- 删除了 `app/domain/message/repository.py`，相关代码已迁移到 `repositories` 目录
+- 删除了 `app/domain/message/routes` 目录，路由定义已整合到 `router.py`
+- 删除了 `app/domain/message/handlers.py`，相关代码将与 `internal/handlers/message_handler.py` 合并
+
+## [Unreleased]
+
+### 新增
+- 为各个模块创建了外观类（Facade）：
+  - `user_facade.py`: 用户模块外观类，提供用户注册、登录、信息管理等功能
+  - `group_facade.py`: 群组模块外观类，提供群组创建、成员管理等功能
+  - `device_facade.py`: 设备模块外观类，提供设备注册、状态管理等功能
+
+### 重构
+- 按照新的层级架构重组消息模块的文件结构：
+  - 移动 `enums.py` 到 `internal` 目录
+  - 移动 `models.py` 到 `internal` 目录
+  - 移动 `schemas.py` 到 `facade/dto` 目录
+  - 保存旧的 `handlers.py` 到 `internal/handlers/handlers_old.py` 以待合并
+
+- 重组用户模块的文件结构：
+  - 移动 `models.py` 到 `internal/models.py`
+  - 移动 `enums.py` 到 `internal/enums.py`
+  - 移动 `service.py` 到 `internal/services/user_service.py`
+  - 移动 `repository.py` 到 `repositories/user_repository.py`
+  - 移动 `schemas.py` 到 `facade/dto/user_dto.py`
+  - 移动 `handlers.py` 到 `internal/handlers/user_handler.py`
+
+- 重组群组模块的文件结构：
+  - 移动 `models.py` 到 `internal/models.py`
+  - 移动 `enums.py` 到 `internal/enums.py`
+  - 移动 `service.py` 到 `internal/services/group_service.py`
+  - 移动 `repository.py` 到 `repositories/group_repository.py`
+  - 移动 `schemas.py` 到 `facade/dto/group_dto.py`
+
+- 重组设备模块的文件结构：
+  - 移动 `models.py` 到 `internal/models.py`
+  - 移动 `service.py` 到 `internal/services/device_service.py`
+  - 移动 `repository.py` 到 `repositories/device_repository.py`
+  - 移动 `schemas.py` 到 `facade/dto/device_dto.py`
+
+### 删除
+- 删除了 `app/domain/message/service.py`，相关代码已迁移到 `internal/services` 目录
+- 删除了 `app/domain/message/repository.py`，相关代码已迁移到 `repositories` 目录
+- 删除了 `app/domain/message/routes` 目录，路由定义已整合到 `router.py`
+- 删除了 `app/domain/message/handlers.py`，相关代码将与 `internal/handlers/message_handler.py` 合并

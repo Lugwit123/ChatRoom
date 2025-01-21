@@ -28,7 +28,7 @@ from app.domain.user.repository import UserRepository
 from app.domain.group.repository import GroupRepository, GroupMemberRepository
 from app.domain.group.service import GroupService
 from app.domain.message.service import MessageService
-from app.domain.message.repositories import PrivateMessageRepository, GroupMessageRepository
+from app.domain.message.repository import PrivateMessageRepository, GroupMessageRepository
 from app.domain.message.enums import MessageStatus
 from app.domain.device.service import DeviceService
 from app.domain.device.repository import DeviceRepository

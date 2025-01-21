@@ -5,9 +5,9 @@
 import Lugwit_Module as LM
 from datetime import datetime, timedelta
 from typing import List, Optional
-from ..models import Message
-from ..repositories.group import GroupMessageRepository
-from ..repositories.private import PrivateMessageRepository
+from app.domain.message.models import Message
+from app.domain.message.repository.group import GroupMessageRepository
+from app.domain.message.repository.private import PrivateMessageRepository
 
 class MessageArchiveService:
     """消息归档服务"""

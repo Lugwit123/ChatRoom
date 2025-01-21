@@ -1,9 +1,4 @@
-"""认证相关功能"""
+"""认证模块"""
+from .facade.auth_facade import AuthFacade
 
-from .auth import (
-    authenticate_user,
-    create_access_token,
-    get_current_user,
-    get_password_hash,
-    authenticate_token
-)
+__all__ = ['AuthFacade']

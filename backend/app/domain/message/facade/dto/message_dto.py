@@ -5,7 +5,7 @@
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
-from ...internal.models import Message
+from app.domain.message.models import Message
 
 class MessageCreateDTO(BaseModel):
     """消息创建DTO

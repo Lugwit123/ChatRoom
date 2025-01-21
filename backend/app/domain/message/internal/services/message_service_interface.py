@@ -4,8 +4,8 @@
 """
 from abc import ABC, abstractmethod
 from typing import List, Optional
-from ..models import Message
-from ...facade.dto.message_dto import MessageCreateDTO
+from app.domain.message.models import Message
+from app.domain.message.facade.dto.message_dto import MessageCreateDTO
 
 class IMessageService(ABC):
     """消息服务接口定义"""

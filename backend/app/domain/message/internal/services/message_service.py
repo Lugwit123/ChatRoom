@@ -4,11 +4,11 @@
 """
 import Lugwit_Module as LM
 from typing import List, Optional
-from .message_service_interface import IMessageService
-from ..models import Message
-from ..repositories.base import MessageRepository
-from ..repositories.group import GroupMessageRepository
-from ..repositories.private import PrivateMessageRepository
+from app.domain.message.internal.services.message_service_interface import IMessageService
+from app.domain.message.internal.models import Message
+from app.domain.message.repository.base import MessageRepository
+from app.domain.message.repository.group import GroupMessageRepository
+from app.domain.message.repository.private import PrivateMessageRepository
 
 class MessageService(IMessageService):
     """消息服务实现类"""

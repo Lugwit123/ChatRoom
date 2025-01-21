@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket, WebSock
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.auth import get_current_user, authenticate_token
 from app.db import DatabaseManager
-from app.domain.message.repositories import PrivateMessageRepository, GroupMessageRepository
+from app.domain.message.repository import PrivateMessageRepository, GroupMessageRepository
 from app.domain.group.repository import GroupRepository, GroupMemberRepository
 from app.domain.user.repository import UserRepository
 from .service import MessageService
