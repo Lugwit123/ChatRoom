@@ -81,4 +81,4 @@ cover/
 # 数据库
 *.db
 *.sqlite3
-*.sqlite 
+*.sqlite .vscode/ 
