@@ -1,27 +1,25 @@
-# -*- coding: utf-8 -*-
+"""
+主应用程序入口
+"""
 import ctypes
-from functools import partial
-from ipaddress import ip_address
-import json
-import subprocess
 import sys
 import os
 import time
 import psutil
 import asyncio
-import threading
 import socket
 import traceback
-from pynput.keyboard import Key, Controller
-from pywinauto import Application
 import yaml
 import fire
+import subprocess
+from typing import Optional, Dict, Any
+from pywinauto import Application
+
 hostname = socket.gethostname()
 os.environ['QT_API'] = 'pyqt6'
 sys.path.append("D:\\TD_Depot\\Software\\Lugwit_syncPlug\\lugwit_insapp\\trayapp\\Lib")
 import Lugwit_Module as LM
-LM.lprint(os.environ['QT_API'])
-import send_message
+lprint = LM.lprint
 
 # 从文件读取服务器IP地址
 try:
@@ -33,44 +31,29 @@ except Exception as e:
     server_ip = "localhost"  # 如果读取失败则使用localhost作为后备
 
 # 根据主机名选择Qt后端
-
-
-
 from qasync import QEventLoop, QApplication, asyncSlot
-from qtpy.QtCore import (QUrl, QObject, Slot, QTimer, Signal, QPropertyAnimation, QPoint,
-                        QEasingCurve, Qt, QRect)
-from qtpy.QtWidgets import (
-    QApplication,
-    QWidget,
-    QVBoxLayout,
-    QHBoxLayout,
-    QPushButton,
-    QSystemTrayIcon,
-    QMenu,
-    QAction,
-    QMainWindow,
-    QToolBar,
-    QWidget,
-    QTabWidget,
-    QMessageBox,
-    QProgressDialog
+from PySide6.QtCore import (QRect, Qt, QTimer, QPropertyAnimation, QPoint, QEasingCurve)
+from PySide6.QtWidgets import (
+    QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
+    QSystemTrayIcon, QMenu, QMainWindow, QToolBar, QMessageBox
 )
-from qtpy.QtWebEngineCore import QWebEnginePage, QWebEngineProfile
-from qtpy.QtWebEngineWidgets import QWebEngineView
-from qtpy.QtWebChannel import QWebChannel
-from qtpy.QtGui import QIcon, QAction
+from PySide6.QtGui import QIcon, QAction
 
 from L_Tools import vnc_install
 from importlib import reload
 from LPerforce import (loginP4, p4_baselib, P4Lib)
 from LPerforce.P4LoginInfoModule import p4_loginInfo
-curdir=os.path.dirname(__file__)
+
+curdir = os.path.dirname(__file__)
 sys.path.append(curdir)
 sys.path.append(r'D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom')
-import notice_win
-from backend import schemas
-from typing import Optional, Dict, Any
-lprint=LM.lprint
+
+from modules.ui.browser import Browser
+from modules.ui.menu import HoverMenu
+from modules.message import MessageBase
+from modules.handlers.chat_handler import ChatRoom
+
+lprint = LM.lprint
 # 设置远程调试环境变量
 os.environ["QTWEBENGINE_REMOTE_DEBUGGING"] = "9222"
 
@@ -91,365 +74,34 @@ for department in departmentList:
         joinChatRoom = True
         break
 
-
-
-# 定义与 JavaScript 交互的处理类
-class CallHandler(QObject):
-    """
-    定义一个处理与 JavaScript 交互的类，包含可供调用的槽函数。
-    """
-    notificationComplete = Signal(str)
-
-    def __init__(self, parent_com: 'Browser' ):
-        super().__init__(parent_com)
-        self.parent_com: 'Browser' = parent_com
-
-    @Slot(str)
-    def pythonFunction(self, message):
-        return True  # 返回 True 表示操作成功
-
-    @Slot(str)
-    def handleNewMessage(self, message: str):
-        asyncio.ensure_future(self._handle_new_message_async(message))
-
-    @asyncSlot(str)
-    async def _handle_new_message_async(self, message:str):
-        """处理新消息的槽函数"""
-        print("收到通知消息", message)
-        try:
-            if isinstance(message, str):
-                message = json.loads(message)
-            reload(notice_win)
-
-            message : schemas.MessageBase= schemas.MessageBase(**message)  # type: ignore
-            LM.lprint(message)
-
-            if message.popup_message:
-                await self.sendNotification(message)
-            self.notificationComplete.emit("Success")
-            
-            handlers = {
-                schemas.MessageType.PRIVATE_CHAT.value: self.handle_private_message,
-                # schemas.MessageType.GROUP_CHAT.value: self.handle_group_message,
-                # schemas.MessageType.GET_USERS.value: self.handle_get_users,
-                # schemas.MessageType.VALIDATION.value: self.handle_validation,
-                # schemas.MessageType.REMOTE_CONTROL.value: self.handle_remote_control_message,
-                schemas.MessageType.OPEN_PATH.value: self.handle_open_path,
-            }
-            if handlers.get(message.message_type):
-                handler = handlers.get(message.message_type)
-                await handler(message)
-            return True
-        except Exception as e:
-            LM.lprint(f"Error in handleNewMessage: {e}")
-            return False
-
-    async def handle_private_message(self,message: schemas.MessageBase):
-        self.parent_com.start_blinking()
-    
-    async def handle_remote_control_message(self,message: schemas.MessageBase):
-        ip=message.content.get('ip')
-        self.parent_com.parent_widget.connect_vnc(ip, 5900, 'OC.123456')
-        # keyboard.press(Key.enter)
-        # keyboard.release(Key.enter)
-
-
-    async def handle_open_path(self,message: schemas.MessageBase):
-        message_conetent=message.content
-        localPath=message_conetent.get('localPath')
-        if os.path.exists(localPath):
-            os.startfile(os.path.dirname(localPath))
-        elif os.path.exists('G:'+localPath[2:]):
-            os.startfile(os.path.dirname('G:'+localPath[2:]))
-        else:
-            await QMessageBox.information(None, "信息提示", "文件或者文件夹不存在！")
-
-    @asyncSlot(str)
-    async def sendNotification(self,message: schemas.MessageBase):
-        """发送通知消息"""
-        try:
-            event = asyncio.Event()
-            # 修改notice_win.main调用，传入回调函数
-            notice_win_ins = notice_win.main(message, on_close=lambda: event.set())
-            # 等待通知窗口关闭
-            await event.wait()
-            lprint(notice_win_ins.result)
-            if notice_win_ins.result=='open':
-                self.parent_com.parent_widget.showNormal()
-                self.parent_com.parent_widget.activateWindow()
-                self.parent_com.scrool(chat_username=message.sender,
-                                        message_id=message.id)
-            if notice_win_ins.result=='accept':
-                await self.handle_remote_control_message(message)
-            
-            return True
-        except Exception as e:
-            LM.lprint(f"Error in sendNotification: {str(e)}")
-            return False
-
-    @Slot(str)
-    def exit_app(self, message):
-        print("退出应用程序")
-        os._exit(0)
-
-    @Slot(str)
-    def get_sid(self, message):
-        return message
-
-
-
-# 定义自定义浏览器窗口类
-class Browser(QMainWindow):
-    """
-    自定义浏览器窗口类。加载指定URL，并在页面加载完成后，通过runJavaScript执行alert。
-    使用自定义的 MyWebEnginePage 来处理JS对话框，使其以QMessageBox的形式显示。
-    """
-
-    def __init__(self,parent_widget=None):
-        super().__init__()
-        self.setWindowTitle("ChatRoom")
-        self.parent_widget:MainWindow=parent_widget
-
-        
-
-        # 创建中心部件和标签页
-        self.central_widget = QWidget()
-        self.setCentralWidget(self.central_widget)
-        self.layout = QHBoxLayout(self.central_widget)
-        self.layout.setContentsMargins(0, 0, 0, 0)
-        self.layout.setSpacing(0)
-        
-        # 创建标签页控件
-        self.tab_widget = QTabWidget()
-        self.tab_widget.setContentsMargins(0, 0, 0, 0)
-        self.layout.addWidget(self.tab_widget)
-
-        # 创建浏览器页面
-        self.browser = QWebEngineView()
-        page = QWebEnginePage(self.browser)
-        
-        # 允许所有内容，包括复制功能
-        settings = page.settings()
-        settings.setAttribute(settings.WebAttribute.JavascriptEnabled, True)
-        settings.setAttribute(settings.WebAttribute.JavascriptCanAccessClipboard, True)
-        settings.setAttribute(settings.WebAttribute.LocalContentCanAccessFileUrls, True)
-        settings.setAttribute(settings.WebAttribute.AllowRunningInsecureContent, True)
-        
-        # 启用剪贴板权限
-        try:
-            # PyQt6
-            page.setFeaturePermission(
-                QUrl(f"http://{server_ip}:7500"),
-                QWebEnginePage.Feature.Clipboard,
-                QWebEnginePage.PermissionPolicy.PermissionGrantedByUser
-            )
-        except:
-            try:
-                # PySide6
-                page.setFeaturePermission(
-                    QUrl(f"http://{server_ip}:7500"),
-                    QWebEnginePage.Feature.ClipboardReadWrite,
-                    QWebEnginePage.PermissionPolicy.PermissionGrantedByUser
-                )
-            except Exception as e:
-                print(f"Error setting clipboard permission: {e}")
-
-        self.browser.setPage(page)
-        self.tab_widget.addTab(self.browser, "聊天室")
-
-        # 创建调试页面
-        self.inspector = QWebEngineView()
-        self.inspector.load(QUrl(f'http://{server_ip}:9222'))
-        self.tab_widget.addTab(self.inspector, "调试")
-
-        # 设置其他属性
-        self.browser.loadFinished.connect(self.handlerHtmlLoaded)
-
-        # 设置 QWebChannel 与处理器
-        self.channel = QWebChannel()
-        self.handler = CallHandler(parent_com=self)
-        self.channel.registerObject('pyObj', self.handler)
-        self.browser.page().setWebChannel(self.channel)
-
-        # 加载本地网页，请确保 http://localhost:7500 可正常访问且有简单页面
-        self.browser.setUrl(QUrl(f"http://{server_ip}:7500"))
-        self.browser.loadFinished.connect(self.autoLogin)
-
-    def handlerHtmlLoaded(self, ok):
-        if ok:
-            self.browser.page().setDevToolsPage(self.inspector.page())
-            self.inspector.show()
-
-    def autoLogin(self):
-        data = {
-            "username": userName,
-            "password": "666"
-        }
-        time.sleep(0.2)
-        # 将数据转换为 JSON 字符串
-        data_json = json.dumps(data)
-
-        # 构造调用 setFormData 的 JavaScript 代码
-        js_code = f'''
-        if (window.setFormData){{
-            window.setFormData({data_json});
-            }}
-        '''
-        self.browser.page().runJavaScript(js_code)
-        time.sleep(0.1)
-        self.browser.page().runJavaScript(js_code)
-        click_js = """
-        var button = document.querySelector('.submit-button');
-        console.log(button)
-        if (button) {
-            button.click();
-            console.log("按下")
-        } else {
-            console.log('未找到提交按钮。');
-        }
-        """
-        self.browser.page().runJavaScript(click_js)
-        time.sleep(0.1)
-        self.browser.page().runJavaScript(click_js)
-        get_sid_code = """
-        (function() {
-            var input = document.querySelector('#sid');
-            if (input) {
-                return input.value;
-            } else {
-                return 'error';
-            }
-        })();
-        """
-        self.browser.page().runJavaScript(get_sid_code, 0, self.handle_result)
-
-    def on_load_finished(self):
-        get_sid_code = """
-        (function() {
-            var input = document.querySelector('#sid');
-            if (input) {
-                return input.value;
-            } else {
-                return 'error';
-            }
-        })();
-        """
-        self.browser.page().runJavaScript(get_sid_code, 0, self.handle_result)
-
-    def handle_result(self, result):
-        if result != 'error':
-            print(f"Input value: {result}")
-        else:
-            print("未找到元素 #sid")
-
-    def scrool(self, chat_username="", message_id=0):
-        js_code = (
-            f'window.handleSelectUserbyUserName("{chat_username}");' +
-            f'window.setTargetMessageIndex({message_id});'
-        )
-        lprint(locals())
-        self.browser.page().runJavaScript(js_code)
-
-    def js_callback(self, result):
-        print("JavaScript 返回:", result)
-
-    def close_all(self):
-        """关闭浏览器和调试窗口"""
-        if hasattr(self, 'tab_widget'):
-            self.tab_widget.clear()
-        if hasattr(self, 'inspector'):
-            self.inspector.close()
-            self.inspector.deleteLater()
-        if hasattr(self, 'browser'):
-            self.browser.close()
-            self.browser.deleteLater()
-
-    def start_blinking(self, date='', interval=500, *args, **kwargs):
-        self.parent_widget.start_blinking(date, interval, *args, **kwargs)
-
-    def stop_blinking(self):
-        self.parent_widget.stop_blinking()
-
-# 检查进程是否正在运行
-def is_process_running(process_name: str) -> bool:
-    for process in psutil.process_iter(['name']):
-        if process.info['name'] == process_name:
-            lprint(process, process_name)
-            return True
-    return False
-
-# 处理 JavaScript 结果（备用函数）
-def handle_result(result):
-    print(f"获取到的值: {result}")
-
-# 定义自定义菜单类，用于处理鼠标离开事件
-class HoverMenu(QMenu):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setMouseTracking(True)  # 启用鼠标追踪
-        
-        # 创建动画对象
-        self.animation = QPropertyAnimation(self, b"pos")
-        self.animation.setDuration(200)  # 动画持续时间（毫秒）
-        self.animation.setEasingCurve(QEasingCurve.Type.OutQuad)  # 设置缓动曲线
-        self.animation.finished.connect(self._on_animation_finished)
-        
-        self.is_hiding = False
-
-    def showEvent(self, event):
-        super().showEvent(event)
-        self.is_hiding = False
-        
-    def leaveEvent(self, event):
-        if not self.is_hiding:
-            self.slide_out()
-        super().leaveEvent(event)
-        
-    def slide_out(self):
-        if self.is_hiding:
-            return
-            
-        self.is_hiding = True
-        start_pos = self.pos()
-        end_pos = QPoint(start_pos.x(), start_pos.y() + self.height())
-        
-        self.animation.setStartValue(start_pos)
-        self.animation.setEndValue(end_pos)
-        
-        # 使用QTimer延迟3秒后启动动画
-        QTimer.singleShot(3000, self.animation.start)
-
-    def _on_animation_finished(self):
-        if self.is_hiding:
-            self.hide()
-            self.is_hiding = False
-
 class MainWindow(QMainWindow):
-    def __init__(self, geometry=None):
+    def __init__(self, geometry: Optional[QRect] = None):
         super().__init__()
+        self.parent_widget = self  # 设置parent_widget为self
         self.setWindowTitle('聊天室')
-        # 创建中心部件
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
-        # 创建主布局
-        self.layout = QHBoxLayout(self.central_widget)
-        self.layout.setContentsMargins(0, 0, 0, 0)
-        self.layout.setSpacing(0)
+        self.central_layout = QHBoxLayout(self.central_widget)
+        self.central_layout.setContentsMargins(0, 0, 0, 0)
+        self.central_layout.setSpacing(0)
         
         self.init_ui()
-        # 如果有保存的几何信息，则恢复
+        
         if geometry:
             self.setGeometry(geometry)
         
         self.setup_window_properties()
         self.setup_tray_icon()
-        # 初始化自动最小化定时器
+        
         if LM.hostName != 'PC-20240202CTEU':
             self.minimize_timer = QTimer(self)
-            self.minimize_timer.setSingleShot(True)  # 只触发一次
+            self.minimize_timer.setSingleShot(True)
             self.minimize_timer.timeout.connect(self.hide_window)
-            self.minimize_timer.start(8000)  # 8000毫秒 = 8秒
-    
+            self.minimize_timer.start(8000)
+        
+        # 创建ChatRoom实例
+        self.chat_room = ChatRoom(parent_com=self)
+
     def init_ui(self):
         """初始化UI组件"""
         # 创建工具栏
@@ -482,15 +134,14 @@ class MainWindow(QMainWindow):
         button_layout = QVBoxLayout()
         button_layout.setContentsMargins(0, 0, 0, 0)
         button_layout.setSpacing(0)
-
         
-        self.layout.addLayout(button_layout)
+        self.central_layout.addLayout(button_layout)
         
         # 创建浏览器实例
         self.browser = Browser(parent_widget=self)
-        self.layout.addWidget(self.browser)
+        self.central_layout.addWidget(self.browser)
         
-        self.setLayout(self.layout)
+        self.setLayout(self.central_layout)
 
     def setup_window_properties(self):
         """设置窗口属性"""
@@ -557,13 +208,10 @@ class MainWindow(QMainWindow):
                 elif option['action'] == 'connect':
                     # VNC直接连接
                     action.triggered.connect(
-                        partial(self.connect_vnc, 
-                                option['host'], 
-                                option['port'], 
-                                option['password'])
+                        lambda checked, host=option['host'], port=option['port'], 
+                               password=option['password']: self.connect_vnc(host, port, password)
                     )
                 tray_menu.addAction(action)
-
 
         # 添加"显示"动作
         show_action = QAction("显示", self)
@@ -597,25 +245,53 @@ class MainWindow(QMainWindow):
         # 显示托盘图标
         self.tray_icon.show()
 
-    def connect_vnc(self, host: str, port: int, password: str):
-        """连接到VNC服务器"""
+    def connect_vnc(self, host: str, port: int, password: str) -> None:
+        """连接VNC服务器"""
         try:
-            # 启动 VNC Viewer 并连接到指定地址
-            pywinauto_app = Application().start(f'"D:\\TD_Depot\\Software\\ProgramFilesLocal\\RealVNC\\VNC Viewer\\vncviewer.exe" {host}:{port}')
-
-            # 等待认证窗口加载
-            dlg = pywinauto_app.window(title='Authentication')
-            dlg.wait('exists', timeout=2)
-
-            # 定位 Password 输入框并输入密码
-            password_input = dlg.child_window(class_name="Edit", found_index=1)
-            password_input.type_keys(password, with_spaces=True)
-
-            # 定位 OK 按钮并点击
-            ok_button = dlg.child_window(title="OK", class_name="Button")
-            ok_button.click()
+            # 尝试连接VNC服务器
+            app = Application().start(
+                f'"D:\\TD_Depot\\Software\\ProgramFilesLocal\\RealVNC\\VNC Viewer\\vncviewer.exe" {host}:{port}'
+            )
+            
+            # 等待认证窗口出现
+            try:
+                dlg = app.window(title='Authentication')
+                dlg.wait('exists', timeout=5)  # 增加超时时间
+            except Exception as e:
+                reply = QMessageBox.warning(
+                    parent=self,
+                    title="连接失败",
+                    text="无法连接到VNC服务器，请检查服务器是否在线",
+                    button0=QMessageBox.StandardButton.Ok,
+                    button1=QMessageBox.StandardButton.Ok
+                )
+                return
+                
+            # 输入密码
+            try:
+                password_input = dlg.child_window(class_name="Edit", found_index=1)
+                password_input.type_keys(password, with_spaces=True)
+                
+                ok_button = dlg.child_window(title="OK", class_name="Button")
+                ok_button.click()
+            except Exception as e:
+                reply = QMessageBox.warning(
+                    parent=self,
+                    title="认证失败",
+                    text="无法完成VNC认证，请检查密码是否正确",
+                    button0=QMessageBox.StandardButton.Ok,
+                    button1=QMessageBox.StandardButton.Ok
+                )
+                return
+                
         except Exception as e:
-            QMessageBox.warning(self, "连接失败", f"无法连接到 {host}:{port}\n错误: {str(e)}")
+            reply = QMessageBox.warning(
+                parent=self,
+                title="连接失败",
+                text=f"连接VNC服务器时发生错误: {str(e)}",
+                button0=QMessageBox.StandardButton.Ok,
+                button1=QMessageBox.StandardButton.Ok
+            )
 
     def check_vnc_version(self) -> tuple[bool, str]:
         """检查VNC版本
@@ -694,13 +370,18 @@ class MainWindow(QMainWindow):
             return False
 
     @asyncSlot()
-    async def request_remote_control(self, sender: str, recipient: str, role_type: str):
-        """请求远程控制
-        Args:
-            sender: 发送者用户名
-            recipient: 接收者用户名
-            role_type: 远程控制类型
-        """
+    async def request_remote_control(self, sender: Optional[str], recipient: Optional[str], role_type: Optional[str]):
+        """请求远程控制"""
+        if not all([sender, recipient, role_type]):
+            reply = QMessageBox.warning(
+                parent=self,
+                title="参数错误",
+                text="远程控制请求缺少必要参数",
+                button0=QMessageBox.StandardButton.Ok,
+                button1=QMessageBox.StandardButton.Ok
+            )
+            return
+
         # 检查VNC版本和运行状态
         is_v7, version = self.check_vnc_version()
         
@@ -708,38 +389,38 @@ class MainWindow(QMainWindow):
             # 如果是7.x版本，检查是否在运行
             if self.is_vnc_running():
                 # VNC已在运行，直接发送远程控制请求
-                send_message.send_message(
-                    sender=sender,
-                    recipient=recipient,
-                    messageType="remote_control",
-                )
+                if sender and recipient and role_type:  # Type narrowing
+                    await self.chat_room._send_remote_control_message(sender, recipient, role_type)
                 return
             else:
                 # VNC 7.x已安装但未运行，启动服务
                 try:
                     subprocess.run(['net', 'start', 'vncserver'], check=True)
-                    send_message.send_message(
-                        sender=sender,
-                        recipient=recipient,
-                        messageType="remote_control",
-                    )
+                    if sender and recipient and role_type:  # Type narrowing
+                        await self.chat_room._send_remote_control_message(sender, recipient, role_type)
                     return
                 except subprocess.CalledProcessError:
-                    QMessageBox.warning(self, "启动服务失败", "VNC服务启动失败，请手动启动服务或重新安装。")
+                    reply = QMessageBox.warning(
+                        parent=self,
+                        title="启动服务失败",
+                        text="VNC服务启动失败，请手动启动服务或重新安装。",
+                        button0=QMessageBox.StandardButton.Ok,
+                        button1=QMessageBox.StandardButton.Ok
+                    )
                     return
         else:
             # 不是7.x版本，提示安装
             reply = QMessageBox.question(
-                self,
-                "安装VNC Server",
-                f"当前{'未安装VNC Server' if not version else f'VNC版本为{version}'}\n"
-                "需要安装VNC Server 7.x版本才能使用远程控制功能。\n"
-                "是否现在安装？",
-                QMessageBox.Yes | QMessageBox.No,
-                QMessageBox.Yes
+                parent=self,
+                title="安装VNC Server",
+                text=f"当前{'未安装VNC Server' if not version else f'VNC版本为{version}'}\n"
+                     "需要安装VNC Server 7.x版本才能使用远程控制功能。\n"
+                     "是否现在安装？",
+                button0=QMessageBox.StandardButton.Yes,
+                button1=QMessageBox.StandardButton.No
             )
             
-            if reply != QMessageBox.Yes:
+            if reply != QMessageBox.StandardButton.Yes:
                 return
 
         # 复制VNC服务器文件
@@ -750,49 +431,45 @@ class MainWindow(QMainWindow):
         os.makedirs(r'D:\TD_Depot\Temp\VNC-Server',exist_ok=True)
 
         try:
-            # 使用线程池执行安装
-            loop = asyncio.get_event_loop()
-            def run_installer():
-                # 运行安装程序
-                result = subprocess.run(
-                    [r'D:\TD_Depot\Temp\VNC-Server\Installer.exe', '/qn'],
-                    capture_output=True,
-                    text=True
+            # 运行安装程序
+            result = subprocess.run(
+                [r'D:\TD_Depot\Temp\VNC-Server\Installer.exe', '/qn'],
+                capture_output=True,
+                text=True
+            )
+            
+            if result.stderr:
+                lprint(f"VNC安装错误输出: {result.stderr}")
+                reply = QMessageBox.warning(
+                    parent=self,
+                    title="安装失败",
+                    text=f"VNC服务安装失败\n{result.stderr}",
+                    button0=QMessageBox.StandardButton.Ok,
+                    button1=QMessageBox.StandardButton.Ok
                 )
-                return result.stdout, result.stderr
-
-            # 在线程池中执行安装
-            try:
-                stdout, stderr = await loop.run_in_executor(None, run_installer)
-                
-                if stderr:
-                    lprint(f"VNC安装错误输出: {stderr}")
-                    QMessageBox.warning(self, "安装失败", f"VNC服务安装失败\n{stderr}")
-                else:
-                    lprint("VNC安装成功")
-                    # 等待服务启动
-                    await asyncio.sleep(2)
-                    # 发送远程控制请求
-                    send_message.send_message(
-                        sender=sender,
-                        recipient=recipient,
-                        messageType="remote_control",
-                    )
-
-            except Exception as e:
-                lprint(traceback.format_exc())
-                QMessageBox.warning(self, "安装失败", f"VNC服务安装失败: {str(e)}")
+            else:
+                lprint("VNC安装成功")
+                # 等待服务启动
+                await asyncio.sleep(2)
+                # 发送远程控制请求
+                if sender and recipient and role_type:  # Type narrowing
+                    await self.chat_room._send_remote_control_message(sender, recipient, role_type)
 
         except Exception as e:
             lprint(f"远程控制准备失败: {str(e)}")
-            QMessageBox.warning(self, "远程控制准备", f"远程控制准备失败: {str(e)}")
+            reply = QMessageBox.warning(
+                parent=self,
+                title="远程控制准备",
+                text=f"远程控制准备失败: {str(e)}",
+                button0=QMessageBox.StandardButton.Ok,
+                button1=QMessageBox.StandardButton.Ok
+            )
 
-    def show_window(self):
+    def show_window(self) -> None:
         """显示主窗口"""
-        self.showNormal()
-        self.activateWindow()
-        # 启动8秒后自动最小化的定时器
-        
+        if not self.isVisible():
+            self.showNormal()
+            self.activateWindow()
 
     def hide_window(self):
         """隐藏主窗口"""
@@ -823,27 +500,29 @@ class MainWindow(QMainWindow):
             self.tray_icon.setIcon(QIcon(self.new_message_icon_path))
             self.overlay_visible = True
 
-    def start_blinking(self, date='', interval=500, *args, **kwargs):
+    def start_blinking(self, date: str = '', interval: int = 500) -> None:
         """开始托盘图标闪烁"""
-        self.overlay_visible = False
-        self.blink_timer.start(interval)
+        if hasattr(self, 'blink_timer'):
+            self.overlay_visible = False
+            self.blink_timer.start(interval)
 
     def stop_blinking(self):
         """停止托盘图标闪烁"""
-        self.blink_timer.stop()
-        print("停止闪烁")
-        self.tray_icon.setIcon(QIcon(self.tray_icon_path))
-        self.overlay_visible = False
+        if hasattr(self, 'blink_timer'):
+            self.blink_timer.stop()
+            print("停止闪烁")
+            self.tray_icon.setIcon(QIcon(self.tray_icon_path))
+            self.overlay_visible = False
 
     def reload_browser(self):
         """重载浏览器"""
         if self.browser:
             self.browser.close_all()
-            self.layout.removeWidget(self.browser)
+            self.central_layout.removeWidget(self.browser)
             self.browser.deleteLater()
         
         self.browser = Browser(parent_widget=self)
-        self.layout.addWidget(self.browser)
+        self.central_layout.addWidget(self.browser)
 
     def save_window_handle(self):
         """保存窗口句柄"""
@@ -859,20 +538,14 @@ class MainWindow(QMainWindow):
         self.tray_icon.showMessage(
             "ChatRoom",
             "应用程序已最小化到系统托盘。双击托盘图标可重新打开。",
-            QSystemTrayIcon.Information,
+            QSystemTrayIcon.MessageIcon.Information,
             2000,
         )
 
     def restart_window(self):
         """重启窗口"""
         # 保存当前窗口的几何信息
-
         self.restart_application()
-        # # 创建新的MainWindow
-        # new_window = MainWindow()
-        # # 使用setGeometry一次性设置位置和大小
-        # new_window.setGeometry(current_geometry)
-        # new_window.show()
 
     def restart_application(self,current_geometry_str=""):
         """重启应用程序"""
@@ -916,8 +589,6 @@ def main(*args,**kwargs):
     lprint(is_process_running("lugwit_chatroom.exe") ,joinChatRoom)
     if joinChatRoom:
         # 使用独立环境变量启动进程
-        with open (LM.oriEnvVarFile,'r',encoding='utf-8') as f:
-            oriEnvVar=json.load(f)
         app = QApplication(sys.argv)
         apply_stylesheet(app)  # 应用暗色主题
         geometry=kwargs.get("geometry")
@@ -940,6 +611,14 @@ def apply_stylesheet(app):
     if os.path.exists(style_file):
         with open(style_file, 'r',encoding='utf-8') as f:
             app.setStyleSheet(f.read())
+
+def is_process_running(process_name: str) -> bool:
+    """检查进程是否正在运行"""
+    for process in psutil.process_iter(['name']):
+        if process.info['name'] == process_name:
+            lprint(process, process_name)
+            return True
+    return False
 
 if __name__ == "__main__":
     fire.Fire(main)

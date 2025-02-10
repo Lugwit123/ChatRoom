@@ -2,6 +2,8 @@ from datetime import datetime
 import os
 import sys
 import socket
+from dataclasses import dataclass, field
+from typing import Dict, Any, Optional, List, Union
 
 # 根据主机名选择Qt后端
 hostname = socket.gethostname()
@@ -14,7 +16,24 @@ from qtpy.QtCore import Qt, QPoint
 import Lugwit_Module as LM
 print("-------------",os.path.abspath('./'))
 sys.path.append(os.path.abspath('./'))
-from backend import schemas
+
+@dataclass
+class MessageBase:
+    """基础消息类型"""
+    sender: str
+    recipient: Optional[str] = None
+    content: Union[str, Dict[str, Any]] = ""
+    timestamp: Optional[str] = None
+    recipient_type: str = "user"
+    status: List[str] = field(default_factory=lambda: ["pending"])
+    direction: str = "request"
+    message_content_type: str = "plain_text"
+    message_type: str = "chat"
+    popup_message: bool = False
+    
+    def __post_init__(self):
+        if self.timestamp is None:
+            self.timestamp = datetime.now().isoformat()
 
 lprint = LM.lprint
 
@@ -54,9 +73,7 @@ def create_markdown_view(markdown_text):
     text_browser.setHtml(html)
     return text_browser
 
-
-
-def create_notification_window(image_path, message: schemas.MessageBase, result,on_close=None):
+def create_notification_window(image_path, message: MessageBase, result,on_close=None):
     # 创建主窗口
     class NotificationWindow(QWidget):
         def __init__(self, message, result,on_close=None):
@@ -83,7 +100,8 @@ def create_notification_window(image_path, message: schemas.MessageBase, result,
                 self.remote_control_toast()
             else:
                 self.normal_toast()
-            self.markdown_view.setStyleSheet("background-color: #2A2D3E;color: white;border: 1px solid #a28135;border-radius: 15px;padding:15px")
+            if self.markdown_view:
+                self.markdown_view.setStyleSheet("background-color: #2A2D3E;color: white;border: 1px solid #a28135;border-radius: 15px;padding:15px")
 
             # 创建按钮
             button_accept = QPushButton("接受")
@@ -237,7 +255,7 @@ if __name__ == "__main__":
         "popup_message":True,
     }
     result={}
-    message=schemas.MessageBase(**message)
+    message=MessageBase(**message)
     notification_window = create_notification_window(image_path, message,result)
     notification_window.show()
 

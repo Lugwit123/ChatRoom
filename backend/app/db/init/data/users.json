@@ -5,6 +5,7 @@
     "password": "666",
     "email": "admin1@example.com",
     "role": "admin",
+    "status": "normal",
     "groups": ["asset_group", "animation_group", "effect_group", "light_group", "solve_group"]
   },
   {
@@ -13,6 +14,7 @@
     "password": "666",
     "email": "system1@example.com",
     "role": "system",
+    "status": "normal",
     "groups": ["solve_group"]
   },
   {
@@ -21,6 +23,7 @@
     "password": "666",
     "email": "test1@example.com",
     "role": "user",
+    "status": "normal",
     "groups": ["light_group", "effect_group", "solve_group"]
   },
   {
@@ -29,6 +32,7 @@
     "password": "666",
     "email": "alice@example.com",
     "role": "user",
+    "status": "normal",
     "groups": ["solve_group"]
   },
   {
@@ -37,6 +41,7 @@
     "password": "666",
     "email": "zhaiwenpeng@example.com",
     "role": "user",
+    "status": "normal",
     "groups": ["effect_group"]
   },
   {
@@ -45,6 +50,7 @@
     "password": "666",
     "email": "OC6@example.com",
     "role": "system",
+    "status": "normal",
     "groups": ["solve_group"]
   },
   {
@@ -53,6 +59,7 @@
     "password": "666",
     "email": "OC5@example.com",
     "role": "system",
+    "status": "normal",
     "groups": ["solve_group"]
   },
   {
@@ -61,6 +68,7 @@
     "password": "666",
     "email": "OC4@example.com",
     "role": "system",
+    "status": "normal",
     "groups": ["solve_group"]
   },
   {
@@ -69,6 +77,7 @@
     "password": "666",
     "email": "OC3@example.com",
     "role": "system",
+    "status": "normal",
     "groups": ["solve_group"]
   },
   {
@@ -77,6 +86,7 @@
     "password": "666",
     "email": "OC2@example.com",
     "role": "system",
+    "status": "normal",
     "groups": ["solve_group"]
   },
   {
@@ -85,6 +95,7 @@
     "password": "666",
     "email": "OC1@example.com",
     "role": "system",
+    "status": "normal",
     "groups": ["solve_group"]
   },
   {
@@ -93,6 +104,7 @@
     "password": "666",
     "email": "liujunlong@example.com",
     "role": "user",
+    "status": "normal",
     "groups": ["asset_group"]
   },
   {
@@ -101,6 +113,7 @@
     "password": "666",
     "email": "tanglinyu@example.com",
     "role": "user",
+    "status": "normal",
     "groups": ["light_group"]
   },
   {
@@ -109,6 +122,7 @@
     "password": "666",
     "email": "julia@example.com",
     "role": "user",
+    "status": "normal",
     "groups": ["asset_group"]
   }
 ]

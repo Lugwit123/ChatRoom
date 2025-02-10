@@ -1,17 +1,30 @@
-"""群组路由模块"""
-from fastapi import APIRouter, Depends, HTTPException
-from typing import List
+"""群组管理路由模块"""
 import sys
+from typing import List
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.auth import get_current_user
+from app.db.facade.database_facade import DatabaseFacade
+from app.domain.common.models.tables import User
+from app.domain.common.enums.group import GroupMemberRole
+from app.domain.group.facade.dto.group_dto import (
+    GroupCreate, 
+    GroupResponse, 
+    GroupMemberInfo,
+    GroupMemberCreate,
+    GroupMemberUpdate,
+    GroupListResponse,
+    GroupMemberListResponse
+)
 
 sys.path.append(r'D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib')
 import Lugwit_Module as LM
 lprint = LM.lprint
 
-from app.core.auth import get_current_user
-from app.domain.user.models import User
-from app.domain.group.schemas import GroupBase, GroupCreate, GroupResponse, GroupMemberResponse
-from .repository import GroupRepository
-from app.db import DatabaseManager
+from app.domain.group.facade.group_facade import GroupFacade, get_group_facade
+from fastapi import APIRouter, Depends, HTTPException, status
+
+database_facade = DatabaseFacade()
 
 router = APIRouter(
     prefix="/api/groups",
@@ -19,90 +32,165 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-async def get_group_repo():
-    """获取群组仓储"""
-    session = DatabaseManager.get_session()
-    try:
-        yield GroupRepository(session)
-    finally:
-        await session.close()
-
 @router.post("", response_model=GroupResponse)
 async def create_group(
     group: GroupCreate,
     current_user: User = Depends(get_current_user),
-    group_repo: GroupRepository = Depends(get_group_repo)
-):
-    """创建群组"""
+    group_facade: GroupFacade = Depends(get_group_facade)
+) -> GroupResponse:
+    """创建新群组"""
     try:
-        group_db = await group_repo.create_group(group.name, group.description, current_user.id)
-        return GroupResponse.model_validate(group_db)
+        result = await group_facade.create_group(group, current_user)
+        if result.success:
+            return result.data
+        raise HTTPException(status_code=400, detail=result.message)
     except Exception as e:
         lprint(f"创建群组失败: {str(e)}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("", response_model=List[GroupResponse])
+@router.get("", response_model=GroupListResponse)
 async def get_groups(
     current_user: User = Depends(get_current_user),
-    group_repo: GroupRepository = Depends(get_group_repo)
-):
+    group_facade: GroupFacade = Depends(get_group_facade)
+) -> GroupListResponse:
     """获取群组列表"""
     try:
-        groups = await group_repo.get_user_groups(current_user.id)
-        return [GroupResponse.model_validate(group) for group in groups]
+        result = await group_facade.get_groups(current_user)
+        if result.success:
+            return result.data
+        raise HTTPException(status_code=400, detail=result.message)
     except Exception as e:
         lprint(f"获取群组列表失败: {str(e)}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/{group_id}", response_model=GroupResponse)
 async def get_group(
-    group_id: int,
+    group_id: str,
     current_user: User = Depends(get_current_user),
-    group_repo: GroupRepository = Depends(get_group_repo)
-):
-    """获取群组详情"""
+    group_facade: GroupFacade = Depends(get_group_facade)
+) -> GroupResponse:
+    """获取群组信息"""
     try:
-        # 验证用户是否是群组成员
-        if not await group_repo.is_group_member(group_id, current_user.id):
-            raise HTTPException(status_code=403, detail="您不是该群组的成员")
-        
-        group = await group_repo.get_group(group_id)
-        if not group:
-            raise HTTPException(status_code=404, detail="群组不存在")
-        
-        return GroupResponse.model_validate(group)
-    except HTTPException:
-        raise
+        result = await group_facade.get_group(group_id)
+        if result.success:
+            return result.data
+        raise HTTPException(status_code=400, detail=result.message)
     except Exception as e:
-        lprint(f"获取群组详情失败: {str(e)}")
-        raise HTTPException(status_code=400, detail=str(e))
+        lprint(f"获取群组信息失败: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/{group_id}/members/{username}", response_model=GroupMemberResponse)
-async def add_group_member(
-    group_id: int,
-    username: str,
+@router.post("/{group_id}/members", response_model=GroupMemberInfo)
+async def add_member(
+    group_id: str,
+    member: GroupMemberCreate,
     current_user: User = Depends(get_current_user),
-    group_repo: GroupRepository = Depends(get_group_repo)
-):
+    group_facade: GroupFacade = Depends(get_group_facade)
+) -> GroupMemberInfo:
     """添加群组成员"""
     try:
-        member = await group_repo.add_member(group_id, username, current_user.id)
-        return GroupMemberResponse.model_validate(member)
+        result = await group_facade.add_member(group_id, member, current_user)
+        if result.success:
+            return result.data
+        raise HTTPException(status_code=400, detail=result.message)
     except Exception as e:
         lprint(f"添加群组成员失败: {str(e)}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/{group_id}/members/{username}", response_model=dict)
-async def remove_group_member(
-    group_id: int,
-    username: str,
+@router.get("/{group_id}/members", response_model=GroupMemberListResponse)
+async def get_members(
+    group_id: str,
     current_user: User = Depends(get_current_user),
-    group_repo: GroupRepository = Depends(get_group_repo)
+    group_facade: GroupFacade = Depends(get_group_facade)
+) -> GroupMemberListResponse:
+    """获取群组成员列表"""
+    try:
+        result = await group_facade.get_members(group_id)
+        if result.success:
+            return result.data
+        raise HTTPException(status_code=400, detail=result.message)
+    except Exception as e:
+        lprint(f"获取群组成员列表失败: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.put("/{group_id}/members/{user_id}", response_model=GroupMemberInfo)
+async def update_member(
+    group_id: str,
+    user_id: str,
+    member: GroupMemberUpdate,
+    current_user: User = Depends(get_current_user),
+    group_facade: GroupFacade = Depends(get_group_facade)
+) -> GroupMemberInfo:
+    """更新群组成员信息"""
+    try:
+        result = await group_facade.update_member(group_id, user_id, member, current_user)
+        if result.success:
+            return result.data
+        raise HTTPException(status_code=400, detail=result.message)
+    except Exception as e:
+        lprint(f"更新群组成员信息失败: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/{group_id}/members/{user_id}")
+async def remove_member(
+    group_id: str,
+    user_id: str,
+    current_user: User = Depends(get_current_user),
+    group_facade: GroupFacade = Depends(get_group_facade)
 ):
     """移除群组成员"""
     try:
-        await group_repo.remove_member(group_id, username, current_user.id)
-        return {"message": "成员已移除"}
+        result = await group_facade.remove_member(group_id, user_id, current_user)
+        if result.success:
+            return {"message": "成员已移除"}
+        raise HTTPException(status_code=400, detail=result.message)
     except Exception as e:
         lprint(f"移除群组成员失败: {str(e)}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/{group_id}/join")
+async def join_group(
+    group_id: str,
+    current_user: User = Depends(get_current_user),
+    group_facade: GroupFacade = Depends(get_group_facade)
+):
+    """加入群组"""
+    try:
+        result = await group_facade.join_group(group_id, current_user)
+        if result.success:
+            return {"message": "已成功加入群组"}
+        raise HTTPException(status_code=400, detail=result.message)
+    except Exception as e:
+        lprint(f"加入群组失败: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/{group_id}/leave")
+async def leave_group(
+    group_id: str,
+    current_user: User = Depends(get_current_user),
+    group_facade: GroupFacade = Depends(get_group_facade)
+):
+    """退出群组"""
+    try:
+        result = await group_facade.leave_group(group_id, current_user)
+        if result.success:
+            return {"message": "已成功退出群组"}
+        raise HTTPException(status_code=400, detail=result.message)
+    except Exception as e:
+        lprint(f"退出群组失败: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/{group_id}")
+async def delete_group(
+    group_id: str,
+    current_user: User = Depends(get_current_user),
+    group_facade: GroupFacade = Depends(get_group_facade)
+):
+    """删除群组"""
+    try:
+        result = await group_facade.delete_group(group_id, current_user)
+        if result.success:
+            return {"message": "群组已删除"}
+        raise HTTPException(status_code=400, detail=result.message)
+    except Exception as e:
+        lprint(f"删除群组失败: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))

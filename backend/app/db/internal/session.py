@@ -40,7 +40,7 @@ class SessionManager:
         finally:
             await session.close()
             
-    async def create_session(self) -> AsyncSession:
+    def create_session(self) -> AsyncSession:
         """创建新的数据库会话
         
         Returns:

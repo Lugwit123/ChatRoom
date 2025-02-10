@@ -1,6 +1,5 @@
-"""WebSocket模块"""
+"""WebSocket模块初始化"""
 from .facade.websocket_facade import WebSocketFacade
-from .manager import ConnectionManager
-from .handlers import WebSocketHandlers
+from .internal.server import SocketServer
 
-__all__ = ['ConnectionManager', 'WebSocketHandlers', 'WebSocketFacade']
+__all__ = ['WebSocketFacade', 'SocketServer']

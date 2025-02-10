@@ -5,7 +5,7 @@ import Lugwit_Module as LM
 lprint = LM.lprint
 
 from app.db.database import AsyncSessionLocal
-from app.domain.user.repository import UserRepository
+from app.domain.user.internal.repository import UserRepository
 from app.utils.security import get_password_hash, verify_password
 
 async def check_user():

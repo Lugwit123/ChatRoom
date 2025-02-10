@@ -5,155 +5,15 @@
 - 控制台编码: 65001
 - 时间戳格式: 带时区
 - Python包管理: requirements.txt
-- 禁止启动后端服务器,请从日志文件读取报错信息,每次出现错误都要读取报错日志文件
+- 运行后端使用"cmd /c run_backend_server.bat".运行前结束"lugwit_chatroom.exe"
+- 禁止主动启动后端服务器,除非是我的指令
 - 请每次都把后端的修改记录到backend\docs\CHANGELOG.md
 - 禁止修改测试文件和日志配置文件
 - 编译.py文件时,文件并不写上一些该代码文件的功能和拥有的函数的功能
+- 使用门面模式,不要轻易创建文件,文件都是存在的,只是改成了门面模式,导入存在缺失的使用搜索的方式寻找一下
+-  禁止修改backend\.env
+- 所有自仓库继承自基础仓库,不应该添加对话参数,而是使用继承自基础仓库对话的方式
 
-## 目录结构
-backend/
-├── app/                    # 应用主目录
-│   ├── core/              # 核心功能
-│   │   ├── auth/         # 认证相关
-│   │   │   ├── __init__.py
-│   │   │   ├── models.py       # 认证模型
-│   │   │   ├── service.py      # 认证服务
-│   │   │   └── auth.py         # JWT认证实现
-│   │   ├── exceptions/   # 异常处理
-│   │   │   ├── __init__.py
-│   │   │   ├── base.py         # 基础异常类
-│   │   │   └── handlers.py     # 异常处理器
-│   │   └── websocket/    # WebSocket处理
-│   │       ├── __init__.py
-│   │       ├── manager.py      # 连接管理器
-│   │       └── events.py       # 事件处理
-│   ├── domain/           # 领域模块
-│   │   ├── base/        # 基础设施
-│   │   │   ├── __init__.py
-│   │   │   ├── models.py       # 基础模型
-│   │   │   └── repository.py   # 基础仓储
-│   │   ├── device/      # 设备管理
-│   │   │   ├── __init__.py
-│   │   │   ├── models.py       # 设备模型
-│   │   │   ├── repository.py   # 设备仓储
-│   │   │   ├── service.py      # 设备服务
-│   │   │   └── router.py       # 设备路由
-│   │   ├── file/        # 文件管理
-│   │   │   ├── __init__.py
-│   │   │   ├── models.py       # 文件模型
-│   │   │   ├── repository.py   # 文件仓储
-│   │   │   ├── service.py      # 文件服务
-│   │   │   ├── router.py       # 文件路由
-│   │   │   └── abc_check/      # ABC文件检查
-│   │   │       ├── __init__.py
-│   │   │       ├── config.py   # 检查配置
-│   │   │       ├── models.py   # 检查模型
-│   │   │       ├── service.py  # 检查服务
-│   │   │       └── utils.py    # 检查工具
-│   │   ├── group/       # 群组管理
-│   │   │   ├── __init__.py
-│   │   │   ├── models.py       # 群组模型
-│   │   │   ├── repository.py   # 群组仓储
-│   │   │   ├── service.py      # 群组服务
-│   │   │   ├── router.py       # 群组路由
-│   │   │   ├── schemas.py      # 数据验证
-│   │   │   └── handlers/       # 事件处理
-│   │   │       ├── __init__.py
-│   │   │       ├── member.py   # 成员处理
-│   │   │       └── message.py  # 消息处理
-│   │   ├── message/     # 消息管理
-│   │   │   ├── __init__.py
-│   │   │   ├── models.py       # 消息模型
-│   │   │   ├── enums.py        # 消息枚举
-│   │   │   ├── schemas.py      # 数据验证
-│   │   │   ├── router.py       # 消息路由
-│   │   │   ├── facade/        # 外观模式
-│   │   │   │   ├── __init__.py
-│   │   │   │   ├── message_facade.py  # 消息门面
-│   │   │   │   └── dto/              # 数据传输
-│   │   │   │       ├── __init__.py
-│   │   │   │       └── message_dto.py
-│   │   │   ├── internal/      # 内部实现
-│   │   │   │   ├── __init__.py
-│   │   │   │   ├── handlers/  # 事件处理
-│   │   │   │   │   ├── __init__.py
-│   │   │   │   │   └── message_handler.py
-│   │   │   │   └── services/  # 业务服务
-│   │   │   │       ├── __init__.py
-│   │   │   │       ├── message_service.py
-│   │   │   │       └── message_archive_service.py
-│   │   │   └── repositories/  # 数据仓储
-│   │   │       ├── __init__.py
-│   │   │       ├── base.py    # 基础仓储
-│   │   │       ├── group.py   # 群组消息
-│   │   │       ├── private.py # 私聊消息
-│   │   │       └── archive/   # 归档相关
-│   │   │           ├── __init__.py
-│   │   │           ├── manager.py  # 归档管理
-│   │   │           └── utils.py    # 归档工具
-│   │   └── user/        # 用户管理
-│   │       ├── __init__.py
-│   │       ├── models.py       # 用户模型
-│   │       ├── repository.py   # 用户仓储
-│   │       ├── service.py      # 用户服务
-│   │       ├── router.py       # 用户路由
-│   │       ├── schemas.py      # 数据验证
-│   │       └── handlers.py     # 事件处理
-│   ├── db/              # 数据库相关
-│   │   ├── __init__.py
-│   │   ├── database.py        # 数据库配置
-│   │   ├── migrations/        # 数据迁移
-│   │   │   ├── __init__.py
-│   │   │   └── versions/      # 迁移版本
-│   │   └── base.py           # 基础定义
-│   ├── utils/           # 工具函数
-│   │   ├── __init__.py
-│   │   ├── common.py          # 通用工具
-│   │   ├── encoding.py        # 编码工具
-│   │   ├── security.py        # 安全工具
-│   │   └── logging/          # 日志相关
-│   │       ├── __init__.py
-│   │       ├── config.py     # 日志配置
-│   │       └── handlers.py   # 日志处理
-│   ├── static/          # 静态资源
-│   │   ├── css/             # 样式文件
-│   │   ├── js/              # 脚本文件
-│   │   └── images/          # 图片资源
-│   ├── templates/       # 模板文件
-│   │   ├── base.html        # 基础模板
-│   │   ├── auth/           # 认证相关
-│   │   └── chat/           # 聊天相关
-│   └── main.py         # 应用入口
-├── tests/              # 测试目录
-│   ├── __init__.py
-│   ├── conftest.py          # 测试配置
-│   ├── unit/               # 单元测试
-│   │   ├── __init__.py
-│   │   ├── test_auth.py
-│   │   ├── test_message.py
-│   │   └── test_group.py
-│   ├── integration/        # 集成测试
-│   │   ├── __init__.py
-│   │   └── test_chat.py
-│   └── e2e/               # 端到端测试
-│       ├── __init__.py
-│       └── test_chat_flow.py
-├── docs/               # 文档目录
-│   ├── README.md           # 项目说明
-│   ├── CHANGELOG.md        # 变更日志
-│   ├── API.md             # 接口文档
-│   └── guides/            # 使用指南
-│       ├── setup.md       # 环境配置
-│       ├── development.md # 开发指南
-│       └── deployment.md  # 部署指南
-├── scripts/            # 脚本目录
-│   ├── setup.py           # 安装脚本
-│   ├── run_server.bat     # 启动服务
-│   └── run_tests.bat      # 运行测试
-├── .env               # 环境变量
-├── .gitignore        # Git忽略
-├── requirements.txt   # 依赖清单
-└── setup.cfg         # 项目配置
 
 # 开发规范
 
@@ -171,7 +31,7 @@ backend/
    a. 消息模块：
       - facade/: 外观模式实现
       - internal/: 内部实现
-      - repositories/: 数据仓储
+      - repository/: 数据仓储
    
    b. 文件模块：
       - abc_check/: ABC文件检查
@@ -218,7 +78,7 @@ backend/
 2. 日志检查：
    - 不要仅通过view_file工具判断文件是否为空
    - 必须先用list_dir检查文件大小
-   - 使用python查看后端日志,注意是utf8编码
+   - 如果只有当读取不到日志时才使用python查看后端日志,注意是utf8编码
 
 ## 测试规范
 1. 测试结构：

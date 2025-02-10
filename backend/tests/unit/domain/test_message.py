@@ -3,7 +3,7 @@
 """
 import pytest
 from app.domain.message.service import MessageService
-from app.domain.message.models import Message
+from app.domain.message.models import BaseMessage
 from Lugwit_Module import lprint
 
 @pytest.mark.asyncio

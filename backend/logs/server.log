@@ -1,33 +1,49 @@
 
 
-    "开始socket连接"   2025-01-19 21:39:12----code_context : lprint("开始socket连接") 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\manager.py:46, -fn: __init__, 
->>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\manager.py:296, ->code_context:->connection_manager = ConnectionManager(None, None)->fn:<module>
+    "启动后端"   2025-02-09 19:52:20----code_context : lprint("启动后端") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:36, -fn: <module>, None
 
 
-    "D:\\TD_Depot\\Software\\Lugwit_syncPlug\\lugwit_insapp\\trayapp\\Lib\\ChatRoom\\backend"   2025-01-19 21:39:12----code_context : lprint(os.getcwd()) 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:91, -fn: <module>, None
+    "Socket.IO服务器初始化完成"   2025-02-09 19:52:20----code_context : lprint("Socket.IO服务器初始化完成") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\internal\server.py:42, -fn: init_server, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:60, ->code_context:->sio = SocketServer.init_server()->fn:<module>
 
 
-    "初始化Socket.IO服务器"   2025-01-19 21:39:12----code_context : lprint("初始化Socket.IO服务器") 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:92, -fn: <module>, None
+    "WebSocket门面初始化完成"   2025-02-09 19:52:20----code_context : lprint("WebSocket门面初始化完成") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:57, -fn: init_server, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:62, ->code_context:->websocket_facade.init_server(sio)->fn:<module>
 
 
-    "开始socket连接"   2025-01-19 21:39:12----code_context : lprint("开始socket连接") 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\manager.py:46, -fn: __init__, 
->>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:114, ->code_context:->connection_manager = ConnectionManager(->fn:<module>
+    "数据库连接初始化成功,会话为<sqlalchemy.orm.session.AsyncSession object at 0x000001B1EB442C90>"   2025-02-09 19:52:21----code_context : self.lprint(f"数据库连接初始化成功,会话为{self._shared_session}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\db\facade\database_facade.py:105, -fn: init_sync, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:79, ->code_context:->database_facade.init_sync(database_url)->fn:<module>
 
 
-    "后端服务启动..."   2025-01-19 21:39:12----code_context : lprint("后端服务启动...") 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:174, -fn: startup_event, 
+    "注册消息处理器事件"   2025-02-09 19:52:21----code_context : self.lprint("注册消息处理器事件") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\message\facade\message_facade.py:85, -fn: register_handlers, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:91, ->code_context:->await message_facade.register_handlers()->fn:register_message_handlers
+
+
+    "消息处理器事件注册完成"   2025-02-09 19:52:21----code_context : self.lprint("消息处理器事件注册完成") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\message\facade\message_facade.py:89, -fn: register_handlers, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:91, ->code_context:->await message_facade.register_handlers()->fn:register_message_handlers
+
+
+    "后端服务启动..."   2025-02-09 19:52:21----code_context : lprint("后端服务启动...") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:152, -fn: startup_event, 
 >>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\starlette\routing.py:654, ->code_context:->await handler()->fn:startup
 
 
-    "已重置所有设备的在线状态为离线"   2025-01-19 21:39:12----code_context : lprint("已重置所有设备的在线状态为离线") 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:165, -fn: init_device_status, 
->>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:177, ->code_context:->await init_device_status()->fn:startup_event
+    "已重置所有设备的在线状态为离线"   2025-02-09 19:52:21----code_context : self.lprint("已重置所有设备的在线状态为离线") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\device\facade\device_facade.py:46, -fn: init_all_devices_status, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:155, ->code_context:->await device_facade.init_all_devices_status()->fn:startup_event
 
 
-    "所有初始化操作完成"   2025-01-19 21:39:12----code_context : lprint("所有初始化操作完成") 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:179, -fn: startup_event, 
+    "后端服务启动完成"   2025-02-09 19:52:21----code_context : lprint("后端服务启动完成") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:157, -fn: startup_event, 
 >>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\starlette\routing.py:654, ->code_context:->await handler()->fn:startup
+
+
+    "业务逻辑错误: 令牌已过期，请重新登录"   2025-02-09 20:30:47----code_context : lprint(f"业务逻辑错误: {exc.detail if hasattr(exc, 'detail') else str(exc)}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\exceptions\handlers.py:85, -fn: business_error_handler, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\starlette\middleware\errors.py:174, ->code_context:->response = await self.handler(request, exc)->fn:__call__

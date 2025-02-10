@@ -8,7 +8,7 @@ from socketio.exceptions import SocketIOError
 import Lugwit_Module as LM
 from app.core.websocket.facade.websocket_facade import WebSocketFacade
 from app.domain.user.facade.user_facade import UserFacade
-from app.domain.user.facade.dto.user_dto import UserStatus
+from app.domain.common.enums.user import UserOnlineStatus
 
 lprint = LM.lprint
 
@@ -35,7 +35,7 @@ class UserStatusHandler:
         self.sio.on("connect", self.handle_connect)
         self.sio.on("disconnect", self.handle_disconnect)
 
-    async def _update_and_broadcast_status(self, user_id: str, status: UserStatus):
+    async def _update_and_broadcast_status(self, user_id: str, status: UserOnlineStatus):
         """更新并广播用户状态
         
         Args:
@@ -79,7 +79,7 @@ class UserStatusHandler:
             # 添加连接
             if await self.websocket_facade.connect(sid, user_id, device_id, ip_address):
                 # 处理用户上线逻辑
-                await self._update_and_broadcast_status(user_id, UserStatus.ONLINE)
+                await self._update_and_broadcast_status(user_id, UserOnlineStatus.ONLINE)
                 return True
             return False
 
@@ -100,7 +100,7 @@ class UserStatusHandler:
                 # 检查用户是否还有其他活动连接
                 if not await self.websocket_facade.is_user_online(user_id):
                     # 处理用户离线逻辑
-                    await self._update_and_broadcast_status(user_id, UserStatus.OFFLINE)
+                    await self._update_and_broadcast_status(user_id, UserOnlineStatus.OFFLINE)
                 lprint(f"用户 {user_id} 断开连接")
 
         except Exception as e:

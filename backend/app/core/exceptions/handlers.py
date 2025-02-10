@@ -16,10 +16,20 @@ import traceback
 
 async def chatroom_exception_handler(request: Request, exc: ChatRoomException) -> JSONResponse:
     """处理ChatRoom基础异常"""
-    lprint(f"ChatRoom异常: {exc.detail if hasattr(exc, 'detail') else str(exc)}")
+    error_message = exc.detail if hasattr(exc, 'detail') else str(exc)
+    lprint(f"ChatRoom异常: {error_message}")
+    
+    # 如果是认证相关的错误，添加更多上下文信息
+    if isinstance(exc, AuthenticationError):
+        error_message = f"认证失败 - {error_message}"
+        headers = {"WWW-Authenticate": "Bearer"}
+    else:
+        headers = {}
+    
     return JSONResponse(
         status_code=exc.status_code if hasattr(exc, 'status_code') else status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={"detail": exc.detail if hasattr(exc, 'detail') else str(exc)}
+        content={"detail": error_message},
+        headers=headers
     )
 
 async def authentication_error_handler(request: Request, exc: AuthenticationError) -> JSONResponse:

@@ -1,0 +1,302 @@
+---
+description: frontend rule file2
+globs: 
+---
+# 前端开发规范
+
+# 全局交互规则
+- 使用中文回答
+- 每次回答前告诉我征询了哪个规则文件及具体的路径
+- 每次回答时补充React Query v5的基础知识
+- 每次回答前描述问题是否合理及原因
+- 代码修改后检查新问题
+- 文件未保存时自动保存
+- 对于文件的修改不需要用户同意,直接修改
+- 使用Windows命令,不使用Linux命令
+- 发现问题先说明后修改
+- 修改代码前分析结构和依赖
+- 使用占位符时注意保护重要代码
+- 修改后检查遗漏和误删
+- 说明删除的函数和原因
+- 保持最小修改原则
+- 运行前端使用`npm run dev`
+- 创建文件前检查类似文件
+- 每次前端修改记录到frontend/docs/CHANGELOG.md
+
+# 技术栈规范
+## 核心技术
+- React 18+
+- TypeScript 5+
+- React Query v5
+- TailwindCSS
+- Vite
+- Electron
+
+## 状态管理
+- React Query用于服务端状态
+- Zustand用于客户端状态
+- Context用于主题等全局配置
+
+# 项目结构
+```
+frontend/
+├── src/
+│   ├── assets/          # 静态资源
+│   ├── components/      # 通用组件
+│   ├── features/        # 功能模块
+│   ├── hooks/          # 自定义hooks
+│   ├── layouts/        # 布局组件
+│   ├── pages/          # 页面组件
+│   ├── services/       # API服务
+│   ├── stores/         # 状态管理
+│   ├── styles/         # 样式文件
+│   ├── types/          # TypeScript类型
+│   └── utils/          # 工具函数
+```
+
+# 开发规范
+## 组件开发规范
+1. 组件命名：
+   - 使用PascalCase
+   - 文件名与组件名一致
+   - 页面组件以Page结尾
+   - 容器组件以Container结尾
+
+2. 组件结构：
+   ```typescript
+   import { FC } from 'react'
+   import { useQuery } from '@tanstack/react-query'
+   
+   interface Props {
+     // props类型定义
+   }
+   
+   export const ComponentName: FC<Props> = ({ prop1, prop2 }) => {
+     // hooks调用
+     // 业务逻辑
+     return (
+       // JSX
+     )
+   }
+   ```
+
+3. Props规范：
+   - 使用interface定义Props类型
+   - 必选props放前面，可选props放后面
+   - 使用解构赋值接收props
+
+## React Query使用规范
+1. 查询键设计：
+   ```typescript
+   const queryKeys = {
+     users: {
+       all: ['users'] as const,
+       byId: (id: string) => ['users', id] as const,
+      list: (params: UserListParams) => ['users', 'list', params] as const
+     }
+   }
+   ```
+
+2. 查询函数：
+   - 返回Promise
+   - 处理错误情况
+   - 类型安全
+
+3. 缓存配置：
+   - 合理设置staleTime和cacheTime
+   - 适当使用prefetching
+   - 实现乐观更新
+
+## TypeScript规范
+1. 类型定义：
+   - 优先使用interface
+   - 合理使用泛型
+   - 避免any类型
+   - 使用type声明联合类型和交叉类型
+
+2. 类型文件组织：
+   - 按模块划分类型文件
+   - 导出类型使用type或interface
+   - 公共类型放在types目录
+
+## 样式规范
+1. TailwindCSS使用规范：
+   - 优先使用原子类
+   - 复杂样式使用@apply
+   - 保持class命名顺序
+   - 使用主题配置
+
+2. CSS-in-JS规范：
+   - 使用styled-components
+   - 样式组件放在styles.ts文件
+   - 避免内联样式
+
+## 路由规范
+1. 路由配置：
+   - 使用React Router
+   - 路由配置集中管理
+   - 实现路由守卫
+   - 处理404页面
+
+2. 路由参数：
+   - 使用useParams获取参数
+   - 参数类型安全
+   - 处理参数验证
+
+## 状态管理规范
+1. Zustand使用规范：
+   ```typescript
+   interface Store {
+     count: number
+     increment: () => void
+   }
+   
+   export const useStore = create<Store>((set) => ({
+     count: 0,
+     increment: () => set((state) => ({ count: state.count + 1 }))
+   }))
+   ```
+
+2. Context使用规范：
+   - 只用于全局配置
+   - 提供默认值
+   - 实现Provider组件
+
+## API调用规范
+1. 请求封装：
+   - 使用axios
+   - 统一错误处理
+   - 请求拦截器
+   - 响应拦截器
+
+2. API定义：
+   ```typescript
+   export const api = {
+     users: {
+       getList: (params: UserListParams) => 
+         axios.get('/api/users', { params }),
+       getById: (id: string) => 
+         axios.get(`/api/users/${id}`)
+     }
+   }
+   ```
+
+## WebSocket规范
+1. 连接管理：
+   - 自动重连
+   - 心跳检测
+   - 错误处理
+
+2. 消息处理：
+   - 消息类型定义
+   - 消息序列化
+   - 消息队列
+
+## 错误处理规范
+1. 全局错误处理：
+   - ErrorBoundary组件
+   - 统一错误UI
+   - 错误上报
+
+2. API错误处理：
+   - HTTP错误处理
+   - 业务错误处理
+   - 错误提示
+
+## 性能优化规范
+1. 代码分割：
+   - 路由级别分割
+   - 组件级别分割
+   - 第三方库分割
+
+2. 渲染优化：
+   - 使用memo
+   - 使用useMemo
+   - 使用useCallback
+   - 虚拟列表
+
+## 测试规范
+1. 单元测试：
+   - Jest + React Testing Library
+   - 组件测试
+   - Hook测试
+   - 工具函数测试
+
+2. E2E测试：
+   - Cypress
+   - 关键流程测试
+   - 用户行为测试
+
+## 文档规范
+1. 组件文档：
+   - 使用Storybook
+   - 编写stories
+   - 包含props说明
+   - 使用示例
+
+2. API文档：
+   - OpenAPI规范
+   - 接口说明
+   - 参数说明
+   - 返回值说明
+
+## Git规范
+1. 分支管理：
+   - main: 主分支
+   - develop: 开发分支
+   - feature: 功能分支
+   - hotfix: 修复分支
+
+2. 提交规范：
+   - feat: 新功能
+   - fix: 修复bug
+   - docs: 文档更新
+   - style: 代码格式
+   - refactor: 重构
+   - test: 测试
+   - chore: 构建过程或辅助工具的变动
+
+## 构建规范
+1. Vite配置：
+   - 环境变量
+   - 代理设置
+   - 构建优化
+   - 插件配置
+
+2. 打包优化：
+   - 代码压缩
+   - Tree Shaking
+   - 图片优化
+   - 缓存策略
+
+## 安全规范
+1. XSS防护：
+   - 输入验证
+   - 输出转义
+   - CSP配置
+
+2. CSRF防护：
+   - Token验证
+   - SameSite Cookie
+   - 请求验证
+
+3. 敏感信息：
+   - 不在前端存储敏感信息
+   - 使用HTTPS
+   - 加密传输
+
+## 辅助工具
+1. 代码格式化：
+   - Prettier
+   - ESLint
+   - StyleLint
+
+2. 提交检查：
+   - Husky
+   - lint-staged
+   - commitlint
+
+3. 依赖管理：
+   - npm
+   - package.json
+   - lock文件维护

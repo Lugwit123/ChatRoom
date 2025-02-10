@@ -160,7 +160,7 @@ Response: 200 OK
         "device_name": "string",
         "device_type": "string",
         "registered_at": "datetime",
-        "last_seen": "datetime",
+        "last_login": "datetime",
         "login_status": "boolean"
     }
 ]
