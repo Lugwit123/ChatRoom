@@ -85,6 +85,24 @@ class HoverMenu(QMenu):
                     # 创建用户信息动作
                     self.user_action = QAction(QIcon(os.path.join(os.path.dirname(__file__), '..', '..', 'icons', 'user.svg')), 
                                           f"当前用户: {username}", self)
+                    
+                    # 设置工具提示
+                    project_info = getattr(main_window, 'project_info', {})
+                    if project_info:
+                        tooltip_text = "<html><body style='white-space:pre;'>"
+                        tooltip_text += "<table style='border-spacing: 5px;'>"
+                        tooltip_text += f"<tr><td><b>用户名:</b></td><td style='padding-left:10px'>{username}</td></tr>"
+                        tooltip_text += f"<tr><td><b>全名:</b></td><td style='padding-left:10px'>{project_info.get('FullName', '')}</td></tr>"
+                        tooltip_text += f"<tr><td><b>邮箱:</b></td><td style='padding-left:10px'>{project_info.get('Email', '')}</td></tr>"
+                        tooltip_text += f"<tr><td><b>用户组:</b></td><td style='padding-left:10px'>{', '.join(group['name'] for group in project_info.get('userGroups', []))}</td></tr>"
+                        tooltip_text += f"<tr><td><b>自定义组:</b></td><td style='padding-left:10px'>{', '.join(project_info.get('customGroups', []))}</td></tr>"
+                        tooltip_text += "</table>"
+                        tooltip_text += "</body></html>"
+                        self.user_action.setToolTip(tooltip_text)
+                        # 设置工具提示显示时间（默认是5000毫秒）
+                        self.setToolTipsVisible(True)
+                        self.setToolTipDuration(10000)  # 设置为10秒
+                    
                     self.user_action.triggered.connect(self.show_user_info)
                     
                     # 将用户信息动作插入到菜单最顶部
@@ -99,6 +117,9 @@ class HoverMenu(QMenu):
                         self.insertSeparator(actions[0])
                     else:
                         self.addSeparator()
+                        
+                    # 默认隐藏用户信息按钮,等登录后显示
+                    self.user_action.setVisible(False)
                         
         except Exception as e:
             lprint(f"设置登录UI失败: {str(e)}")
@@ -127,26 +148,6 @@ class HoverMenu(QMenu):
     def setup_menu_actions(self):
         """设置菜单动作"""
         try:
-            # 添加用户信息按钮
-            main_window = self.get_main_window()
-            if main_window and hasattr(main_window, 'userName'):
-                username = main_window.userName
-                if username:
-                    # 创建用户信息动作
-                    self.user_action = QAction(QIcon(os.path.join(os.path.dirname(__file__), '..', '..', 'icons', 'user.svg')), 
-                                          f"当前用户: {username}", self)
-                    self.user_action.triggered.connect(self.show_user_info)
-                    self.addAction(self.user_action)
-                    
-                    # 添加分隔线
-                    self.addSeparator()
-
-            # 添加登录/登出按钮
-            self.login_action = QAction(QIcon(os.path.join(os.path.dirname(__file__), '..', '..', 'icons', 'login.svg')), 
-                                      "登录", self)
-            self.login_action.triggered.connect(self.handle_login)
-            self.addAction(self.login_action)
-
             # 从yaml配置文件读取远程控制选项
             config_path = os.path.join(os.path.dirname(__file__), '..', '..', 'config', 'remote_control.yaml')
             try:
@@ -192,7 +193,13 @@ class HoverMenu(QMenu):
                                      "隐藏", self)
             self.hide_action.triggered.connect(self.hide_window)
             self.addAction(self.hide_action)
-
+            
+            # 添加登录/登出按钮
+            self.login_action = QAction(QIcon(os.path.join(os.path.dirname(__file__), '..', '..', 'icons', 'login.svg')), 
+                                      "登录", self)
+            self.login_action.triggered.connect(self.handle_login)
+            self.addAction(self.login_action)
+            
             # 添加重启按钮
             self.restart_action = QAction(QIcon(os.path.join(os.path.dirname(__file__), '..', '..', 'icons', 'restart.svg')), 
                                         "重启", self)
@@ -428,25 +435,37 @@ class HoverMenu(QMenu):
     def update_login_status(self):
         """更新登录状态显示"""
         if self.is_logged_in:
+            # 更新登录按钮
             self.login_action.setText(f"登出 ({self.username})")
             self.login_action.setIcon(QIcon(os.path.join(os.path.dirname(__file__), '..', '..', 'icons', 'logout.svg')))
+            
+            # 更新用户信息按钮
+            if hasattr(self, 'user_action'):
+                self.user_action.setText(f"当前用户: {self.username}")
+                self.user_action.setIcon(QIcon(os.path.join(os.path.dirname(__file__), '..', '..', 'icons', 'user.svg')))
+                self.user_action.setVisible(True)
         else:
+            # 更新登录按钮
             self.login_action.setText("登录")
             self.login_action.setIcon(QIcon(os.path.join(os.path.dirname(__file__), '..', '..', 'icons', 'login.svg')))
-
+            
+            # 隐藏用户信息按钮
+            if hasattr(self, 'user_action'):
+                self.user_action.setVisible(False)
+                
     def handle_exit_action(self):
         """处理退出动作的确认对话框"""
         try:
             lprint("触发退出按钮")
             main_window = self.get_main_window()
             if main_window:
-                reply = QMessageBox.question(
-                    main_window,
-                    "确认退出",
-                    "确定要退出程序吗？",
-                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-                    QMessageBox.StandardButton.No
-                )
+                msg_box = QMessageBox(main_window)
+                msg_box.setWindowTitle("确认退出")
+                msg_box.setText("确定要退出程序吗？")
+                msg_box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+                msg_box.setDefaultButton(QMessageBox.StandardButton.No)
+                
+                reply = msg_box.exec()
                 if reply == QMessageBox.StandardButton.Yes:
                     lprint("用户确认退出")
                     self.handle_action_in_thread("退出", main_window.exit_application)

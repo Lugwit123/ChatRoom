@@ -186,8 +186,8 @@ class MainWindow(QMainWindow):
         self.central_layout.setSpacing(0)
         
         # 初始化变量
-        self.userName = os.getenv('USER_NAME', '')
-        self.project_info = {}
+        self.userName = userName
+        self.project_info = project_info
         self.tray_icon: QSystemTrayIcon
         self.tray_menu: HoverMenu
         self.blink_timer: Optional[QTimer] = None
@@ -542,76 +542,7 @@ class MainWindow(QMainWindow):
 
     def exit_application(self):
         """退出应用程序"""
-        try:
-            lprint("开始执行退出程序流程")
-            # 先隐藏窗口和托盘图标，避免用户重复点击
-            self.hide()
-            if hasattr(self, 'tray_icon'):
-                self.tray_icon.hide()
-                lprint("已隐藏窗口和托盘图标")
-            
-            # 关闭浏览器
-            if hasattr(self, 'browser'):
-                try:
-                    lprint("正在关闭浏览器...")
-                    self.browser.close_all()
-                    lprint("浏览器已关闭")
-                except Exception as e:
-                    lprint(f"关闭浏览器失败: {str(e)}")
-            
-            # 关闭WebSocket连接
-            if hasattr(self, 'chat_handler'):
-                try:
-                    lprint("正在关闭WebSocket连接...")
-                    loop = asyncio.get_event_loop()
-                    if not loop.is_closed():
-                        loop.create_task(self.chat_handler.close())
-                        lprint("WebSocket关闭任务已创建")
-                except Exception as e:
-                    lprint(f"关闭WebSocket失败: {str(e)}")
-            
-            # 获取当前进程ID和子进程
-            try:
-                lprint("开始清理子进程...")
-                current_pid = os.getpid()
-                current_process = psutil.Process(current_pid)
-                children = current_process.children(recursive=True)
-                
-                # 终止所有子进程
-                for child in children:
-                    try:
-                        child.terminate()
-                        lprint(f"已终止子进程: {child.pid}")
-                    except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.TimeoutExpired) as e:
-                        lprint(f"终止子进程失败: {str(e)}")
-                
-                # 等待子进程完全终止
-                psutil.wait_procs(children, timeout=3)
-                lprint("子进程清理完成")
-                
-            except Exception as e:
-                lprint(f"清理子进程失败: {str(e)}")
-            
-            # 设置退出原因
-            global exit_reason
-            exit_reason = "用户主动退出"
-            lprint("退出原因已设置: 用户主动退出")
-            
-            # 使用定时器延迟退出
-            try:
-                lprint("设置退出定时器...")
-                QTimer.singleShot(100, self._force_exit)
-                lprint("退出定时器已设置")
-            except Exception as e:
-                lprint(f"设置退出定时器失败: {str(e)}")
-                lprint("直接调用强制退出")
-                self._force_exit()
-                
-        except Exception as e:
-            error_msg = f"退出应用程序失败: {str(e)}\n{traceback.format_exc()}"
-            lprint(error_msg)
-            exit_reason = f"异常退出: {str(e)}"
-            os._exit(1)
+        os._exit(0)
 
     def _force_exit(self):
         """强制退出程序"""
@@ -654,7 +585,6 @@ def main(*args,**kwargs):
             geometry = kwargs.get("geometry")
             window = MainWindow()
             window.show()
-            window.save_window_handle()
             
             if geometry:
                 window.setGeometry(QRect(*geometry))

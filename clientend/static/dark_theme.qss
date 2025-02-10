@@ -1,9 +1,42 @@
 /* 主窗口样式 */
+
+QMainWindow {
+    border: 5px solid #555555;
+}
+
+QSystemTrayIcon {
+    border: 5px solid #555555;
+}
+
 QWidget {
     background-color: #2b2b2b;
     color: #e0e0e0;
     margin: 0;
     padding: 0;
+}
+
+/* 工具提示样式 */
+QToolTip {
+    background-color: #1a1a1a;
+    color: #ffffff;
+    border: 2px solid #3d3d3d;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 13px;
+    font-family: 'Microsoft YaHei', sans-serif;
+    opacity: 255;
+}
+
+/* 工具提示中的标签样式 */
+QToolTip b {
+    color: #4d9de0;  /* 蓝色标签 */
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* 工具提示中的分隔符样式 */
+QToolTip br {
+    line-height: 150%;
 }
 
 /* 按钮样式 */
@@ -56,12 +89,46 @@ QWebEngineView {
     border: none;
 }
 
+/* 对话框样式 */
+QMessageBox {
+    background-color: #2b2b2b;
+    border-radius: 15px;
+}
+
+QMessageBox QLabel {
+    color: #ffffff;
+    font-size: 16pt;
+    padding: 20px;
+    background-color: transparent;
+}
+
+QMessageBox QPushButton {
+    background-color: #3b3b3b;
+    color: #ffffff;
+    border: 1px solid #555555;
+    border-radius: 8px;
+    min-width: 100px;
+    min-height: 35px;
+    font-size: 14pt;
+    padding: 5px 15px;
+    margin: 10px;
+}
+
+QMessageBox QPushButton:hover {
+    background-color: #4b4b4b;
+    border: 1px solid #666666;
+}
+
+QMessageBox QPushButton:pressed {
+    background-color: #555555;
+}
+
 /* 托盘菜单样式 */
 QMenu {
     background-color: #333333;
     border: 1px solid #666666;
-    border-radius: 8px;
-    padding: 4px;
+    border-radius: 12px;
+    padding: 8px;
     font-size: 13px;
     font-family: 'Microsoft YaHei', sans-serif;
     color: #ffffff;
@@ -70,9 +137,9 @@ QMenu {
 
 QMenu::item {
     background-color: transparent;
-    padding: 8px 16px;
-    margin: 2px;
-    border-radius: 4px;
+    padding: 8px 20px;
+    margin: 4px;
+    border-radius: 6px;
     min-width: 140px;
 }
 
@@ -114,7 +181,7 @@ QMenu::item:disabled {
 QMenu::separator {
     height: 1px;
     background: #666666;
-    margin: 4px 8px;
+    margin: 6px 12px;
 }
 
 QMenu::indicator {
@@ -125,10 +192,9 @@ QMenu::indicator {
 
 /* 子菜单样式 */
 QMenu QMenu {
-    border: 1px solid #666666;
-    background-color: #333333;
+    border-radius: 12px;
     margin: 0;
-    padding: 4px;
+    padding: 8px;
 }
 
 QMenu::right-arrow {

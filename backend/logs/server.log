@@ -822,3 +822,730 @@ File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\ba
     "连接断开成功: sid=qEhKG_-LbDmYdTgyAAAL, user_id=4, device_id=96fc0abd-b334-4e27-a362-582312f5ea53"   2025-02-10 14:41:39----code_context : lprint(f"连接断开成功: sid={sid}, user_id={user_id}, device_id={device_id}") 
 File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:236, -fn: disconnect, 
 >>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "开始验证用户: system01"   2025-02-10 17:46:27----code_context : lprint(f"开始验证用户: {form_data.username}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:149, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "开始验证密码"   2025-02-10 17:46:27----code_context : self.lprint(f"开始验证密码") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\user\facade\user_facade.py:322, -fn: verify_password, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:73, ->code_context:->return self.user_facade.verify_password(plain_password, hashed_password)->fn:verify_password
+
+
+    "密码验证结果: True"   2025-02-10 17:46:27----code_context : self.lprint(f"密码验证结果: {result}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\user\facade\user_facade.py:324, -fn: verify_password, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:73, ->code_context:->return self.user_facade.verify_password(plain_password, hashed_password)->fn:verify_password
+
+
+    "密码验证成功,用户名: system01"   2025-02-10 17:46:27----code_context : lprint(f"密码验证成功,用户名: {form_data.username}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:159, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "客户端IP: 127.0.0.1"   2025-02-10 17:46:27----code_context : lprint(f"客户端IP: {client_ip}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:163, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "开始更新设备信息,设备ID: 6e58e9e8e9fa28b53b0276706140dc00"   2025-02-10 17:46:27----code_context : lprint(f"开始更新设备信息,设备ID: {device_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:168, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "[设备状态] 成功更新设备 6e58e9e8e9fa28b53b0276706140dc00 状态为 在线"   2025-02-10 17:46:27----code_context : self.lprint(f"[设备状态] 成功更新设备 {device_id} 状态为 {'在线' if is_online else '离线'}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\device\facade\device_facade.py:179, -fn: update_device_status, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:171, ->code_context:->await self.device_facade.update_device_status(->fn:login
+
+
+    "创建访问令牌成功,用户名: system01"   2025-02-10 17:46:27----code_context : lprint(f"创建访问令牌成功,用户名: {form_data.username}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:184, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "收到连接请求: sid=d1suCg27wvTMZCWOAAAN"   2025-02-10 17:46:27----code_context : lprint(f"收到连接请求: sid={sid}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:68, -fn: connect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "获取到token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJzeXN0ZW0wMSIsImRldmljZV9pZCI6IjZlNThlOWU4ZTlmYTI4YjUzYjAyNzY3MDYxNDBkYzAwIiwiZXhwIjoxNzM5MjY3MTg3fQ.T1MWvDeDNqzYytlgYpTxGb9Mm9WmukgcFm9iYavxgQI"   2025-02-10 17:46:27----code_context : lprint(f"获取到token: {token}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:77, -fn: connect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "添加新会话: sid=d1suCg27wvTMZCWOAAAN, user_id=2"   2025-02-10 17:46:27----code_context : lprint(f"添加新会话: sid={sid}, user_id={user_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\dto\websocket_dto.py:80, -fn: add_session, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:113, ->code_context:->self._session_manager.add_session(sid, str(user.id), device_id, ip_address)->fn:connect
+
+
+    "新连接建立成功: sid=d1suCg27wvTMZCWOAAAN, user_id=2, device_id=113a2442-09e9-4192-80d7-7a01a29c2a52"   2025-02-10 17:46:27----code_context : lprint(f"新连接建立成功: sid={sid}, user_id={user.id}, device_id={device_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:114, -fn: connect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "收到新消息事件: sid=d1suCg27wvTMZCWOAAAN, data={'content': '请求远程控制', 'message_type': 8, 'content_type': 7, 'target_type': 1, 'timestamp': '2025-02-10T17:46:28.856503+08:00', 'popup_message': True, 'status': [1], 'recipient_id': 'fengqingqing'}"   2025-02-10 17:46:28----code_context : self.lprint(f"收到新消息事件: sid={sid}, data={data}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\message\facade\message_facade.py:244, -fn: handle_message, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "[数据库查询users] 开始查询用户名: fengqingqing"   2025-02-10 17:46:28----code_context : lprint(f"[数据库查询{self.model.__tablename__}] 开始查询用户名: {username}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\user\internal\repository\user_repository.py:45, -fn: get_by_username, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\message\facade\message_facade.py:180, ->code_context:->recipient = await self.user_repository.get_by_username(recipient_username)->fn:save_message_to_db
+
+
+    "[数据库查询users] SQL查询: SELECT users.id, users.username, users.hashed_password, users.email, users.nickname, users.avatar_index, users.role, users.status, users.last_active, users.created_at, users.updated_at, users.extra_data 
+FROM users 
+WHERE users.username = :username_1"   2025-02-10 17:46:28----code_context : lprint(f"[数据库查询{self.model.__tablename__}] SQL查询: {query}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\user\internal\repository\user_repository.py:50, -fn: get_by_username, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\message\facade\message_facade.py:180, ->code_context:->recipient = await self.user_repository.get_by_username(recipient_username)->fn:save_message_to_db
+
+
+    "[数据库查询users] 找到用户: fengqingqing"   2025-02-10 17:46:28----code_context : lprint(f"[数据库查询{self.model.__tablename__}] 找到用户: {user.username}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\user\internal\repository\user_repository.py:56, -fn: get_by_username, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\message\facade\message_facade.py:180, ->code_context:->recipient = await self.user_repository.get_by_username(recipient_username)->fn:save_message_to_db
+
+
+    "[数据库查询users] 用户设备信息: [\"设备ID: 40851a02b1150e3457faacb1bda67f67, 在线状态: <bound method Device.is_online of <Device(id=4, device_id='40851a02b1150e3457faacb1bda67f67', user_id=4)>>\"]"   2025-02-10 17:46:28----code_context : lprint(f"[数据库查询{self.model.__tablename__}] 用户设备信息: {devices_info}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\user\internal\repository\user_repository.py:62, -fn: get_by_username, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\message\facade\message_facade.py:180, ->code_context:->recipient = await self.user_repository.get_by_username(recipient_username)->fn:save_message_to_db
+
+
+    "私聊消息保存成功: PrivateMessage(id=35, sender_id=2, recipient_id=4, public_id='pm_5d87c6d2e4dd48b1af951dfd93490a66', content='请求远程控制', content_type=7, message_type=8, target_type=1, group_id=None, status=[1], created_at=datetime.datetime(2025, 2, 10, 9, 48, 6, 375214, tzinfo=datetime.timezone.utc), updated_at=datetime.datetime(2025, 2, 10, 9, 48, 6, 375214, tzinfo=datetime.timezone.utc), extra_data={})"   2025-02-10 17:46:28----code_context : self.lprint(f"私聊消息保存成功: {message}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\message\facade\message_facade.py:187, -fn: save_message_to_db, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\message\facade\message_facade.py:256, ->code_context:->message = await self.save_message_to_db(data)->fn:handle_message
+
+
+    "私聊消息已发送给用户: fengqingqing"   2025-02-10 17:46:28----code_context : self.lprint(f"私聊消息已发送给用户: {recipient.username}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\message\facade\message_facade.py:230, -fn: send_message_via_socket, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\asyncio\events.py:84, ->code_context:->self._context.run(self._callback, *self._args)->fn:_run
+
+
+    "开始断开连接: sid=d1suCg27wvTMZCWOAAAN, user_id=2, device_id=113a2442-09e9-4192-80d7-7a01a29c2a52"   2025-02-10 17:46:39----code_context : lprint(f"开始断开连接: sid={sid}, user_id={user_id}, device_id={device_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:224, -fn: disconnect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "连接断开成功: sid=d1suCg27wvTMZCWOAAAN, user_id=2, device_id=113a2442-09e9-4192-80d7-7a01a29c2a52"   2025-02-10 17:46:39----code_context : lprint(f"连接断开成功: sid={sid}, user_id={user_id}, device_id={device_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:236, -fn: disconnect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "开始验证用户: fengqingqing"   2025-02-10 17:51:34----code_context : lprint(f"开始验证用户: {form_data.username}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:149, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "开始验证密码"   2025-02-10 17:51:34----code_context : self.lprint(f"开始验证密码") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\user\facade\user_facade.py:322, -fn: verify_password, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:73, ->code_context:->return self.user_facade.verify_password(plain_password, hashed_password)->fn:verify_password
+
+
+    "密码验证结果: True"   2025-02-10 17:51:35----code_context : self.lprint(f"密码验证结果: {result}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\user\facade\user_facade.py:324, -fn: verify_password, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:73, ->code_context:->return self.user_facade.verify_password(plain_password, hashed_password)->fn:verify_password
+
+
+    "密码验证成功,用户名: fengqingqing"   2025-02-10 17:51:35----code_context : lprint(f"密码验证成功,用户名: {form_data.username}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:159, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "客户端IP: 127.0.0.1"   2025-02-10 17:51:35----code_context : lprint(f"客户端IP: {client_ip}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:163, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "开始更新设备信息,设备ID: 40851a02b1150e3457faacb1bda67f67"   2025-02-10 17:51:35----code_context : lprint(f"开始更新设备信息,设备ID: {device_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:168, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "[设备状态] 成功更新设备 40851a02b1150e3457faacb1bda67f67 状态为 在线"   2025-02-10 17:51:35----code_context : self.lprint(f"[设备状态] 成功更新设备 {device_id} 状态为 {'在线' if is_online else '离线'}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\device\facade\device_facade.py:179, -fn: update_device_status, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:171, ->code_context:->await self.device_facade.update_device_status(->fn:login
+
+
+    "创建访问令牌成功,用户名: fengqingqing"   2025-02-10 17:51:35----code_context : lprint(f"创建访问令牌成功,用户名: {form_data.username}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:184, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "收到连接请求: sid=PLpMhkQcoJZmbUXUAAAP"   2025-02-10 17:51:35----code_context : lprint(f"收到连接请求: sid={sid}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:68, -fn: connect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "获取到token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmZW5ncWluZ3FpbmciLCJkZXZpY2VfaWQiOiI0MDg1MWEwMmIxMTUwZTM0NTdmYWFjYjFiZGE2N2Y2NyIsImV4cCI6MTczOTI2NzQ5NX0.mYBO7LzQb1YNUH2nPEdDU5rWAzapMe_PHjERL1X4SQs"   2025-02-10 17:51:35----code_context : lprint(f"获取到token: {token}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:77, -fn: connect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "添加新会话: sid=PLpMhkQcoJZmbUXUAAAP, user_id=4"   2025-02-10 17:51:35----code_context : lprint(f"添加新会话: sid={sid}, user_id={user_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\dto\websocket_dto.py:80, -fn: add_session, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:113, ->code_context:->self._session_manager.add_session(sid, str(user.id), device_id, ip_address)->fn:connect
+
+
+    "新连接建立成功: sid=PLpMhkQcoJZmbUXUAAAP, user_id=4, device_id=1fc81236-2bb4-4e5f-8340-073813776ebb"   2025-02-10 17:51:35----code_context : lprint(f"新连接建立成功: sid={sid}, user_id={user.id}, device_id={device_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:114, -fn: connect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "开始断开连接: sid=PLpMhkQcoJZmbUXUAAAP, user_id=4, device_id=1fc81236-2bb4-4e5f-8340-073813776ebb"   2025-02-10 17:52:38----code_context : lprint(f"开始断开连接: sid={sid}, user_id={user_id}, device_id={device_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:224, -fn: disconnect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "连接断开成功: sid=PLpMhkQcoJZmbUXUAAAP, user_id=4, device_id=1fc81236-2bb4-4e5f-8340-073813776ebb"   2025-02-10 17:52:38----code_context : lprint(f"连接断开成功: sid={sid}, user_id={user_id}, device_id={device_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:236, -fn: disconnect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "开始验证用户: fengqingqing"   2025-02-10 17:53:08----code_context : lprint(f"开始验证用户: {form_data.username}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:149, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "开始验证密码"   2025-02-10 17:53:08----code_context : self.lprint(f"开始验证密码") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\user\facade\user_facade.py:322, -fn: verify_password, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:73, ->code_context:->return self.user_facade.verify_password(plain_password, hashed_password)->fn:verify_password
+
+
+    "密码验证结果: True"   2025-02-10 17:53:08----code_context : self.lprint(f"密码验证结果: {result}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\user\facade\user_facade.py:324, -fn: verify_password, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:73, ->code_context:->return self.user_facade.verify_password(plain_password, hashed_password)->fn:verify_password
+
+
+    "密码验证成功,用户名: fengqingqing"   2025-02-10 17:53:08----code_context : lprint(f"密码验证成功,用户名: {form_data.username}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:159, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "客户端IP: 127.0.0.1"   2025-02-10 17:53:08----code_context : lprint(f"客户端IP: {client_ip}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:163, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "开始更新设备信息,设备ID: 40851a02b1150e3457faacb1bda67f67"   2025-02-10 17:53:08----code_context : lprint(f"开始更新设备信息,设备ID: {device_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:168, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "[设备状态] 成功更新设备 40851a02b1150e3457faacb1bda67f67 状态为 在线"   2025-02-10 17:53:08----code_context : self.lprint(f"[设备状态] 成功更新设备 {device_id} 状态为 {'在线' if is_online else '离线'}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\device\facade\device_facade.py:179, -fn: update_device_status, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:171, ->code_context:->await self.device_facade.update_device_status(->fn:login
+
+
+    "创建访问令牌成功,用户名: fengqingqing"   2025-02-10 17:53:08----code_context : lprint(f"创建访问令牌成功,用户名: {form_data.username}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:184, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "收到连接请求: sid=4UkJEKqe-jgq7Zm_AAAR"   2025-02-10 17:53:08----code_context : lprint(f"收到连接请求: sid={sid}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:68, -fn: connect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "获取到token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmZW5ncWluZ3FpbmciLCJkZXZpY2VfaWQiOiI0MDg1MWEwMmIxMTUwZTM0NTdmYWFjYjFiZGE2N2Y2NyIsImV4cCI6MTczOTI2NzU4OH0.o1EPrgrGM04rXNPHDLSTR4ifNx_sIrQVID5GHHPK5Bg"   2025-02-10 17:53:08----code_context : lprint(f"获取到token: {token}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:77, -fn: connect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "添加新会话: sid=4UkJEKqe-jgq7Zm_AAAR, user_id=4"   2025-02-10 17:53:08----code_context : lprint(f"添加新会话: sid={sid}, user_id={user_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\dto\websocket_dto.py:80, -fn: add_session, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:113, ->code_context:->self._session_manager.add_session(sid, str(user.id), device_id, ip_address)->fn:connect
+
+
+    "新连接建立成功: sid=4UkJEKqe-jgq7Zm_AAAR, user_id=4, device_id=d60b4c30-9733-4528-a972-8ebad227e0a5"   2025-02-10 17:53:08----code_context : lprint(f"新连接建立成功: sid={sid}, user_id={user.id}, device_id={device_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:114, -fn: connect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "开始断开连接: sid=4UkJEKqe-jgq7Zm_AAAR, user_id=4, device_id=d60b4c30-9733-4528-a972-8ebad227e0a5"   2025-02-10 17:54:24----code_context : lprint(f"开始断开连接: sid={sid}, user_id={user_id}, device_id={device_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:224, -fn: disconnect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "连接断开成功: sid=4UkJEKqe-jgq7Zm_AAAR, user_id=4, device_id=d60b4c30-9733-4528-a972-8ebad227e0a5"   2025-02-10 17:54:24----code_context : lprint(f"连接断开成功: sid={sid}, user_id={user_id}, device_id={device_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:236, -fn: disconnect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "开始验证用户: fengqingqing"   2025-02-10 17:54:59----code_context : lprint(f"开始验证用户: {form_data.username}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:149, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "开始验证密码"   2025-02-10 17:54:59----code_context : self.lprint(f"开始验证密码") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\user\facade\user_facade.py:322, -fn: verify_password, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:73, ->code_context:->return self.user_facade.verify_password(plain_password, hashed_password)->fn:verify_password
+
+
+    "密码验证结果: True"   2025-02-10 17:54:59----code_context : self.lprint(f"密码验证结果: {result}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\user\facade\user_facade.py:324, -fn: verify_password, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:73, ->code_context:->return self.user_facade.verify_password(plain_password, hashed_password)->fn:verify_password
+
+
+    "密码验证成功,用户名: fengqingqing"   2025-02-10 17:54:59----code_context : lprint(f"密码验证成功,用户名: {form_data.username}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:159, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "客户端IP: 127.0.0.1"   2025-02-10 17:54:59----code_context : lprint(f"客户端IP: {client_ip}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:163, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "开始更新设备信息,设备ID: 40851a02b1150e3457faacb1bda67f67"   2025-02-10 17:54:59----code_context : lprint(f"开始更新设备信息,设备ID: {device_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:168, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "[设备状态] 成功更新设备 40851a02b1150e3457faacb1bda67f67 状态为 在线"   2025-02-10 17:54:59----code_context : self.lprint(f"[设备状态] 成功更新设备 {device_id} 状态为 {'在线' if is_online else '离线'}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\device\facade\device_facade.py:179, -fn: update_device_status, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:171, ->code_context:->await self.device_facade.update_device_status(->fn:login
+
+
+    "创建访问令牌成功,用户名: fengqingqing"   2025-02-10 17:54:59----code_context : lprint(f"创建访问令牌成功,用户名: {form_data.username}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:184, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "收到连接请求: sid=y4AVvW2UYFqCArE5AAAT"   2025-02-10 17:54:59----code_context : lprint(f"收到连接请求: sid={sid}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:68, -fn: connect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "获取到token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmZW5ncWluZ3FpbmciLCJkZXZpY2VfaWQiOiI0MDg1MWEwMmIxMTUwZTM0NTdmYWFjYjFiZGE2N2Y2NyIsImV4cCI6MTczOTI2NzY5OX0.47RTFAkb_-8FTSIdw0n5eWmd1rk-zJexFvTKWOmj8u0"   2025-02-10 17:54:59----code_context : lprint(f"获取到token: {token}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:77, -fn: connect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "添加新会话: sid=y4AVvW2UYFqCArE5AAAT, user_id=4"   2025-02-10 17:54:59----code_context : lprint(f"添加新会话: sid={sid}, user_id={user_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\dto\websocket_dto.py:80, -fn: add_session, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:113, ->code_context:->self._session_manager.add_session(sid, str(user.id), device_id, ip_address)->fn:connect
+
+
+    "新连接建立成功: sid=y4AVvW2UYFqCArE5AAAT, user_id=4, device_id=81c83712-b114-4265-904b-73ad093013c7"   2025-02-10 17:54:59----code_context : lprint(f"新连接建立成功: sid={sid}, user_id={user.id}, device_id={device_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:114, -fn: connect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "开始断开连接: sid=y4AVvW2UYFqCArE5AAAT, user_id=4, device_id=81c83712-b114-4265-904b-73ad093013c7"   2025-02-10 17:56:15----code_context : lprint(f"开始断开连接: sid={sid}, user_id={user_id}, device_id={device_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:224, -fn: disconnect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "连接断开成功: sid=y4AVvW2UYFqCArE5AAAT, user_id=4, device_id=81c83712-b114-4265-904b-73ad093013c7"   2025-02-10 17:56:15----code_context : lprint(f"连接断开成功: sid={sid}, user_id={user_id}, device_id={device_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:236, -fn: disconnect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "开始验证用户: fengqingqing"   2025-02-10 17:56:20----code_context : lprint(f"开始验证用户: {form_data.username}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:149, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "开始验证密码"   2025-02-10 17:56:20----code_context : self.lprint(f"开始验证密码") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\user\facade\user_facade.py:322, -fn: verify_password, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:73, ->code_context:->return self.user_facade.verify_password(plain_password, hashed_password)->fn:verify_password
+
+
+    "密码验证结果: True"   2025-02-10 17:56:20----code_context : self.lprint(f"密码验证结果: {result}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\user\facade\user_facade.py:324, -fn: verify_password, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:73, ->code_context:->return self.user_facade.verify_password(plain_password, hashed_password)->fn:verify_password
+
+
+    "密码验证成功,用户名: fengqingqing"   2025-02-10 17:56:20----code_context : lprint(f"密码验证成功,用户名: {form_data.username}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:159, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "客户端IP: 127.0.0.1"   2025-02-10 17:56:20----code_context : lprint(f"客户端IP: {client_ip}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:163, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "开始更新设备信息,设备ID: 40851a02b1150e3457faacb1bda67f67"   2025-02-10 17:56:20----code_context : lprint(f"开始更新设备信息,设备ID: {device_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:168, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "[设备状态] 成功更新设备 40851a02b1150e3457faacb1bda67f67 状态为 在线"   2025-02-10 17:56:20----code_context : self.lprint(f"[设备状态] 成功更新设备 {device_id} 状态为 {'在线' if is_online else '离线'}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\device\facade\device_facade.py:179, -fn: update_device_status, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:171, ->code_context:->await self.device_facade.update_device_status(->fn:login
+
+
+    "创建访问令牌成功,用户名: fengqingqing"   2025-02-10 17:56:20----code_context : lprint(f"创建访问令牌成功,用户名: {form_data.username}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:184, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "收到连接请求: sid=z8wuYoIOUZmusPbrAAAV"   2025-02-10 17:56:20----code_context : lprint(f"收到连接请求: sid={sid}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:68, -fn: connect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "获取到token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmZW5ncWluZ3FpbmciLCJkZXZpY2VfaWQiOiI0MDg1MWEwMmIxMTUwZTM0NTdmYWFjYjFiZGE2N2Y2NyIsImV4cCI6MTczOTI2Nzc4MH0.03VBwDFpukJIp3A7sfJUcjdXlDXsOIpdbPkvoxwXXLk"   2025-02-10 17:56:20----code_context : lprint(f"获取到token: {token}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:77, -fn: connect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "添加新会话: sid=z8wuYoIOUZmusPbrAAAV, user_id=4"   2025-02-10 17:56:20----code_context : lprint(f"添加新会话: sid={sid}, user_id={user_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\dto\websocket_dto.py:80, -fn: add_session, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:113, ->code_context:->self._session_manager.add_session(sid, str(user.id), device_id, ip_address)->fn:connect
+
+
+    "新连接建立成功: sid=z8wuYoIOUZmusPbrAAAV, user_id=4, device_id=f0ea44c1-a706-4766-9501-1ea6f568c711"   2025-02-10 17:56:20----code_context : lprint(f"新连接建立成功: sid={sid}, user_id={user.id}, device_id={device_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:114, -fn: connect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "开始断开连接: sid=z8wuYoIOUZmusPbrAAAV, user_id=4, device_id=f0ea44c1-a706-4766-9501-1ea6f568c711"   2025-02-10 17:56:59----code_context : lprint(f"开始断开连接: sid={sid}, user_id={user_id}, device_id={device_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:224, -fn: disconnect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "连接断开成功: sid=z8wuYoIOUZmusPbrAAAV, user_id=4, device_id=f0ea44c1-a706-4766-9501-1ea6f568c711"   2025-02-10 17:56:59----code_context : lprint(f"连接断开成功: sid={sid}, user_id={user_id}, device_id={device_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:236, -fn: disconnect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "开始验证用户: fengqingqing"   2025-02-10 17:57:06----code_context : lprint(f"开始验证用户: {form_data.username}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:149, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "开始验证密码"   2025-02-10 17:57:06----code_context : self.lprint(f"开始验证密码") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\user\facade\user_facade.py:322, -fn: verify_password, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:73, ->code_context:->return self.user_facade.verify_password(plain_password, hashed_password)->fn:verify_password
+
+
+    "密码验证结果: True"   2025-02-10 17:57:06----code_context : self.lprint(f"密码验证结果: {result}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\user\facade\user_facade.py:324, -fn: verify_password, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:73, ->code_context:->return self.user_facade.verify_password(plain_password, hashed_password)->fn:verify_password
+
+
+    "密码验证成功,用户名: fengqingqing"   2025-02-10 17:57:06----code_context : lprint(f"密码验证成功,用户名: {form_data.username}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:159, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "客户端IP: 127.0.0.1"   2025-02-10 17:57:06----code_context : lprint(f"客户端IP: {client_ip}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:163, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "开始更新设备信息,设备ID: 40851a02b1150e3457faacb1bda67f67"   2025-02-10 17:57:06----code_context : lprint(f"开始更新设备信息,设备ID: {device_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:168, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "[设备状态] 成功更新设备 40851a02b1150e3457faacb1bda67f67 状态为 在线"   2025-02-10 17:57:06----code_context : self.lprint(f"[设备状态] 成功更新设备 {device_id} 状态为 {'在线' if is_online else '离线'}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\device\facade\device_facade.py:179, -fn: update_device_status, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:171, ->code_context:->await self.device_facade.update_device_status(->fn:login
+
+
+    "创建访问令牌成功,用户名: fengqingqing"   2025-02-10 17:57:06----code_context : lprint(f"创建访问令牌成功,用户名: {form_data.username}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:184, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "收到连接请求: sid=JcAeWYQWa2iBjy4JAAAX"   2025-02-10 17:57:06----code_context : lprint(f"收到连接请求: sid={sid}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:68, -fn: connect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "获取到token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmZW5ncWluZ3FpbmciLCJkZXZpY2VfaWQiOiI0MDg1MWEwMmIxMTUwZTM0NTdmYWFjYjFiZGE2N2Y2NyIsImV4cCI6MTczOTI2NzgyNn0.A3uWmJRzSU50_Nv-6B0BxkijOoBhgaq-0-pBBUbHrNo"   2025-02-10 17:57:06----code_context : lprint(f"获取到token: {token}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:77, -fn: connect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "添加新会话: sid=JcAeWYQWa2iBjy4JAAAX, user_id=4"   2025-02-10 17:57:06----code_context : lprint(f"添加新会话: sid={sid}, user_id={user_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\dto\websocket_dto.py:80, -fn: add_session, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:113, ->code_context:->self._session_manager.add_session(sid, str(user.id), device_id, ip_address)->fn:connect
+
+
+    "新连接建立成功: sid=JcAeWYQWa2iBjy4JAAAX, user_id=4, device_id=4c009a2f-5281-4393-b01e-850de890b86c"   2025-02-10 17:57:06----code_context : lprint(f"新连接建立成功: sid={sid}, user_id={user.id}, device_id={device_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:114, -fn: connect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "开始断开连接: sid=JcAeWYQWa2iBjy4JAAAX, user_id=4, device_id=4c009a2f-5281-4393-b01e-850de890b86c"   2025-02-10 17:58:53----code_context : lprint(f"开始断开连接: sid={sid}, user_id={user_id}, device_id={device_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:224, -fn: disconnect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "连接断开成功: sid=JcAeWYQWa2iBjy4JAAAX, user_id=4, device_id=4c009a2f-5281-4393-b01e-850de890b86c"   2025-02-10 17:58:53----code_context : lprint(f"连接断开成功: sid={sid}, user_id={user_id}, device_id={device_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:236, -fn: disconnect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "开始验证用户: fengqingqing"   2025-02-10 17:59:17----code_context : lprint(f"开始验证用户: {form_data.username}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:149, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "开始验证密码"   2025-02-10 17:59:17----code_context : self.lprint(f"开始验证密码") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\user\facade\user_facade.py:322, -fn: verify_password, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:73, ->code_context:->return self.user_facade.verify_password(plain_password, hashed_password)->fn:verify_password
+
+
+    "密码验证结果: True"   2025-02-10 17:59:17----code_context : self.lprint(f"密码验证结果: {result}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\user\facade\user_facade.py:324, -fn: verify_password, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:73, ->code_context:->return self.user_facade.verify_password(plain_password, hashed_password)->fn:verify_password
+
+
+    "密码验证成功,用户名: fengqingqing"   2025-02-10 17:59:17----code_context : lprint(f"密码验证成功,用户名: {form_data.username}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:159, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "客户端IP: 127.0.0.1"   2025-02-10 17:59:17----code_context : lprint(f"客户端IP: {client_ip}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:163, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "开始更新设备信息,设备ID: 40851a02b1150e3457faacb1bda67f67"   2025-02-10 17:59:17----code_context : lprint(f"开始更新设备信息,设备ID: {device_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:168, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "[设备状态] 成功更新设备 40851a02b1150e3457faacb1bda67f67 状态为 在线"   2025-02-10 17:59:17----code_context : self.lprint(f"[设备状态] 成功更新设备 {device_id} 状态为 {'在线' if is_online else '离线'}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\device\facade\device_facade.py:179, -fn: update_device_status, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:171, ->code_context:->await self.device_facade.update_device_status(->fn:login
+
+
+    "创建访问令牌成功,用户名: fengqingqing"   2025-02-10 17:59:17----code_context : lprint(f"创建访问令牌成功,用户名: {form_data.username}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:184, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "收到连接请求: sid=0Em4n-LkZErtK6tVAAAZ"   2025-02-10 17:59:17----code_context : lprint(f"收到连接请求: sid={sid}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:68, -fn: connect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "获取到token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmZW5ncWluZ3FpbmciLCJkZXZpY2VfaWQiOiI0MDg1MWEwMmIxMTUwZTM0NTdmYWFjYjFiZGE2N2Y2NyIsImV4cCI6MTczOTI2Nzk1N30.xBY1YEu8J3VRtJsgJULkESuBSWheIG3QPlsYhpDhMzw"   2025-02-10 17:59:17----code_context : lprint(f"获取到token: {token}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:77, -fn: connect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "添加新会话: sid=0Em4n-LkZErtK6tVAAAZ, user_id=4"   2025-02-10 17:59:17----code_context : lprint(f"添加新会话: sid={sid}, user_id={user_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\dto\websocket_dto.py:80, -fn: add_session, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:113, ->code_context:->self._session_manager.add_session(sid, str(user.id), device_id, ip_address)->fn:connect
+
+
+    "新连接建立成功: sid=0Em4n-LkZErtK6tVAAAZ, user_id=4, device_id=4cebd360-03e5-4209-ad7e-de1476c3b881"   2025-02-10 17:59:17----code_context : lprint(f"新连接建立成功: sid={sid}, user_id={user.id}, device_id={device_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:114, -fn: connect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "开始断开连接: sid=0Em4n-LkZErtK6tVAAAZ, user_id=4, device_id=4cebd360-03e5-4209-ad7e-de1476c3b881"   2025-02-10 17:59:37----code_context : lprint(f"开始断开连接: sid={sid}, user_id={user_id}, device_id={device_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:224, -fn: disconnect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "连接断开成功: sid=0Em4n-LkZErtK6tVAAAZ, user_id=4, device_id=4cebd360-03e5-4209-ad7e-de1476c3b881"   2025-02-10 17:59:37----code_context : lprint(f"连接断开成功: sid={sid}, user_id={user_id}, device_id={device_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:236, -fn: disconnect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "开始验证用户: fengqingqing"   2025-02-10 17:59:43----code_context : lprint(f"开始验证用户: {form_data.username}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:149, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "开始验证密码"   2025-02-10 17:59:43----code_context : self.lprint(f"开始验证密码") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\user\facade\user_facade.py:322, -fn: verify_password, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:73, ->code_context:->return self.user_facade.verify_password(plain_password, hashed_password)->fn:verify_password
+
+
+    "密码验证结果: True"   2025-02-10 17:59:44----code_context : self.lprint(f"密码验证结果: {result}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\user\facade\user_facade.py:324, -fn: verify_password, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:73, ->code_context:->return self.user_facade.verify_password(plain_password, hashed_password)->fn:verify_password
+
+
+    "密码验证成功,用户名: fengqingqing"   2025-02-10 17:59:44----code_context : lprint(f"密码验证成功,用户名: {form_data.username}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:159, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "客户端IP: 127.0.0.1"   2025-02-10 17:59:44----code_context : lprint(f"客户端IP: {client_ip}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:163, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "开始更新设备信息,设备ID: 40851a02b1150e3457faacb1bda67f67"   2025-02-10 17:59:44----code_context : lprint(f"开始更新设备信息,设备ID: {device_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:168, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "[设备状态] 成功更新设备 40851a02b1150e3457faacb1bda67f67 状态为 在线"   2025-02-10 17:59:44----code_context : self.lprint(f"[设备状态] 成功更新设备 {device_id} 状态为 {'在线' if is_online else '离线'}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\device\facade\device_facade.py:179, -fn: update_device_status, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:171, ->code_context:->await self.device_facade.update_device_status(->fn:login
+
+
+    "创建访问令牌成功,用户名: fengqingqing"   2025-02-10 17:59:44----code_context : lprint(f"创建访问令牌成功,用户名: {form_data.username}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:184, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "收到连接请求: sid=4KZUhdaNYDYC8bfbAAAb"   2025-02-10 17:59:44----code_context : lprint(f"收到连接请求: sid={sid}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:68, -fn: connect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "获取到token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmZW5ncWluZ3FpbmciLCJkZXZpY2VfaWQiOiI0MDg1MWEwMmIxMTUwZTM0NTdmYWFjYjFiZGE2N2Y2NyIsImV4cCI6MTczOTI2Nzk4NH0.vqHxTmthpIsZNz_ShmbVY36ERS-_1MS5r7fEHx1OFYQ"   2025-02-10 17:59:44----code_context : lprint(f"获取到token: {token}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:77, -fn: connect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "添加新会话: sid=4KZUhdaNYDYC8bfbAAAb, user_id=4"   2025-02-10 17:59:44----code_context : lprint(f"添加新会话: sid={sid}, user_id={user_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\dto\websocket_dto.py:80, -fn: add_session, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:113, ->code_context:->self._session_manager.add_session(sid, str(user.id), device_id, ip_address)->fn:connect
+
+
+    "新连接建立成功: sid=4KZUhdaNYDYC8bfbAAAb, user_id=4, device_id=2796a9c0-0e01-4b26-815a-733256b5cf3c"   2025-02-10 17:59:44----code_context : lprint(f"新连接建立成功: sid={sid}, user_id={user.id}, device_id={device_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:114, -fn: connect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "开始断开连接: sid=4KZUhdaNYDYC8bfbAAAb, user_id=4, device_id=2796a9c0-0e01-4b26-815a-733256b5cf3c"   2025-02-10 18:01:53----code_context : lprint(f"开始断开连接: sid={sid}, user_id={user_id}, device_id={device_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:224, -fn: disconnect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "连接断开成功: sid=4KZUhdaNYDYC8bfbAAAb, user_id=4, device_id=2796a9c0-0e01-4b26-815a-733256b5cf3c"   2025-02-10 18:01:53----code_context : lprint(f"连接断开成功: sid={sid}, user_id={user_id}, device_id={device_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:236, -fn: disconnect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "开始验证用户: fengqingqing"   2025-02-10 18:02:00----code_context : lprint(f"开始验证用户: {form_data.username}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:149, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "开始验证密码"   2025-02-10 18:02:00----code_context : self.lprint(f"开始验证密码") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\user\facade\user_facade.py:322, -fn: verify_password, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:73, ->code_context:->return self.user_facade.verify_password(plain_password, hashed_password)->fn:verify_password
+
+
+    "密码验证结果: True"   2025-02-10 18:02:00----code_context : self.lprint(f"密码验证结果: {result}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\user\facade\user_facade.py:324, -fn: verify_password, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:73, ->code_context:->return self.user_facade.verify_password(plain_password, hashed_password)->fn:verify_password
+
+
+    "密码验证成功,用户名: fengqingqing"   2025-02-10 18:02:00----code_context : lprint(f"密码验证成功,用户名: {form_data.username}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:159, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "客户端IP: 127.0.0.1"   2025-02-10 18:02:00----code_context : lprint(f"客户端IP: {client_ip}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:163, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "开始更新设备信息,设备ID: 40851a02b1150e3457faacb1bda67f67"   2025-02-10 18:02:00----code_context : lprint(f"开始更新设备信息,设备ID: {device_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:168, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "[设备状态] 成功更新设备 40851a02b1150e3457faacb1bda67f67 状态为 在线"   2025-02-10 18:02:00----code_context : self.lprint(f"[设备状态] 成功更新设备 {device_id} 状态为 {'在线' if is_online else '离线'}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\device\facade\device_facade.py:179, -fn: update_device_status, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:171, ->code_context:->await self.device_facade.update_device_status(->fn:login
+
+
+    "创建访问令牌成功,用户名: fengqingqing"   2025-02-10 18:02:00----code_context : lprint(f"创建访问令牌成功,用户名: {form_data.username}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:184, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "收到连接请求: sid=nGRTXG-qMlNOm8ueAAAd"   2025-02-10 18:02:00----code_context : lprint(f"收到连接请求: sid={sid}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:68, -fn: connect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "获取到token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmZW5ncWluZ3FpbmciLCJkZXZpY2VfaWQiOiI0MDg1MWEwMmIxMTUwZTM0NTdmYWFjYjFiZGE2N2Y2NyIsImV4cCI6MTczOTI2ODEyMH0.kGHupcbzj4sq1wMjfiGQ-P17vwsCnBNMxkvC5dZHyx0"   2025-02-10 18:02:00----code_context : lprint(f"获取到token: {token}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:77, -fn: connect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "添加新会话: sid=nGRTXG-qMlNOm8ueAAAd, user_id=4"   2025-02-10 18:02:00----code_context : lprint(f"添加新会话: sid={sid}, user_id={user_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\dto\websocket_dto.py:80, -fn: add_session, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:113, ->code_context:->self._session_manager.add_session(sid, str(user.id), device_id, ip_address)->fn:connect
+
+
+    "新连接建立成功: sid=nGRTXG-qMlNOm8ueAAAd, user_id=4, device_id=4dea48da-47f0-42bf-b448-15d5a9bc1889"   2025-02-10 18:02:00----code_context : lprint(f"新连接建立成功: sid={sid}, user_id={user.id}, device_id={device_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:114, -fn: connect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "开始断开连接: sid=nGRTXG-qMlNOm8ueAAAd, user_id=4, device_id=4dea48da-47f0-42bf-b448-15d5a9bc1889"   2025-02-10 18:04:17----code_context : lprint(f"开始断开连接: sid={sid}, user_id={user_id}, device_id={device_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:224, -fn: disconnect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "连接断开成功: sid=nGRTXG-qMlNOm8ueAAAd, user_id=4, device_id=4dea48da-47f0-42bf-b448-15d5a9bc1889"   2025-02-10 18:04:17----code_context : lprint(f"连接断开成功: sid={sid}, user_id={user_id}, device_id={device_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:236, -fn: disconnect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "开始验证用户: fengqingqing"   2025-02-10 18:04:22----code_context : lprint(f"开始验证用户: {form_data.username}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:149, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "开始验证密码"   2025-02-10 18:04:22----code_context : self.lprint(f"开始验证密码") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\user\facade\user_facade.py:322, -fn: verify_password, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:73, ->code_context:->return self.user_facade.verify_password(plain_password, hashed_password)->fn:verify_password
+
+
+    "密码验证结果: True"   2025-02-10 18:04:22----code_context : self.lprint(f"密码验证结果: {result}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\user\facade\user_facade.py:324, -fn: verify_password, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:73, ->code_context:->return self.user_facade.verify_password(plain_password, hashed_password)->fn:verify_password
+
+
+    "密码验证成功,用户名: fengqingqing"   2025-02-10 18:04:22----code_context : lprint(f"密码验证成功,用户名: {form_data.username}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:159, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "客户端IP: 127.0.0.1"   2025-02-10 18:04:22----code_context : lprint(f"客户端IP: {client_ip}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:163, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "开始更新设备信息,设备ID: 40851a02b1150e3457faacb1bda67f67"   2025-02-10 18:04:22----code_context : lprint(f"开始更新设备信息,设备ID: {device_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:168, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "[设备状态] 成功更新设备 40851a02b1150e3457faacb1bda67f67 状态为 在线"   2025-02-10 18:04:22----code_context : self.lprint(f"[设备状态] 成功更新设备 {device_id} 状态为 {'在线' if is_online else '离线'}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\device\facade\device_facade.py:179, -fn: update_device_status, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:171, ->code_context:->await self.device_facade.update_device_status(->fn:login
+
+
+    "创建访问令牌成功,用户名: fengqingqing"   2025-02-10 18:04:22----code_context : lprint(f"创建访问令牌成功,用户名: {form_data.username}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\facade\auth_facade.py:184, -fn: login, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\auth\router.py:25, ->code_context:->return await auth_facade.login(request, form_data)->fn:login
+
+
+    "收到连接请求: sid=7PuBIG9C2n-IwAWaAAAf"   2025-02-10 18:04:22----code_context : lprint(f"收到连接请求: sid={sid}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:68, -fn: connect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "获取到token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmZW5ncWluZ3FpbmciLCJkZXZpY2VfaWQiOiI0MDg1MWEwMmIxMTUwZTM0NTdmYWFjYjFiZGE2N2Y2NyIsImV4cCI6MTczOTI2ODI2Mn0.FwUqN7oPnqZjQNx_bvXxok2m7YdXkQWZURI60Ei1kgY"   2025-02-10 18:04:22----code_context : lprint(f"获取到token: {token}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:77, -fn: connect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event
+
+
+    "添加新会话: sid=7PuBIG9C2n-IwAWaAAAf, user_id=4"   2025-02-10 18:04:22----code_context : lprint(f"添加新会话: sid={sid}, user_id={user_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\dto\websocket_dto.py:80, -fn: add_session, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:113, ->code_context:->self._session_manager.add_session(sid, str(user.id), device_id, ip_address)->fn:connect
+
+
+    "新连接建立成功: sid=7PuBIG9C2n-IwAWaAAAf, user_id=4, device_id=b377d229-826c-4882-81ef-ded12f3883b6"   2025-02-10 18:04:22----code_context : lprint(f"新连接建立成功: sid={sid}, user_id={user.id}, device_id={device_id}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:114, -fn: connect, 
+>>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\socketio\async_server.py:631, ->code_context:->ret = await handler(*args)->fn:_trigger_event

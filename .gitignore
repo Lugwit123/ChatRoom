@@ -10,7 +10,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -20,43 +19,46 @@ wheels/
 .installed.cfg
 *.egg
 
+# 虚拟环境
+venv/
+ENV/
+env/
+python_env/
+
 # IDE
 .idea/
 .vscode/
 *.swp
 *.swo
-.vs/
-*.suo
-*.user
-*.userosscache
-*.sln.docstates
 
-# 环境
-venv/
-env/
-ENV/
-.env
-.venv
-env.bak/
-venv.bak/
-
-# 日志
+# 日志文件
 *.log
 logs/
-lprint_log.txt
+log/
 
 # 临时文件
 *.tmp
 temp/
-.temp/
-*.bak
-*.swp
-*.swo
+tmp/
 
 # 系统文件
 .DS_Store
 Thumbs.db
-desktop.ini
+
+# 环境变量
+.env
+.env.local
+
+# 其他
+*.bak
+*.pyc
+*.pyo
+*.pyd
+*.conf
+*.zip
+*.tar.gz
+*.rar
+*.7z
 
 # 项目特定
 *.pyc
@@ -79,15 +81,4 @@ cover/
 # 数据库
 *.db
 *.sqlite3
-*.sqlite
-
-# 配置文件
-config.ini
-settings.json
-*.conf
-
-# 其他
-*.zip
-*.tar.gz
-*.rar
-*.7z 
+*.sqlite 
