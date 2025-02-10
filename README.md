@@ -44,6 +44,14 @@
 - alembic (数据库迁移)
 
 ### 前端
+- React 18
+- React Query v5
+- TypeScript
+- TailwindCSS
+- Socket.IO Client
+- Vite
+
+### 桌面客户端
 - PySide6 (Qt for Python)
 - WebEngine
 - CSS3 (暗色主题)
@@ -74,6 +82,19 @@ ChatRoom/
 │   │   │   └── group/    # 群组模块
 │   │   └── routers/      # API路由
 │   └── tests/            # 测试代码
+│
+├── frontend/             # Web前端
+│   ├── src/             # 源代码
+│   │   ├── components/  # React组件
+│   │   ├── hooks/       # 自定义Hooks
+│   │   ├── pages/       # 页面组件
+│   │   ├── services/    # API服务
+│   │   ├── store/       # 状态管理
+│   │   └── utils/       # 工具函数
+│   ├── public/          # 静态资源
+│   └── styles/          # 样式文件
+│       ├── themes/      # 主题样式
+│       └── components/  # 组件样式
 │
 ├── clientend/            # 客户端
 │   ├── modules/          # 模块目录
