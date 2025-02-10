@@ -360,83 +360,6 @@ class MainWindow(QMainWindow):
                 lprint(f"初始化聊天处理器或连接消息信号失败: {str(e)}")
                 lprint(traceback.format_exc())
 
-            # 从yaml配置文件读取远程控制选项
-            config_path = os.path.join(os.path.dirname(__file__), 'config', 'remote_control.yaml')
-            try:
-                lprint(f"读取远程控制配置: {config_path}")
-                with open(config_path, 'r', encoding='utf-8') as f:
-                    config = yaml.safe_load(f)
-                    for option in config['remote_control_options']:
-                        try:
-                            lprint(f"添加远程控制选项: {option['label']}")
-                            action = QAction(QIcon(os.path.join(os.path.dirname(__file__), 'icons', 'remote.svg')), 
-                                          option['label'], self)
-                            if option['action'] == 'request':
-                                action.triggered.connect(
-                                    lambda checked, opt=option: self.request_remote_control(
-                                        userName, opt.get('username'), opt.get('type')
-                                    )
-                                )
-                            elif option['action'] == 'connect':
-                                action.triggered.connect(
-                                    lambda checked, host=option['host'], port=option['port'], 
-                                           password=option['password']: self.connect_vnc(host, port, password)
-                                )
-                            self.tray_menu.addAction(action)
-                            lprint(f"远程控制选项 {option['label']} 添加成功")
-                        except Exception as e:
-                            lprint(f"添加远程控制选项 {option.get('label', '未知')} 失败: {str(e)}")
-                            lprint(traceback.format_exc())
-                lprint("远程控制选项添加完成")
-            except Exception as e:
-                lprint(f"加载远程控制配置失败: {str(e)}")
-                lprint(traceback.format_exc())
-
-            # 添加分隔线
-            try:
-                self.tray_menu.addSeparator()
-                lprint("添加分隔线成功")
-            except Exception as e:
-                lprint(f"添加分隔线失败: {str(e)}")
-                lprint(traceback.format_exc())
-
-            # 添加基本菜单项
-            try:
-                # 添加"显示"动作
-                show_action = QAction(QIcon(os.path.join(os.path.dirname(__file__), 'icons', 'show.svg')), 
-                                    "显示", self)
-                show_action.triggered.connect(self.show_window)
-                self.tray_menu.addAction(show_action)
-                lprint("添加显示菜单项成功")
-
-                # 添加"隐藏"动作
-                hide_action = QAction(QIcon(os.path.join(os.path.dirname(__file__), 'icons', 'hide.svg')), 
-                                    "隐藏", self)
-                hide_action.triggered.connect(self.hide_window)
-                self.tray_menu.addAction(hide_action)
-                lprint("添加隐藏菜单项成功")
-
-                # 添加"重启"动作
-                restart_action = QAction(QIcon(os.path.join(os.path.dirname(__file__), '..', '..', 'icons', 'restart.svg')), 
-                                       "重启", self)
-                restart_action.triggered.connect(self.restart_application)
-                self.tray_menu.addAction(restart_action)
-                lprint("添加重启菜单项成功")
-
-                # 添加分隔线
-                self.tray_menu.addSeparator()
-                lprint("添加第二个分隔线成功")
-
-                # 添加"退出"动作
-                exit_action = QAction(QIcon(os.path.join(os.path.dirname(__file__), 'icons', 'exit.svg')), 
-                                    "退出", self)
-                exit_action.triggered.connect(self.exit_application)
-                self.tray_menu.addAction(exit_action)
-                lprint("添加退出菜单项成功")
-            except Exception as e:
-                lprint(f"添加基本菜单项失败: {str(e)}")
-                lprint(traceback.format_exc())
-
             # 设置托盘图标菜单
             try:
                 lprint("开始设置托盘图标菜单...")
@@ -482,53 +405,54 @@ class MainWindow(QMainWindow):
             lprint(f"自动登录失败: {str(e)}")
             lprint(traceback.format_exc())
 
-    def connect_vnc(self, host: str, port: int, password: str) -> None:
-        """连接VNC服务器"""
-        try:
-            # 尝试连接VNC服务器
-            app = Application().start(
-                f'"D:\\TD_Depot\\Software\\ProgramFilesLocal\\RealVNC\\VNC Viewer\\vncviewer.exe" {host}:{port}'
-            )
-            
-            # 等待认证窗口出现
-            try:
-                dlg = app.window(title='Authentication')
-                dlg.wait('exists', timeout=5)  # 增加超时时间
-            except Exception as e:
-                reply = QMessageBox.warning(
-                    parent=self,
-                    title="连接失败",
-                    text="无法连接到VNC服务器，请检查服务器是否在线",
-                    button0=QMessageBox.StandardButton.Ok,
-                    button1=QMessageBox.StandardButton.Ok
-                )
-                return
-                
-            # 输入密码
-            try:
-                password_input = dlg.child_window(class_name="Edit", found_index=1)
-                password_input.type_keys(password, with_spaces=True)
-                
-                ok_button = dlg.child_window(title="OK", class_name="Button")
-                ok_button.click()
-            except Exception as e:
-                reply = QMessageBox.warning(
-                    parent=self,
-                    title="认证失败",
-                    text="无法完成VNC认证，请检查密码是否正确",
-                    button0=QMessageBox.StandardButton.Ok,
-                    button1=QMessageBox.StandardButton.Ok
-                )
-                return
-                
-        except Exception as e:
-            reply = QMessageBox.warning(
-                parent=self,
-                title="连接失败",
-                text=f"连接VNC服务器时发生错误: {str(e)}",
-                button0=QMessageBox.StandardButton.Ok,
-                button1=QMessageBox.StandardButton.Ok
-            )
+    def on_tray_icon_activated(self, reason):
+        """处理托盘图标激活事件"""
+        lprint(f"托盘图标被激活，原因: {reason}")
+        
+        if reason == QSystemTrayIcon.ActivationReason.Trigger:  # 单击
+            lprint("单击托盘图标，切换窗口显示状态")
+            if self.isVisible():
+                self.hide()
+            else:
+                self.show()
+                self.activateWindow()
+        elif reason == QSystemTrayIcon.ActivationReason.DoubleClick:  # 双击
+            lprint("双击托盘图标，显示窗口")
+            self.show()
+            self.activateWindow()
+        elif reason == QSystemTrayIcon.ActivationReason.Context:  # 右键
+            # 获取托盘图标的全局位置
+            geometry = self.tray_icon.geometry()
+            if geometry.isValid():
+                # 如果能获取到托盘图标位置，就在托盘图标位置显示
+                self.tray_menu.popup(geometry.topRight())
+            else:
+                # 否则在鼠标位置显示
+                cursor_pos = QCursor.pos()
+                self.tray_menu.popup(cursor_pos)
+
+    def toggle_overlay(self):
+        """切换托盘图标闪烁效果"""
+        if self.overlay_visible:
+            self.tray_icon.setIcon(QIcon(self.tray_icon_path))
+            self.overlay_visible = False
+        else:
+            self.tray_icon.setIcon(QIcon(os.path.join(os.path.dirname(__file__), 'icons', 'logo.png')))
+            self.overlay_visible = True
+
+    def start_blinking(self, date: str = '', interval: int = 500) -> None:
+        """开始托盘图标闪烁"""
+        if hasattr(self, 'blink_timer'):
+            self.overlay_visible = False
+            self.blink_timer.start(interval)
+
+    def stop_blinking(self):
+        """停止托盘图标闪烁"""
+        if hasattr(self, 'blink_timer'):
+            self.blink_timer.stop()
+            print("停止闪烁")
+            self.tray_icon.setIcon(QIcon(self.tray_icon_path))
+            self.overlay_visible = False
 
     def check_vnc_version(self) -> tuple[bool, str]:
         """检查VNC版本
@@ -605,102 +529,6 @@ class MainWindow(QMainWindow):
             return False
         except Exception:
             return False
-
-    @asyncSlot()
-    async def request_remote_control(self, sender: Optional[str], recipient: Optional[str], role_type: Optional[str]):
-        """请求远程控制"""
-        if not all([sender, recipient, role_type]):
-            reply = QMessageBox.warning(
-                parent=self,
-                title="参数错误",
-                text="远程控制请求缺少必要参数",
-                button0=QMessageBox.StandardButton.Ok,
-                button1=QMessageBox.StandardButton.Ok
-            )
-            return
-
-        # 检查VNC版本和运行状态
-        is_v7, version = self.check_vnc_version()
-        
-        if is_v7:
-            # 如果是7.x版本，检查是否在运行
-            if self.is_vnc_running():
-                # VNC已在运行，直接发送远程控制请求
-                if sender and recipient and role_type:  # Type narrowing
-                    await self.chat_handler._send_remote_control_message(sender, recipient, role_type)
-                return
-            else:
-                # VNC 7.x已安装但未运行，启动服务
-                try:
-                    subprocess.run(['net', 'start', 'vncserver'], check=True)
-                    if sender and recipient and role_type:  # Type narrowing
-                        await self.chat_handler._send_remote_control_message(sender, recipient, role_type)
-                    return
-                except subprocess.CalledProcessError:
-                    reply = QMessageBox.warning(
-                        parent=self,
-                        title="启动服务失败",
-                        text="VNC服务启动失败，请手动启动服务或重新安装。",
-                        button0=QMessageBox.StandardButton.Ok,
-                        button1=QMessageBox.StandardButton.Ok
-                    )
-                    return
-        else:
-            # 不是7.x版本，提示安装
-            reply = QMessageBox.question(
-                parent=self,
-                title="安装VNC Server",
-                text=f"当前{'未安装VNC Server' if not version else f'VNC版本为{version}'}\n"
-                     "需要安装VNC Server 7.x版本才能使用远程控制功能。\n"
-                     "是否现在安装？",
-                button0=QMessageBox.StandardButton.Yes,
-                button1=QMessageBox.StandardButton.No
-            )
-            
-            if reply != QMessageBox.StandardButton.Yes:
-                return
-
-        # 复制VNC服务器文件
-        subprocess.run(['robocopy','/MIR',
-            LM.ProgramFilesLocal_Public+r'\VNC-Server',
-            r'D:\TD_Depot\Temp\VNC-Server'
-        ])
-        os.makedirs(r'D:\TD_Depot\Temp\VNC-Server',exist_ok=True)
-
-        try:
-            # 运行安装程序
-            result = subprocess.run(
-                [r'D:\TD_Depot\Temp\VNC-Server\Installer.exe', '/qn'],
-                capture_output=True,
-                text=True
-            )
-            
-            if result.stderr:
-                lprint(f"VNC安装错误输出: {result.stderr}")
-                reply = QMessageBox.warning(
-                    parent=self,
-                    title="安装失败",
-                    text=f"VNC服务安装失败\n{result.stderr}",
-                    button0=QMessageBox.StandardButton.Ok,
-                    button1=QMessageBox.StandardButton.Ok
-                )
-            else:
-                lprint("VNC安装成功")
-                # 等待服务启动
-                await asyncio.sleep(2)
-                # 发送远程控制请求
-                if sender and recipient and role_type:  # Type narrowing
-                    await self.chat_handler._send_remote_control_message(sender, recipient, role_type)
-
-        except Exception as e:
-            lprint(f"远程控制准备失败: {str(e)}")
-            reply = QMessageBox.warning(
-                parent=self,
-                title="远程控制准备",
-                text=f"远程控制准备失败: {str(e)}",
-                button0=QMessageBox.StandardButton.Ok,
-                button1=QMessageBox.StandardButton.Ok
-            )
 
     def show_window(self) -> None:
         """显示主窗口"""
@@ -794,122 +622,6 @@ class MainWindow(QMainWindow):
             lprint(f"QApplication.quit()失败: {str(e)}")
             lprint("使用os._exit(0)强制退出")
             os._exit(0)
-
-    def on_tray_icon_activated(self, reason):
-        """处理托盘图标激活事件"""
-        lprint(f"托盘图标被激活，原因: {reason}")
-        
-        if reason == QSystemTrayIcon.ActivationReason.Trigger:  # 单击
-            lprint("单击托盘图标，切换窗口显示状态")
-            if self.isVisible():
-                self.hide()
-            else:
-                self.show()
-                self.activateWindow()
-        elif reason == QSystemTrayIcon.ActivationReason.DoubleClick:  # 双击
-            lprint("双击托盘图标，显示窗口")
-            self.show()
-            self.activateWindow()
-        elif reason == QSystemTrayIcon.ActivationReason.Context:  # 右键
-            # 获取托盘图标的全局位置
-            geometry = self.tray_icon.geometry()
-            if geometry.isValid():
-                # 如果能获取到托盘图标位置，就在托盘图标位置显示
-                self.tray_menu.popup(geometry.topRight())
-            else:
-                # 否则在鼠标位置显示
-                cursor_pos = QCursor.pos()
-                self.tray_menu.popup(cursor_pos)
-
-    def toggle_overlay(self):
-        """切换托盘图标闪烁效果"""
-        
-        if self.overlay_visible:
-            self.tray_icon.setIcon(QIcon(self.tray_icon_path))
-            self.overlay_visible = False
-        else:
-            self.tray_icon.setIcon(QIcon(os.path.join(os.path.dirname(__file__), 'icons', 'logo.png')))
-            self.overlay_visible = True
-
-    def start_blinking(self, date: str = '', interval: int = 500) -> None:
-        """开始托盘图标闪烁"""
-        if hasattr(self, 'blink_timer'):
-            self.overlay_visible = False
-            self.blink_timer.start(interval)
-
-    def stop_blinking(self):
-        """停止托盘图标闪烁"""
-        if hasattr(self, 'blink_timer'):
-            self.blink_timer.stop()
-            print("停止闪烁")
-            self.tray_icon.setIcon(QIcon(self.tray_icon_path))
-            self.overlay_visible = False
-
-    def reload_browser(self):
-        """重载浏览器"""
-        if self.browser:
-            self.browser.close_all()
-            self.central_layout.removeWidget(self.browser)
-            self.browser.deleteLater()
-        
-        self.browser = Browser(parent_widget=self)
-        self.central_layout.addWidget(self.browser)
-
-    def save_window_handle(self):
-        """保存窗口句柄"""
-        win_id = self.winId()
-        handle = int(win_id)
-        with open("D:/TD_Depot/Temp/chatroom.txt", "w") as f:
-            f.write(str(handle))
-    
-    def restart_window(self):
-        """重启窗口"""
-        # 保存当前窗口的几何信息
-        self.restart_application()
-
-    def restart_application(self,current_geometry_str=""):
-        """重启应用程序"""
-        try:
-            # 记录重启事件
-            log_exit("用户请求重启程序")
-            
-            # 隐藏托盘图标
-            if hasattr(self, 'tray_icon'):
-                self.tray_icon.hide()
-            
-            # 获取当前进程ID
-            current_pid = os.getpid()
-            
-            # 获取当前进程的所有子进程
-            current_process = psutil.Process(current_pid)
-            children = current_process.children(recursive=True)
-            
-            # 终止所有子进程
-            for child in children:
-                try:
-                    child.terminate()
-                except psutil.NoSuchProcess:
-                    pass
-            
-            # 等待子进程完全终止
-            for child in children:
-                try:
-                    child.wait(timeout=3)
-                except (psutil.NoSuchProcess, psutil.TimeoutExpired):
-                    pass
-            
-            rect = self.geometry()
-            current_geometry_str=f"{rect.x()},{rect.y()},{rect.width()},{rect.height()}"
-            subprocess.Popen(['lugwit_chatroom.exe', __file__,'--geometry',current_geometry_str])
-            
-            # 退出当前实例
-            os._exit(0)
-            
-        except Exception as e:
-            error_msg = f"重启失败: {str(e)}\n{traceback.format_exc()}"
-            lprint(error_msg)
-            log_exit(f"重启失败: {str(e)}")
-            print(f"重启失败: {str(e)}")
 
     def on_new_message(self, message_data: dict):
         """处理新消息"""

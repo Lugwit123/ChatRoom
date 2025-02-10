@@ -14,6 +14,8 @@ from qasync import QEventLoop, asyncSlot
 import Lugwit_Module as LM
 lprint = LM.lprint
 import time
+import yaml
+import subprocess
 
 if TYPE_CHECKING:
     from clientend.pyqt_chatroom import MainWindow
@@ -144,6 +146,58 @@ class HoverMenu(QMenu):
                                       "登录", self)
             self.login_action.triggered.connect(self.handle_login)
             self.addAction(self.login_action)
+
+            # 从yaml配置文件读取远程控制选项
+            config_path = os.path.join(os.path.dirname(__file__), '..', '..', 'config', 'remote_control.yaml')
+            try:
+                lprint(f"读取远程控制配置: {config_path}")
+                with open(config_path, 'r', encoding='utf-8') as f:
+                    config = yaml.safe_load(f)
+                    for option in config['remote_control_options']:
+                        try:
+                            lprint(f"添加远程控制选项: {option['label']}")
+                            action = QAction(QIcon(os.path.join(os.path.dirname(__file__), '..', '..', 'icons', 'remote.svg')), 
+                                          option['label'], self)
+                            if option['action'] == 'request':
+                                action.triggered.connect(
+                                    lambda checked, opt=option: self.request_remote_control(
+                                        username, opt.get('username'), opt.get('type')
+                                    )
+                                )
+                            elif option['action'] == 'connect':
+                                action.triggered.connect(
+                                    lambda checked, host=option['host'], port=option['port'], 
+                                           password=option['password']: self.connect_vnc(host, port, password)
+                                )
+                            self.addAction(action)
+                            lprint(f"远程控制选项 {option['label']} 添加成功")
+                        except Exception as e:
+                            lprint(f"添加远程控制选项 {option.get('label', '未知')} 失败: {str(e)}")
+                            lprint(traceback.format_exc())
+                lprint("远程控制选项添加完成")
+            except Exception as e:
+                lprint(f"加载远程控制配置失败: {str(e)}")
+                lprint(traceback.format_exc())
+
+            # 添加分隔线
+            self.addSeparator()
+
+            # 添加显示/隐藏按钮
+            self.show_action = QAction(QIcon(os.path.join(os.path.dirname(__file__), '..', '..', 'icons', 'show.svg')), 
+                                     "显示", self)
+            self.show_action.triggered.connect(self.show_window)
+            self.addAction(self.show_action)
+
+            self.hide_action = QAction(QIcon(os.path.join(os.path.dirname(__file__), '..', '..', 'icons', 'hide.svg')), 
+                                     "隐藏", self)
+            self.hide_action.triggered.connect(self.hide_window)
+            self.addAction(self.hide_action)
+
+            # 添加重启按钮
+            self.restart_action = QAction(QIcon(os.path.join(os.path.dirname(__file__), '..', '..', 'icons', 'restart.svg')), 
+                                        "重启", self)
+            self.restart_action.triggered.connect(self.restart_application)
+            self.addAction(self.restart_action)
 
             # 添加分隔线
             self.addSeparator()
@@ -437,3 +491,171 @@ class HoverMenu(QMenu):
             lprint(traceback.format_exc())
             # 如果出错，使用默认位置显示
             super().popup(pos) 
+
+    def show_window(self):
+        """显示主窗口"""
+        main_window = self.get_main_window()
+        if main_window:
+            if not main_window.isVisible():
+                main_window.showNormal()
+                main_window.activateWindow()
+
+    def hide_window(self):
+        """隐藏主窗口"""
+        main_window = self.get_main_window()
+        if main_window:
+            main_window.hide()
+
+    def restart_application(self):
+        """重启应用程序"""
+        main_window = self.get_main_window()
+        if main_window:
+            main_window.restart_application()
+
+    def connect_vnc(self, host: str, port: int, password: str) -> None:
+        """连接VNC服务器"""
+        try:
+            # 尝试连接VNC服务器
+            app = Application().start(
+                f'"D:\\TD_Depot\\Software\\ProgramFilesLocal\\RealVNC\\VNC Viewer\\vncviewer.exe" {host}:{port}'
+            )
+            
+            # 等待认证窗口出现
+            try:
+                dlg = app.window(title='Authentication')
+                dlg.wait('exists', timeout=5)  # 增加超时时间
+            except Exception as e:
+                reply = QMessageBox.warning(
+                    parent=self,
+                    title="连接失败",
+                    text="无法连接到VNC服务器，请检查服务器是否在线",
+                    button0=QMessageBox.StandardButton.Ok,
+                    button1=QMessageBox.StandardButton.Ok
+                )
+                return
+                
+            # 输入密码
+            try:
+                password_input = dlg.child_window(class_name="Edit", found_index=1)
+                password_input.type_keys(password, with_spaces=True)
+                
+                ok_button = dlg.child_window(title="OK", class_name="Button")
+                ok_button.click()
+            except Exception as e:
+                reply = QMessageBox.warning(
+                    parent=self,
+                    title="认证失败",
+                    text="无法完成VNC认证，请检查密码是否正确",
+                    button0=QMessageBox.StandardButton.Ok,
+                    button1=QMessageBox.StandardButton.Ok
+                )
+                return
+                
+        except Exception as e:
+            reply = QMessageBox.warning(
+                parent=self,
+                title="连接失败",
+                text=f"连接VNC服务器时发生错误: {str(e)}",
+                button0=QMessageBox.StandardButton.Ok,
+                button1=QMessageBox.StandardButton.Ok
+            )
+
+    @asyncSlot()
+    async def request_remote_control(self, sender: Optional[str], recipient: Optional[str], role_type: Optional[str]):
+        """请求远程控制"""
+        if not all([sender, recipient, role_type]):
+            reply = QMessageBox.warning(
+                parent=self,
+                title="参数错误",
+                text="远程控制请求缺少必要参数",
+                button0=QMessageBox.StandardButton.Ok,
+                button1=QMessageBox.StandardButton.Ok
+            )
+            return
+
+        main_window = self.get_main_window()
+        if not main_window:
+            return
+
+        # 检查VNC版本和运行状态
+        is_v7, version = main_window.check_vnc_version()
+        
+        if is_v7:
+            # 如果是7.x版本，检查是否在运行
+            if main_window.is_vnc_running():
+                # VNC已在运行，直接发送远程控制请求
+                if sender and recipient and role_type:  # Type narrowing
+                    await main_window.chat_handler._send_remote_control_message(sender, recipient, role_type)
+                return
+            else:
+                # VNC 7.x已安装但未运行，启动服务
+                try:
+                    subprocess.run(['net', 'start', 'vncserver'], check=True)
+                    if sender and recipient and role_type:  # Type narrowing
+                        await main_window.chat_handler._send_remote_control_message(sender, recipient, role_type)
+                    return
+                except subprocess.CalledProcessError:
+                    reply = QMessageBox.warning(
+                        parent=self,
+                        title="启动服务失败",
+                        text="VNC服务启动失败，请手动启动服务或重新安装。",
+                        button0=QMessageBox.StandardButton.Ok,
+                        button1=QMessageBox.StandardButton.Ok
+                    )
+                    return
+        else:
+            # 不是7.x版本，提示安装
+            reply = QMessageBox.question(
+                parent=self,
+                title="安装VNC Server",
+                text=f"当前{'未安装VNC Server' if not version else f'VNC版本为{version}'}\n"
+                     "需要安装VNC Server 7.x版本才能使用远程控制功能。\n"
+                     "是否现在安装？",
+                button0=QMessageBox.StandardButton.Yes,
+                button1=QMessageBox.StandardButton.No
+            )
+            
+            if reply != QMessageBox.StandardButton.Yes:
+                return
+
+        # 复制VNC服务器文件
+        subprocess.run(['robocopy','/MIR',
+            LM.ProgramFilesLocal_Public+r'\VNC-Server',
+            r'D:\TD_Depot\Temp\VNC-Server'
+        ])
+        os.makedirs(r'D:\TD_Depot\Temp\VNC-Server',exist_ok=True)
+
+        try:
+            # 运行安装程序
+            result = subprocess.run(
+                [r'D:\TD_Depot\Temp\VNC-Server\Installer.exe', '/qn'],
+                capture_output=True,
+                text=True
+            )
+            
+            if result.stderr:
+                lprint(f"VNC安装错误输出: {result.stderr}")
+                reply = QMessageBox.warning(
+                    parent=self,
+                    title="安装失败",
+                    text=f"VNC服务安装失败\n{result.stderr}",
+                    button0=QMessageBox.StandardButton.Ok,
+                    button1=QMessageBox.StandardButton.Ok
+                )
+            else:
+                lprint("VNC安装成功")
+                # 等待服务启动
+                await asyncio.sleep(2)
+                # 发送远程控制请求
+                if sender and recipient and role_type:  # Type narrowing
+                    await main_window.chat_handler._send_remote_control_message(sender, recipient, role_type)
+
+        except Exception as e:
+            lprint(f"远程控制准备失败: {str(e)}")
+            reply = QMessageBox.warning(
+                parent=self,
+                title="远程控制准备",
+                text=f"远程控制准备失败: {str(e)}",
+                button0=QMessageBox.StandardButton.Ok,
+                button1=QMessageBox.StandardButton.Ok
+            ) 
