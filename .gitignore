@@ -86,4 +86,19 @@ cover/
 # 数据库
 *.db
 *.sqlite3
+*.sqlite
+
+# 前端例外
+!frontend/dist/
+!frontend/public/
+!frontend/src/
+!frontend/package.json
+!frontend/package-lock.json
+!frontend/tsconfig.json
+!frontend/vite.config.ts
+!frontend/.env
+
+# 数据库
+*.db
+*.sqlite3
 *.sqlite .vscode/ 
