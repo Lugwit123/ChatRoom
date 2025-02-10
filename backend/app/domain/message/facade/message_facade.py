@@ -204,71 +204,78 @@ class MessageFacade(BaseFacade):
                 self.lprint("Socket.IO服务器未初始化")
                 return
                 
-            # 转换消息为字典格式
-            message_data = message.to_dict()
-            
-            # 获取发送者和接收者的用户名
+            # 获取发送者信息
             sender = await self.user_repository.get_by_id(message.sender_id)
-            if sender:
-                message_data["sender_username"] = sender.username
-            
+            if not sender:
+                self.lprint(f"未找到发送者: id={message.sender_id}")
+                return
+            self.lprint(f"发送者信息: id={sender.id}, username={sender.username}")
+
+            # 准备消息数据
+            message_data = message.to_dict()
+            message_data['sender_username'] = sender.username
+
+            # 根据消息类型处理
             if message.group_id is not None:
-                # 群组消息
+                # 群聊消息
                 group = await self.group_repository.get_by_id(message.group_id)
                 if group:
                     message_data["group_name"] = group.name
+                    self.lprint(f"群组信息: id={group.id}, name={group.name}")
+                else:
+                    self.lprint(f"未找到群组信息: group_id={message.group_id}")
                 room = f"group_{message.group_id}"
-                await self.sio.emit("message", message_data, room=room)
-                self.lprint(f"群组消息已发送到房间: {room}")
+                self.lprint(f"发送群组消息到房间: {room}")
             else:
                 # 私聊消息
                 recipient = await self.user_repository.get_by_id(message.recipient_id)
                 if recipient:
-                    message_data["recipient_username"] = recipient.username
-                    room = str(message.recipient_id)
-                    await self.sio.emit("message", message_data, room=room)
-                    self.lprint(f"私聊消息已发送给用户: {recipient.username}")
+                    self.lprint(f"接收者信息: id={recipient.id}, username={recipient.username}")
+                    # 使用两个用户ID的组合作为房间名
+                    user_ids = sorted([sender.id, recipient.id])
+                    room = f"private_{user_ids[0]}_{user_ids[1]}"
+                    self.lprint(f"发送私聊消息到房间: {room}")
+                    
+                    # 获取房间内的所有会话
+                    if hasattr(self.sio, 'manager') and hasattr(self.sio.manager, 'rooms'):
+                        room_sids = self.sio.manager.rooms.get(room, set())
+                        self.lprint(f"房间 {room} 内的所有会话ID: {room_sids}")
+                    
+                    message_data['recipient_username'] = recipient.username
+                    # 发送到组合房间
+                    await self.sio.emit('message', message_data, room=room, namespace='/chat')
+                    self.lprint(f"私聊消息已发送到房间: {room}, 消息内容: {message_data}")
+                else:
+                    self.lprint(f"未找到接收者信息: recipient_id={message.recipient_id}")
                 
+            self.lprint(f"消息发送成功确认已发送到客户端, message_id={message.id}")
         except Exception as e:
             self.lprint(f"发送消息失败: {str(e)}")
-            traceback.print_exc()
+            self.lprint(traceback.format_exc())
 
-    async def handle_message(self, sid: str, data: dict):
-        """处理新消息事件
+    async def handle_message(self, message: BaseMessage):
+        """处理消息
         
         Args:
-            sid: 会话ID
-            data: 消息数据
+            message: 要处理的消息
         """
         try:
-            self.lprint(f"收到新消息事件: sid={sid}, data={data}")
+            # 保存消息到数据库
+            await self.send(message)
             
-            # 1. 获取发送者ID
-            sender_id = await self._websocket_facade.get_user_id(sid)
-            if not sender_id:
-                self.lprint(f"无法获取发送者ID, sid={sid}")
-                return
+            # 通过WebSocket广播消息
+            await self.send_message_via_socket(message)
+            
+            # 在/chat命名空间下发送消息
+            if message.group_id is not None:
+                room = f"group_{message.group_id}"
+                await self.sio.emit("message", message.dict(), room=room, namespace='/chat')
+            else:
+                await self.sio.emit("message", message.dict(), room=f"private_{message.sender_id}_{message.recipient_id}", namespace='/chat')
                 
-            # 2. 添加发送者ID到消息数据
-            data["sender_id"] = sender_id
-            
-            # 3. 保存消息到数据库
-            message = await self.save_message_to_db(data)
-            if not message:
-                self.lprint("消息保存失败")
-                await self.sio.emit("message_error", {"error": "消息保存失败"}, room=sid)
-                return
-                
-            # 4. 异步发送消息
-            asyncio.create_task(self.send_message_via_socket(message))
-            
-            # 5. 返回成功响应
-            await self.sio.emit("message_sent", {"message_id": str(message.id)}, room=sid)
-            
         except Exception as e:
-            self.lprint(f"处理消息事件失败: {str(e)}")
+            self.lprint(f"处理消息失败: {str(e)}")
             self.lprint(traceback.format_exc())
-            await self.sio.emit("message_error", {"error": str(e)}, room=sid)
 
     async def handle_read_message(self, sid: str, data: dict):
         """处理消息已读事件
@@ -597,3 +604,21 @@ class MessageFacade(BaseFacade):
         except Exception as e:
             self.lprint(f"获取未读消息数量失败: {str(e)}")
             return 0
+
+    async def get_chat_partners(self, user_id: int) -> List[int]:
+        """获取用户的所有聊天伙伴ID
+        
+        Args:
+            user_id: 用户ID
+            
+        Returns:
+            List[int]: 聊天伙伴ID列表
+        """
+        try:
+            # 使用仓储层的方法获取聊天伙伴
+            return await self.private_repo.get_chat_partners(user_id)
+                
+        except Exception as e:
+            self.lprint(f"获取聊天伙伴失败: {str(e)}")
+            self.lprint(traceback.format_exc())
+            return []

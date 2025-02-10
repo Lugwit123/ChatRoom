@@ -265,16 +265,18 @@ class MainWindow(QMainWindow):
         """登录成功的处理"""
         try:
             if self.chat_handler:
-                await self.chat_handler.connect_websocket(token)
+                self.chat_handler.token = token  # 设置token
+                await self.chat_handler.connect_to_server()
         except Exception as e:
             lprint(f"登录成功处理出错: {str(e)}")
             lprint(traceback.format_exc())
             
-    def on_logout(self):
+    @asyncSlot()
+    async def on_logout(self):
         """登出的处理"""
         try:
             if self.chat_handler:
-                self.chat_handler.disconnect()
+                await self.chat_handler.close()
         except Exception as e:
             lprint(f"登出处理出错: {str(e)}")
             lprint(traceback.format_exc())
@@ -369,7 +371,7 @@ class MainWindow(QMainWindow):
 
                 # 设置闪烁定时器
                 lprint("设置闪烁定时器...")
-                self.blink_timer = QTimer(self)
+                self.blink_timer: QTimer = QTimer(self)
                 self.blink_timer.timeout.connect(self.toggle_overlay)
                 self.overlay_visible = False
                 lprint("闪烁定时器设置完成")

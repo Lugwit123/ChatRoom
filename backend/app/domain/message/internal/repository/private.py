@@ -149,3 +149,44 @@ class PrivateMessageRepository(BaseMessageRepository):
         async with self.session.begin():
             await self.session.execute(stmt)
             return True
+
+    async def get_chat_partners(self, user_id: int) -> List[int]:
+        """获取用户的所有聊天伙伴ID
+        
+        Args:
+            user_id: 用户ID
+            
+        Returns:
+            List[int]: 聊天伙伴ID列表
+        """
+        try:
+            # 使用独立的会话
+            async with self.get_session() as session:
+                # 查询用户作为发送者的所有私聊消息的接收者
+                query = select(PrivateMessage.recipient_id).where(
+                    PrivateMessage.sender_id == user_id
+                ).distinct()
+                
+                # 查询用户作为接收者的所有私聊消息的发送者
+                query2 = select(PrivateMessage.sender_id).where(
+                    PrivateMessage.recipient_id == user_id
+                ).distinct()
+                
+                # 执行查询
+                result1 = await session.execute(query)
+                result2 = await session.execute(query2)
+                
+                # 获取所有不重复的用户ID
+                partner_ids = set()
+                for row in result1:
+                    partner_ids.add(row[0])
+                for row in result2:
+                    partner_ids.add(row[0])
+                    
+                self.lprint(f"用户 {user_id} 的聊天伙伴: {partner_ids}")
+                return list(partner_ids)
+                
+        except Exception as e:
+            self.lprint(f"获取聊天伙伴失败: {str(e)}")
+            self.lprint(traceback.format_exc())
+            return []

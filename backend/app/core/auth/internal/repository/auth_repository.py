@@ -26,25 +26,65 @@ class AuthRepository(CoreBaseRepository[User]):
         super().__init__(User)
     
     async def get_user_by_username(self, username: str) -> Optional[User]:
-        """根据用户名获取用户"""
+        """根据用户名获取用户
+        
+        Args:
+            username: 用户名
+            
+        Returns:
+            Optional[User]: 用户对象,不存在返回None
+        """
         try:
-            stmt = select(self.model).where(self.model.username == username)
-            result = await self.session.execute(stmt)
-            return result.scalar_one_or_none()
+            # 使用独立的会话
+            async with self.get_session() as session:
+                # 构建查询
+                stmt = select(self.model).where(self.model.username == username)
+                # 执行查询
+                result = await session.execute(stmt)
+                # 获取第一个结果
+                user = result.scalar_one_or_none()
+                
+                if user:
+                    self.lprint(f"找到用户: {user.username}")
+                else:
+                    self.lprint(f"用户不存在: {username}")
+                    
+                return user
+                
         except Exception as e:
             self.lprint(f"获取用户失败: {str(e)}")
-            traceback.print_exc()
+            self.lprint(traceback.format_exc())
             return None
     
     async def get_user_by_id(self, user_id: int) -> Optional[User]:
-        """根据用户ID获取用户"""
+        """根据用户ID获取用户
+        
+        Args:
+            user_id: 用户ID
+            
+        Returns:
+            Optional[User]: 用户对象,不存在返回None
+        """
         try:
-            stmt = select(self.model).where(self.model.id == user_id)
-            result = await self.session.execute(stmt)
-            return result.scalar_one_or_none()
+            # 使用独立的会话
+            async with self.get_session() as session:
+                # 构建查询
+                stmt = select(self.model).where(self.model.id == user_id)
+                # 执行查询
+                result = await session.execute(stmt)
+                # 获取第一个结果
+                user = result.scalar_one_or_none()
+                
+                if user:
+                    self.lprint(f"找到用户: {user.username}")
+                else:
+                    self.lprint(f"用户不存在: id={user_id}")
+                    
+                return user
+                
         except Exception as e:
             self.lprint(f"获取用户失败: {str(e)}")
-            traceback.print_exc()
+            self.lprint(traceback.format_exc())
             return None
     
     async def create_user(self, username: str, hashed_password: str, email: str,

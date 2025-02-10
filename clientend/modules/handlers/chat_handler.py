@@ -6,7 +6,7 @@ import os
 import asyncio
 import traceback
 import socket
-from typing import Any, Dict, Optional, Callable, Union, Coroutine, cast, TYPE_CHECKING
+from typing import Any, Dict, Optional, Callable, Union, Coroutine, cast, TYPE_CHECKING, Protocol
 import aiohttp
 from PySide6.QtCore import QObject, Signal
 from PySide6.QtWidgets import QWidget, QMessageBox
@@ -26,6 +26,13 @@ from ..message import MessageType, MessageTargetType, MessageContentType
 
 if TYPE_CHECKING:
     from clientend.pyqt_chatroom import MainWindow
+    
+    class MainWindowProtocol(Protocol):
+        """主窗口协议，定义必需的属性和方法"""
+        parent_widget: QWidget
+        userName: str
+        connect_vnc: Callable[[str, int, str], None]
+        start_blinking: Callable[[], None]
 
 class ChatRoom(QObject):
     """与 JavaScript 交互的处理类"""
@@ -34,7 +41,8 @@ class ChatRoom(QObject):
     message_received = Signal(object)  # 收到新消息的信号
     connection_status = Signal(bool)  # 连接状态信号
     
-    def __init__(self, parent_com: Optional['MainWindow'] = None, app=None):
+    def __init__(self, parent_com: Union['MainWindow', None] = None, app=None):
+        """初始化聊天室处理器"""
         super().__init__()
         self._parent_window = parent_com  # 保存父窗口引用
         self.app = app
@@ -53,11 +61,19 @@ class ChatRoom(QObject):
         self.max_reconnect_attempts = int(os.getenv('WS_MAX_RECONNECT_ATTEMPTS', '5'))
         self.reconnect_delay = int(os.getenv('WS_INITIAL_RECONNECT_DELAY', '1'))
         
-        # 设置URL
+        # 设置URL和命名空间
         self.base_url = f'http://{self.server_ip}:{self.server_port}'
+        self.namespace = '/chat'  # 使用固定的命名空间
         
         # Socket.IO相关
-        self.sio = socketio.AsyncClient(logger=False, engineio_logger=False)
+        self.sio = socketio.AsyncClient(
+            logger=False,
+            engineio_logger=False,
+            reconnection=True,
+            reconnection_attempts=self.max_reconnect_attempts,
+            reconnection_delay=self.reconnect_delay,
+            handle_sigint=False
+        )
         self.token: Optional[str] = None
         self.reconnect_attempts = 0
         
@@ -67,62 +83,21 @@ class ChatRoom(QObject):
         # 连接信号到槽
         self.message_received.connect(self._handle_message)
         
-        lprint(f"ChatRoom初始化完成: server={self.server_ip}, port={self.server_port}")
+        # 启动定期检查连接状态的任务
+        self._start_connection_check()
+        
+        lprint(f"ChatRoom初始化完成: server={self.server_ip}, port={self.server_port}, namespace={self.namespace}")
 
     def _register_handlers(self):
         """注册Socket.IO事件处理器"""
-        
-        @self.sio.event
-        async def connect():
-            lprint('Socket.IO连接成功!')
-            self.connection_status.emit(True)
-            self.reconnect_attempts = 0
+        # 在/chat命名空间下注册事件
+        self.sio.on('connect', self._on_connect, namespace=self.namespace)
+        self.sio.on('disconnect', self._on_disconnect, namespace=self.namespace)
+        self.sio.on('message', self._on_message, namespace=self.namespace)
+        self.sio.on('auth_response', self._on_auth_response, namespace=self.namespace)
+        self.sio.on('room_assigned', self._on_room_assigned, namespace=self.namespace)
 
-        @self.sio.event
-        async def disconnect():
-            """处理断开连接事件"""
-            lprint('Socket.IO连接断开')
-            self.connection_status.emit(False)
-            if self.reconnect_attempts < self.max_reconnect_attempts:
-                self.reconnect_attempts += 1
-                delay = min(self.reconnect_delay * (2 ** (self.reconnect_attempts - 1)), 30)
-                lprint(f"准备第{self.reconnect_attempts}次重连，延迟{delay}秒")
-                await asyncio.sleep(delay)
-                await self.connect_ws()
-            else:
-                lprint("达到最大重连次数，停止重连")
-
-        @self.sio.event
-        async def connect_error(data):
-            """处理连接错误事件"""
-            lprint(f'Socket.IO连接错误: {data}')
-            self.connection_status.emit(False)
-            if self.reconnect_attempts < self.max_reconnect_attempts:
-                self.reconnect_attempts += 1
-                delay = min(self.reconnect_delay * (2 ** (self.reconnect_attempts - 1)), 30)
-                lprint(f"准备第{self.reconnect_attempts}次重连，延迟{delay}秒")
-                await asyncio.sleep(delay)
-                await self.connect_ws()
-            else:
-                lprint("达到最大重连次数，停止重连")
-
-        @self.sio.on('message')
-        async def on_message(data):
-            try:
-                lprint(f'收到消息: {data}')
-                self.message_received.emit(data)
-            except Exception as e:
-                lprint(f'处理消息错误: {str(e)}')
-                lprint(traceback.format_exc())
-
-        @self.sio.on('authentication_response')
-        async def on_auth_response(data):
-            if data.get('success'):
-                lprint('Socket.IO认证成功')
-            else:
-                lprint(f'Socket.IO认证失败: {data.get("error")}')
-
-    def get_parent_window(self) -> Optional['MainWindow']:
+    def get_parent_window(self) -> Optional['MainWindowProtocol']:
         """获取父窗口实例"""
         return self._parent_window
 
@@ -219,12 +194,33 @@ class ChatRoom(QObject):
             lprint(f"处理远程控制消息失败: {str(e)}")
             lprint(traceback.format_exc())
 
+    async def check_connection(self) -> bool:
+        """检查连接状态并在需要时重连
+        Returns:
+            bool: 连接是否正常
+        """
+        try:
+            if not self.sio.connected:
+                lprint("检测到连接断开，尝试重连")
+                if self.token:
+                    await self.connect_to_server()
+                    return self.sio.connected
+                else:
+                    lprint("没有可用的token，无法重连")
+                    return False
+            return True
+        except Exception as e:
+            lprint(f"检查连接状态失败: {str(e)}")
+            lprint(traceback.format_exc())
+            return False
+
     async def send_message(self, **message_data) -> Optional[Dict[str, Any]]:
         """发送消息到服务器"""
         try:
-            if not self.sio.connected:
-                lprint("Socket.IO未连接，尝试重新连接")
-                await self.connect_ws()
+            # 先检查连接状态
+            if not await self.check_connection():
+                lprint("连接检查失败，无法发送消息")
+                return None
                 
             async with aiohttp.ClientSession() as session:
                 async with session.post(
@@ -349,51 +345,178 @@ class ChatRoom(QObject):
                         "文件或者文件夹不存在！"
                     )
 
-    async def connect_ws(self, token: Optional[str] = None):
+    async def connect_websocket(self, token: str):
+        """连接WebSocket服务器"""
+        try:
+            lprint("开始连接Socket.IO服务器...")
+            self.token = token  # 保存token
+            await self.connect_to_server()
+            lprint("Socket.IO连接成功")
+        except Exception as e:
+            lprint(f"连接Socket.IO服务器失败: {str(e)}")
+            lprint(traceback.format_exc())
+
+    async def connect_to_server(self):
         """连接到Socket.IO服务器"""
         try:
-            if token:
-                self.token = token
-                
-            if not self.token:
-                lprint("未提供token，无法连接Socket.IO")
-                return
-                
+            # 如果已经连接，先断开
             if self.sio.connected:
-                lprint("Socket.IO已连接")
+                await self.sio.disconnect()
+                await asyncio.sleep(0.5)  # 等待断开完成
+            
+            # 注册事件处理器
+            self._register_handlers()
+
+            # 确保token存在
+            if not self.token:
+                lprint("错误: 没有可用的token")
                 return
                 
-            lprint(f"正在连接Socket.IO: {self.base_url}")
-            
             # 设置认证信息
-            auth = {'token': self.token}
+            auth = {
+                'token': self.token
+            }
             
+            # 连接到服务器
+            lprint("开始连接到Socket.IO服务器...")
             await self.sio.connect(
                 self.base_url,
-                auth=auth,
+                auth=auth,  # 使用auth参数传递token
+                namespaces=[self.namespace],  # 直接连接到chat命名空间
                 transports=['websocket'],
                 wait_timeout=10,
                 socketio_path='socket.io'
             )
             
-            lprint("等待Socket.IO连接建立...")
-            await asyncio.sleep(1)  # 等待认证完成
+            lprint(f"Socket.IO连接已建立，命名空间: {self.sio.namespaces}")
             
-            if not self.sio.connected:
-                lprint("Socket.IO连接失败")
-                self.connection_status.emit(False)
-                await self._handle_connection_error()
+        except socketio.exceptions.ConnectionError as e:
+            lprint(f"连接错误: {str(e)}")
+            if self.reconnect_attempts < self.max_reconnect_attempts:
+                self.reconnect_attempts += 1
+                delay = min(self.reconnect_delay * (2 ** (self.reconnect_attempts - 1)), 30)
+                lprint(f"将在 {delay} 秒后重试...")
+                await asyncio.sleep(delay)
+                return await self.connect_to_server()
             else:
-                lprint("Socket.IO连接成功")
-                self.connection_status.emit(True)
-                self.reconnect_attempts = 0
-            
+                lprint("达到最大重连次数,停止重连")
         except Exception as e:
-            lprint(f"Socket.IO连接失败: {str(e)}")
+            lprint(f"连接失败: {str(e)}")
             lprint(traceback.format_exc())
-            self.connection_status.emit(False)
-            await self._handle_connection_error()
+
+    async def _on_connect(self):
+        """连接成功回调"""
+        try:
+            lprint("已连接到服务器")
+            self.reconnect_attempts = 0
+            self.connection_status.emit(True)
             
+            # 等待命名空间就绪
+            for _ in range(5):  # 最多等待5次
+                if self.namespace in self.sio.namespaces:
+                    break
+                await asyncio.sleep(0.1)
+            
+            lprint(f"命名空间状态: {self.sio.namespaces}")
+            
+            # 发送认证消息
+            if self.token and self.namespace in self.sio.namespaces:
+                await self.sio.emit('authenticate', {'token': self.token}, namespace=self.namespace)
+                lprint("已发送认证消息")
+        except Exception as e:
+            lprint(f"连接回调处理失败: {str(e)}")
+            lprint(traceback.format_exc())
+
+    async def _on_disconnect(self):
+        """断开连接回调"""
+        lprint("与服务器断开连接")
+
+    async def _on_message(self, data):
+        """接收消息回调"""
+        lprint(f"收到消息: {data}")
+
+    async def _on_auth_response(self, data):
+        """认证响应回调"""
+        try:
+            lprint(f"认证响应: {data}")
+            if isinstance(data, dict):
+                status = data.get('status')
+                if status == 'success':
+                    lprint("认证成功")
+                    self.connection_status.emit(True)
+                    # 认证成功后，等待房间分配
+                    lprint("等待房间分配...")
+                else:
+                    error = data.get('error', '未知错误')
+                    lprint(f"认证失败: {error}")
+                    self.connection_status.emit(False)
+                    # 如果认证失败，断开连接并重试
+                    await self.close()
+                    if self.reconnect_attempts < self.max_reconnect_attempts:
+                        self.reconnect_attempts += 1
+                        delay = min(self.reconnect_delay * (2 ** (self.reconnect_attempts - 1)), 30)
+                        lprint(f"将在 {delay} 秒后重试...")
+                        await asyncio.sleep(delay)
+                        await self.connect_to_server()
+                    else:
+                        lprint("达到最大重试次数，停止重连")
+        except Exception as e:
+            lprint(f"处理认证响应失败: {str(e)}")
+            lprint(traceback.format_exc())
+
+    async def _on_room_assigned(self, rooms):
+        """房间分配回调"""
+        try:
+            lprint(f"分配到房间: {rooms}")
+            if isinstance(rooms, dict) and 'rooms' in rooms:
+                rooms = rooms['rooms']
+            
+            if not isinstance(rooms, list):
+                lprint(f"无效的房间数据格式: {rooms}")
+                return
+                
+            # 等待连接和命名空间就绪
+            for _ in range(5):  # 最多等待5次
+                if self.sio.connected and self.namespace in self.sio.namespaces:
+                    break
+                lprint(f"等待连接就绪... 命名空间状态: {self.sio.namespaces}")
+                await asyncio.sleep(0.5)
+            
+            # 再次检查连接状态
+            if not self.sio.connected:
+                lprint("Socket.IO未连接，无法加入房间")
+                return
+                
+            if self.namespace not in self.sio.namespaces:
+                lprint(f"命名空间 {self.namespace} 未连接")
+                return
+            
+            lprint(f"开始加入房间，当前命名空间: {self.namespace}, 状态: {self.sio.namespaces}")
+            
+            for room_data in rooms:
+                try:
+                    if isinstance(room_data, dict) and 'room_name' in room_data:
+                        room = room_data['room_name']
+                    else:
+                        room = room_data
+                        
+                    # 在/chat命名空间下加入房间
+                    await self.sio.emit('join', {'room': room}, namespace=self.namespace)
+                    lprint(f"已加入房间: {room}")
+                    await asyncio.sleep(0.1)  # 短暂等待，避免消息堆积
+                    
+                except socketio.exceptions.BadNamespaceError:
+                    lprint(f"命名空间 {self.namespace} 不可用，跳过房间 {room}")
+                    continue
+                except Exception as e:
+                    lprint(f"加入房间 {room} 失败: {str(e)}")
+                    lprint(traceback.format_exc())
+                    continue
+                    
+        except Exception as e:
+            lprint(f"处理房间分配失败: {str(e)}")
+            lprint(traceback.format_exc())
+
     async def _handle_connection_error(self) -> None:
         """处理连接错误"""
         try:
@@ -402,7 +525,7 @@ class ChatRoom(QObject):
                 delay = min(self.reconnect_delay * (2 ** (self.reconnect_attempts - 1)), 30)  # 指数退避，最大30秒
                 lprint(f"准备第{self.reconnect_attempts}次重连，延迟{delay}秒")
                 await asyncio.sleep(delay)
-                await self.connect_ws()  # 使用已保存的token重连
+                await self.connect_to_server()  # 使用已保存的token重连
             else:
                 lprint("达到最大重连次数，停止重连")
         except Exception as e:
@@ -416,12 +539,55 @@ class ChatRoom(QObject):
             self.connection_status.emit(False)
             lprint("Socket.IO连接已关闭")
 
-    async def connect_websocket(self, token: str):
-        """连接WebSocket服务器"""
+    def _start_connection_check(self):
+        """启动定期检查连接状态的任务"""
         try:
-            lprint("开始连接Socket.IO服务器...")
-            await self.connect_ws(token)
-            lprint("Socket.IO连接成功")
+            from qasync import QEventLoop, asyncSlot
+            
+            @asyncSlot()
+            async def check_connection_periodically():
+                while True:
+                    await asyncio.sleep(30)  # 每30秒检查一次
+                    if not await self.check_connection():
+                        lprint("定期连接检查失败")
+                    else:
+                        lprint("定期连接检查成功")
+            
+            # 使用QEventLoop来运行异步任务
+            if self.app:
+                loop = QEventLoop(self.app)
+                asyncio.set_event_loop(loop)
+                loop.create_task(check_connection_periodically())
+                lprint("已启动定期连接检查任务")
         except Exception as e:
-            lprint(f"连接Socket.IO服务器失败: {str(e)}")
+            lprint(f"启动定期连接检查任务失败: {str(e)}")
+            lprint(traceback.format_exc())
+
+    async def initialize_connection(self, token: str):
+        """初始化WebSocket连接
+        
+        Args:
+            token: 认证token
+        """
+        try:
+            self.token = token
+            lprint(f"初始化WebSocket连接, token: {token[:10]}...")
+            
+            # 设置认证信息
+            auth = {'token': self.token}
+            
+            # 连接到Socket.IO服务器
+            await self.sio.connect(
+                self.base_url,
+                auth=auth,
+                transports=['websocket'],
+                wait_timeout=10,
+                socketio_path='socket.io'
+            )
+            
+            lprint("等待Socket.IO连接建立...")
+            await asyncio.sleep(1)  # 等待认证完成
+            
+        except Exception as e:
+            lprint(f"初始化WebSocket连接失败: {str(e)}")
             lprint(traceback.format_exc()) 

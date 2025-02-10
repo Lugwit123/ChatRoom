@@ -54,6 +54,9 @@ class WebSocketFacade:
         self._sio = sio
         # 注册事件处理器
         self._register_handlers()
+        # 注册/chat命名空间
+        self._sio.on('connect', self.connect, namespace='/chat')
+        self._sio.on('disconnect', self.disconnect, namespace='/chat')
         lprint("WebSocket门面初始化完成")
         
     async def connect(self, sid: str, environ: dict, auth: Optional[dict] = None) -> None:
@@ -119,10 +122,30 @@ class WebSocketFacade:
                 "user_id": str(user.id),
                 "device_id": device_id
             }, room=sid)
+            
+            # 获取用户的聊天伙伴
+            from app.domain.message.facade import get_message_facade
+            message_facade = get_message_facade()
+            chat_partners = await message_facade.private_repo.get_chat_partners(user.id)
+            lprint(f"获取到用户 {user.username} 的聊天伙伴: {chat_partners}")
+            
+            # 构建房间列表
+            rooms = []
+            for partner_id in chat_partners:
+                user_ids = sorted([user.id, partner_id])
+                room_name = f"private_{user_ids[0]}_{user_ids[1]}"
+                rooms.append({"room_name": room_name})
+                lprint(f"创建私聊房间: {room_name}")
+                
+            # 发送房间分配消息
+            await self._sio.emit("room_assigned", {
+                "rooms": rooms
+            }, namespace='/chat')
+            lprint(f"已发送房间分配消息: rooms={rooms},命名空间是")
 
         except Exception as e:
             lprint(f"处理连接事件失败: {str(e)}")
-            traceback.print_exc()
+            lprint(traceback.format_exc())
             await self._sio.disconnect(sid)
         
     def _register_handlers(self):
@@ -198,12 +221,12 @@ class WebSocketFacade:
             if message.group_id is not None:
                 # 群组消息广播给所有群成员
                 room = f"group_{message.group_id}"
-                await self._sio.emit("message", message.dict(), room=room)
+                await self._sio.emit("message", message.dict(), room=room, namespace='/chat')
             else:
                 # 私聊消息只发送给接收者
                 recipient_sids = self._session_manager.get_user_sids(str(message.recipient_id))
                 for sid in recipient_sids:
-                    await self._sio.emit("message", message.dict(), room=sid)
+                    await self._sio.emit("message", message.dict(), room=sid, namespace='/chat')
                     
         except Exception as e:
             lprint(f"广播消息失败: {str(e)}")
@@ -263,7 +286,7 @@ class WebSocketFacade:
             return
             
         for sid in self._session_manager.get_user_sids(user_id):
-            await self._sio.emit(event, data, room=sid)
+            await self._sio.emit(event, data, room=sid, namespace='/chat')
                 
     async def broadcast_to_users(self, user_ids: Set[str], event: str, data: dict):
         """向多个用户广播事件

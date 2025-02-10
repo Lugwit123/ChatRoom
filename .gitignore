@@ -10,6 +10,7 @@ dist/
 downloads/
 eggs/
 .eggs/
+lib/
 lib64/
 parts/
 sdist/
@@ -19,34 +20,38 @@ wheels/
 .installed.cfg
 *.egg
 
-# 虚拟环境
+# Virtual Environment
 venv/
 ENV/
 env/
-python_env/
+.env
 
 # IDE
 .idea/
 .vscode/
 *.swp
 *.swo
+.cursor/
 
-# 日志文件
+# Logs
 *.log
 logs/
 log/
 
-# 临时文件
-*.tmp
-temp/
-tmp/
-
-# 系统文件
+# OS
 .DS_Store
 Thumbs.db
 
+# Project specific
+*.qss
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.db
+*.sqlite3
+
 # 环境变量
-.env
 .env.local
 
 # 其他

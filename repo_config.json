@@ -1,0 +1,28 @@
+{
+    "repository": {
+        "name": "ChatRoom",
+        "url": "https://github.com/Lugwit123/ChatRoom",
+        "description": "A chat room application with modern UI and real-time communication",
+        "owner": "Lugwit123",
+        "branch": {
+            "main": "main",
+            "develop": "develop"
+        },
+        "remote": {
+            "origin": "https://github.com/Lugwit123/ChatRoom"
+        }
+    },
+    "config": {
+        "auto_push": true,
+        "default_branch": "main",
+        "commit_template": {
+            "feat": "feat: ",
+            "fix": "fix: ",
+            "docs": "docs: ",
+            "style": "style: ",
+            "refactor": "refactor: ",
+            "test": "test: ",
+            "chore": "chore: "
+        }
+    }
+} 

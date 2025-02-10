@@ -3,6 +3,8 @@ from typing import List, Optional, Dict, Any, cast
 from fastapi import APIRouter, Depends, HTTPException, Query, Path, WebSocket, WebSocketDisconnect, Body
 from sqlalchemy.ext.asyncio import AsyncSession
 import Lugwit_Module as LM
+import traceback
+import socketio
 
 from app.db.facade.database_facade import DatabaseFacade
 from app.domain.message.facade import get_message_facade
@@ -23,6 +25,7 @@ from app.domain.message.facade.dto.message_dto import (
 from app.domain.base.facade.dto.base_dto import ResponseDTO
 from app.core.auth.facade.auth_facade import get_current_user
 from app.domain.common.models.tables import User, BaseMessage
+from app.core.websocket.facade.websocket_facade import WebSocketFacade
 
 lprint = LM.lprint
 
@@ -389,36 +392,28 @@ async def get_unread_count(
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.websocket("/ws")
-async def websocket_endpoint(
-    websocket: WebSocket,
-    token: str = Query(...),
-    message_facade: MessageFacade = Depends(get_message_facade)
-):
-    """WebSocket连接"""
+async def websocket_endpoint(websocket: WebSocket):
+    """WebSocket连接端点"""
     try:
-        # 验证token
-        user = await get_current_user(token)
-        if not user:
-            await websocket.close(code=4001)
-            return
-            
-        # 接受连接
         await websocket.accept()
         
-        # 使用基础门面的sio
-        if message_facade.sio:
-            # 使用客户端ID作为sid
-            sid = str(id(websocket))  # 使用websocket对象的id作为唯一标识
-            await message_facade.sio.emit('connection_established', {'user_id': user.id}, room=sid)
-            
-            try:
-                while True:
-                    data = await websocket.receive_json()
-                    await message_facade.handle_message(sid, data)
-            except WebSocketDisconnect:
-                if message_facade.sio:
-                    await message_facade.sio.emit('user_disconnected', {'user_id': user.id}, room=sid)
-                    
+        # 创建Socket.IO服务器
+        sio = socketio.AsyncServer(
+            async_mode='asgi',
+            cors_allowed_origins='*',
+            logger=False,
+            engineio_logger=False,
+            namespaces=['/chat']  # 显式指定命名空间
+        )
+        
+        # 初始化WebSocket门面
+        ws_facade = WebSocketFacade()
+        ws_facade.init_server(sio)
+        
+        # 等待连接关闭
+        await websocket.receive_text()
+    except WebSocketDisconnect:
+        lprint("WebSocket连接已关闭")
     except Exception as e:
-        lprint(f"WebSocket连接失败: {str(e)}")
-        await websocket.close(code=4000)
+        lprint(f"WebSocket连接错误: {str(e)}")
+        lprint(traceback.format_exc())
