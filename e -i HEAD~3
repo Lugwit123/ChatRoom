@@ -1,0 +1,5 @@
+8373a73 - 文档：完善项目说明文档，添加前端架构描述 (16 seconds ago)
+26e9785 - docs: update README.md with comprehensive project documentation (5 minutes ago)
+5f8ebe9 - Initial commit: ChatRoom project setup (9 minutes ago)
+a5689de - refactor: 统一使用单数形式repository作为包名，修改相关导入路径 (3 weeks ago)
+a7aff2e - feat: 添加单元测试、WebSocket支持和消息归档功能 (3 weeks ago)

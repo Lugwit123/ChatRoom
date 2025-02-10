@@ -125,6 +125,20 @@ class HoverMenu(QMenu):
     def setup_menu_actions(self):
         """设置菜单动作"""
         try:
+            # 添加用户信息按钮
+            main_window = self.get_main_window()
+            if main_window and hasattr(main_window, 'userName'):
+                username = main_window.userName
+                if username:
+                    # 创建用户信息动作
+                    self.user_action = QAction(QIcon(os.path.join(os.path.dirname(__file__), '..', '..', 'icons', 'user.svg')), 
+                                          f"当前用户: {username}", self)
+                    self.user_action.triggered.connect(self.show_user_info)
+                    self.addAction(self.user_action)
+                    
+                    # 添加分隔线
+                    self.addSeparator()
+
             # 添加登录/登出按钮
             self.login_action = QAction(QIcon(os.path.join(os.path.dirname(__file__), '..', '..', 'icons', 'login.svg')), 
                                       "登录", self)

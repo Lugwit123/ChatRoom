@@ -56,21 +56,88 @@ QWebEngineView {
     border: none;
 }
 
-/* 菜单样式 */
+/* 托盘菜单样式 */
 QMenu {
-    background-color: #2b2b2b;
-    border: 1px solid #555555;
-    margin: 0;
-    padding: 2px;
+    background-color: #333333;
+    border: 1px solid #666666;
+    border-radius: 8px;
+    padding: 4px;
+    font-size: 13px;
+    font-family: 'Microsoft YaHei', sans-serif;
+    color: #ffffff;
+    min-width: 160px;
 }
 
 QMenu::item {
-    padding: 5px 20px;
-    color: #e0e0e0;
+    background-color: transparent;
+    padding: 8px 16px;
+    margin: 2px;
+    border-radius: 4px;
+    min-width: 140px;
 }
 
+/* 远程控制相关按钮使用蓝色 */
+QMenu::item:selected[text~="远程"] {
+    background-color: #1e5e7c;
+    color: #ffffff;
+}
+
+/* 显示/隐藏按钮使用绿色 */
+QMenu::item:selected[text="显示"],
+QMenu::item:selected[text="隐藏"] {
+    background-color: #2e7c1e;
+    color: #ffffff;
+}
+
+/* 重启按钮使用橙色 */
+QMenu::item:selected[text="重启"] {
+    background-color: #b36d00;
+    color: #ffffff;
+}
+
+/* 退出按钮使用红色 */
+QMenu::item:selected[text="退出"] {
+    background-color: #7c1e1e;
+    color: #ffffff;
+}
+
+/* 默认选中状态 */
 QMenu::item:selected {
-    background-color: #3d3d3d;
+    background-color: #4d4d4d;
+    color: #ffffff;
+}
+
+QMenu::item:disabled {
+    color: #888888;
+}
+
+QMenu::separator {
+    height: 1px;
+    background: #666666;
+    margin: 4px 8px;
+}
+
+QMenu::indicator {
+    width: 16px;
+    height: 16px;
+    margin-left: 4px;
+}
+
+/* 子菜单样式 */
+QMenu QMenu {
+    border: 1px solid #666666;
+    background-color: #333333;
+    margin: 0;
+    padding: 4px;
+}
+
+QMenu::right-arrow {
+    image: url(right-arrow.png);
+    margin-right: 8px;
+}
+
+QMenu::right-arrow:selected {
+    image: url(right-arrow-selected.png);
 }
 
 /* 滚动条样式 */

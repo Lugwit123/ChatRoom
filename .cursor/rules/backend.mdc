@@ -1,5 +1,5 @@
 ---
-description: backend rules file
+description: backend rules file(后端规则)
 globs: /backend/**
 ---
 # 全局交互规则
@@ -25,6 +25,7 @@ globs: /backend/**
 - 创建文件前检查类似文件
 - 不读取日志文件,从终端获取
 - 使用traceback时直接使用trace.print_exc()
+- 向前声明防止循环依赖，确保类型提示永无误
 
 # 后端项目架构
 ## 整体架构
