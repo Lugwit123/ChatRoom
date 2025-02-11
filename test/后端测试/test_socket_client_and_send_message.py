@@ -61,24 +61,25 @@ class ChatClient:
             'message_count': 0,
             'send_count': 0
         }
+        self.namespace = '/chat'  # 添加命名空间
         self._register_handlers()
         
     def _register_handlers(self):
         """注册所有事件处理器"""
         
-        @self.sio.event  # type: ignore
+        @self.sio.event(namespace=self.namespace)  # 添加命名空间
         async def connect():
             lprint('连接到服务器成功!')
 
-        @self.sio.event  # type: ignore
+        @self.sio.event(namespace=self.namespace)  # 添加命名空间
         async def error(data):
             lprint(f'Socket.IO错误: {data}')
 
-        @self.sio.event  # type: ignore
+        @self.sio.event(namespace=self.namespace)  # 添加命名空间
         async def message_error(data):
             lprint(f'消息错误: {data}')
 
-        @self.sio.on('message')  # type: ignore
+        @self.sio.on('message', namespace=self.namespace)  # 添加命名空间
         async def on_message(data):
             try:
                 start_time = datetime.now()
@@ -104,26 +105,26 @@ class ChatClient:
                 lprint(f'处理消息时出错: {str(e)}')
                 lprint(traceback.format_exc())
             
-        @self.sio.event  # type: ignore
+        @self.sio.event(namespace=self.namespace)  # 添加命名空间
         async def connect_error(data):
             lprint(f'连接错误: {data}')
             
-        @self.sio.on('authentication_response')  # type: ignore
+        @self.sio.on('authentication_response', namespace=self.namespace)  # 添加命名空间
         async def on_auth_response(data):
             if data.get('success'):
                 lprint('认证成功')
             else:
                 lprint(f'认证失败: {data.get("error")}')
                 
-        @self.sio.on('connection_established')  # type: ignore
+        @self.sio.on('connection_established', namespace=self.namespace)  # 添加命名空间
         async def on_connection_established(data):
             lprint(f'连接已建立: {data}')
         
-        @self.sio.on('message_sent')  # type: ignore
+        @self.sio.on('message_sent', namespace=self.namespace)  # 添加命名空间
         async def on_message_sent(data):
             lprint(f'消息发送成功: {data}')
 
-        @self.sio.on('message_error')  # type: ignore
+        @self.sio.on('message_error', namespace=self.namespace)  # 添加命名空间
         async def on_message_error(data):
             lprint(f'消息发送失败: {data}')
         
@@ -164,33 +165,34 @@ class ChatClient:
             traceback.print_exc()
             return False
 
-    async def connect(self):
+    async def connect(self) -> bool:
         """连接到Socket.IO服务器"""
         try:
-            # 添加token到auth参数
+            if not self.token:
+                lprint("未获取到token,无法连接")
+                return False
+                
+            # 设置认证信息
             auth = {
                 'token': self.token
-            } if self.token else {}
+            }
             
-            lprint(f"开始连接服务器 {self.base_url}, auth={auth}")
+            # 连接到服务器
+            lprint("开始连接到Socket.IO服务器...")
             await self.sio.connect(
                 self.base_url,
                 auth=auth,
+                namespaces=[self.namespace],  # 指定命名空间
                 transports=['websocket'],
                 wait_timeout=10,
                 socketio_path='socket.io'
             )
-            lprint("等待连接建立...")
-            await asyncio.sleep(1)  # 等待认证完成
             
-            if not self.sio.connected:
-                lprint("连接失败")
-                return False
-                
-            lprint("连接成功")
+            lprint("Socket.IO连接已建立")
             return True
+            
         except Exception as e:
-            lprint(f"连接服务器失败: {str(e)}")
+            lprint(f"连接失败: {str(e)}")
             lprint(traceback.format_exc())
             return False
 
@@ -271,7 +273,6 @@ class ChatClient:
                 "target_type": target_type_value,
                 "timestamp": datetime.now(ZoneInfo("Asia/Shanghai")).isoformat(),
                 "popup_message": popup_message,
-                "status": [msg_status.unread]
             }
             
             # 根据目标类型添加特定字段
@@ -281,7 +282,7 @@ class ChatClient:
                 message_data["group_id"] = target_id
                 
             lprint(f"准备发送消息: {message_data}")
-            await self.sio.emit("message", message_data)
+            await self.sio.emit("message", message_data, namespace=self.namespace)  # 添加命名空间
             lprint(f"消息已发送: {content} -> {target_type}:{target_id or 'all'}")
             
             self.stats['send_time'] += (datetime.now() - start_time).total_seconds()
@@ -289,7 +290,7 @@ class ChatClient:
             
         except Exception as e:
             lprint(f"发送消息失败: {str(e)}")
-            traceback.print_exc()
+            lprint(traceback.format_exc())
             
     async def send_private_message(self, content: str, recipient: str, **kwargs) -> None:
         """发送私聊消息"""

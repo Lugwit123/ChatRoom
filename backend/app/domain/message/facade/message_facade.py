@@ -33,7 +33,7 @@ from app.domain.message.internal.repository.private import PrivateMessageReposit
 from app.domain.message.internal.repository.group import GroupMessageRepository
 from app.domain.group.internal.repository.group_repository import GroupRepository
 from app.domain.user.internal.repository import UserRepository
-from app.domain.common.enums.message import MessageContentType, MessageType, MessageTargetType
+from app.domain.common.enums.message import MessageContentType, MessageType, MessageTargetType, MessageStatus
 
 class MessageFacade(BaseFacade):
     """消息门面类,处理所有消息相关操作"""
@@ -84,11 +84,83 @@ class MessageFacade(BaseFacade):
         """注册消息处理器的事件处理函数"""
         self.lprint("注册消息处理器事件")
         if self.sio:
-            self.sio.on("message", self.handle_message)
-            self.sio.on("read_message", self.handle_read_message)
+            # 直接注册消息处理事件
+            self.sio.on("message", self.handle_socket_message, namespace='/chat')
+            self.sio.on("read_message", self.handle_read_message, namespace='/chat')
             self.lprint("消息处理器事件注册完成")
         else:
             self.lprint("Socket.IO服务器未初始化,无法注册事件处理器")
+            
+    async def handle_socket_message(self, sid: str, data: dict):
+        """处理Socket.IO消息事件
+        
+        Args:
+            sid: 会话ID
+            data: 消息数据
+        """
+        try:
+            self.lprint(f"收到Socket.IO消息: {data}")
+            
+            # 获取发送者ID
+            user_id = await self._websocket_facade.get_user_id(sid)
+            if not user_id:
+                self.lprint(f"无法获取发送者ID, sid={sid}")
+                return
+                
+            # 添加发送者ID到消息数据
+            data['sender_id'] = user_id
+            
+            # 如果是远程控制消息，添加发送者IP
+            if data.get('message_type') == MessageType.remote_control.value:
+                # 获取发送者IP
+                session = await self._websocket_facade.get_session(sid)
+                if session and hasattr(session, 'ip_address'):
+                    if isinstance(data.get('content'), str):
+                        data['content'] = {
+                            'type': data['content'],  # 原始内容作为类型
+                            'ip': session.ip_address  # 添加发送者IP
+                        }
+            
+            # 处理消息
+            await self.process_message(data)
+            
+        except Exception as e:
+            self.lprint(f"处理Socket.IO消息失败: {str(e)}")
+            traceback.print_exc()
+            
+    async def process_message(self, data: dict) -> Optional[BaseMessage]:
+        """处理消息的主要逻辑
+        
+        Args:
+            data: 消息数据，包含sender_id
+            
+        Returns:
+            Optional[BaseMessage]: 处理后的消息对象
+        """
+        try:
+            self.lprint(f"开始处理消息: {data}")
+            
+            # 保存消息到数据库
+            message = await self.save_message_to_db(data)
+            if not message:
+                return None
+                
+            # 通过WebSocket发送消息
+            await self.send_message_via_socket(message)
+            
+            # 根据消息类型处理特殊逻辑
+            message_type = data.get('message_type')
+            if message_type == MessageType.remote_control.value:
+                await self.handle_remote_control_message(data)
+            elif message_type == MessageType.open_path.value:
+                await self.handle_open_path(data)
+                
+            return message
+            
+        except Exception as e:
+            self.lprint(f"消息处理失败: {str(e)}")
+            traceback.print_exc()
+            return None
 
     async def send(self, message: BaseMessage) -> Optional[BaseMessage]:
         """保存消息到数据库
@@ -121,10 +193,16 @@ class MessageFacade(BaseFacade):
             Optional[BaseMessage]: 保存的消息对象，如果失败则返回None
         """
         try:
-            # 获取发送者ID
+            # 获取发送者ID并确保是整数
             sender_id = data.get("sender_id")
             if not sender_id:
                 self.lprint("消息缺少发送者ID")
+                return None
+                
+            try:
+                sender_id = int(sender_id)
+            except (TypeError, ValueError):
+                self.lprint(f"无效的sender_id格式: {sender_id}")
                 return None
 
             # 确定消息类型
@@ -156,12 +234,12 @@ class MessageFacade(BaseFacade):
                 
             # 创建消息实体
             message_data = {
-                "sender_id": int(sender_id),
+                "sender_id": sender_id,  # 使用转换后的整数ID
                 "content": data.get("content", ""),
                 "content_type": content_type,
                 "message_type": message_type,
                 "target_type": target_type,
-                "status": data.get("status", ["unread"])
+                "status": [MessageStatus.unread.value]  # 使用枚举值
             }
             
             if is_group_message:
@@ -171,15 +249,15 @@ class MessageFacade(BaseFacade):
                 self.lprint(f"群聊消息保存成功: {message}")
             else:
                 # 私聊消息
-                recipient_username = data.get("recipient_id")
-                if not recipient_username:
+                recipient_id = data.get("recipient_id")
+                if not recipient_id:
                     self.lprint("私聊消息缺少接收者ID")
                     return None
                     
                 # 通过用户名查找用户ID
-                recipient = await self.user_repository.get_by_username(recipient_username)
+                recipient = await self.user_repository.get_by_username(recipient_id)
                 if not recipient:
-                    self.lprint(f"找不到接收者: {recipient_username}")
+                    self.lprint(f"找不到接收者: {recipient_id}")
                     return None
                     
                 message_data["recipient_id"] = recipient.id
@@ -251,30 +329,6 @@ class MessageFacade(BaseFacade):
             self.lprint(f"消息发送成功确认已发送到客户端, message_id={message.id}")
         except Exception as e:
             self.lprint(f"发送消息失败: {str(e)}")
-            self.lprint(traceback.format_exc())
-
-    async def handle_message(self, message: BaseMessage):
-        """处理消息
-        
-        Args:
-            message: 要处理的消息
-        """
-        try:
-            # 保存消息到数据库
-            await self.send(message)
-            
-            # 通过WebSocket广播消息
-            await self.send_message_via_socket(message)
-            
-            # 在/chat命名空间下发送消息
-            if message.group_id is not None:
-                room = f"group_{message.group_id}"
-                await self.sio.emit("message", message.dict(), room=room, namespace='/chat')
-            else:
-                await self.sio.emit("message", message.dict(), room=f"private_{message.sender_id}_{message.recipient_id}", namespace='/chat')
-                
-        except Exception as e:
-            self.lprint(f"处理消息失败: {str(e)}")
             self.lprint(traceback.format_exc())
 
     async def handle_read_message(self, sid: str, data: dict):
@@ -622,3 +676,55 @@ class MessageFacade(BaseFacade):
             self.lprint(f"获取聊天伙伴失败: {str(e)}")
             self.lprint(traceback.format_exc())
             return []
+
+    async def handle_remote_control_message(self, data: dict) -> None:
+        """处理远程控制消息
+        
+        Args:
+            data: 消息数据
+        """
+        try:
+            # 获取消息内容
+            content = data.get('content', {})
+            if not isinstance(content, dict):
+                self.lprint(f"无效的远程控制消息内容: {content}")
+                return
+                
+            # 获取控制类型和IP
+            control_type = content.get('type')
+            remote_ip = content.get('ip')
+            
+            if not all([control_type, remote_ip]):
+                self.lprint(f"远程控制消息缺少必要参数: {content}")
+                return
+                
+            self.lprint(f"处理远程控制消息: type={control_type}, ip={remote_ip}")
+            
+        except Exception as e:
+            self.lprint(f"处理远程控制消息失败: {str(e)}")
+            self.lprint(traceback.format_exc())
+            
+    async def handle_open_path(self, data: dict) -> None:
+        """处理打开路径消息
+        
+        Args:
+            data: 消息数据
+        """
+        try:
+            # 获取消息内容
+            content = data.get('content', {})
+            if not isinstance(content, dict):
+                self.lprint(f"无效的打开路径消息内容: {content}")
+                return
+                
+            # 获取路径
+            local_path = content.get('localPath')
+            if not local_path:
+                self.lprint("打开路径消息缺少路径参数")
+                return
+                
+            self.lprint(f"处理打开路径消息: path={local_path}")
+            
+        except Exception as e:
+            self.lprint(f"处理打开路径消息失败: {str(e)}")
+            self.lprint(traceback.format_exc())

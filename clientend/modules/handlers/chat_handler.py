@@ -95,7 +95,6 @@ class ChatRoom(QObject):
         self.sio.on('disconnect', self._on_disconnect, namespace=self.namespace)
         self.sio.on('message', self._on_message, namespace=self.namespace)
         self.sio.on('auth_response', self._on_auth_response, namespace=self.namespace)
-        self.sio.on('room_assigned', self._on_room_assigned, namespace=self.namespace)
 
     def get_parent_window(self) -> Optional['MainWindowProtocol']:
         """获取父窗口实例"""
@@ -320,7 +319,8 @@ class ChatRoom(QObject):
                     return True
             return False
         except Exception as e:
-            lprint(f'Error in handleNewMessage: {e}')
+            lprint(f'处理新消息失败: {str(e)}')
+            lprint(traceback.format_exc())
             return False
 
     async def handle_private_message(self, message_data: dict) -> None:
@@ -364,9 +364,6 @@ class ChatRoom(QObject):
                 await self.sio.disconnect()
                 await asyncio.sleep(0.5)  # 等待断开完成
             
-            # 注册事件处理器
-            self._register_handlers()
-
             # 确保token存在
             if not self.token:
                 lprint("错误: 没有可用的token")
@@ -433,7 +430,13 @@ class ChatRoom(QObject):
 
     async def _on_message(self, data):
         """接收消息回调"""
-        lprint(f"收到消息: {data}")
+        try:
+            lprint(f"收到消息: {data}")
+            if isinstance(data, dict):
+                self.message_received.emit(data)
+        except Exception as e:
+            lprint(f"处理消息失败: {str(e)}")
+            lprint(traceback.format_exc())
 
     async def _on_auth_response(self, data):
         """认证响应回调"""
@@ -444,8 +447,6 @@ class ChatRoom(QObject):
                 if status == 'success':
                     lprint("认证成功")
                     self.connection_status.emit(True)
-                    # 认证成功后，等待房间分配
-                    lprint("等待房间分配...")
                 else:
                     error = data.get('error', '未知错误')
                     lprint(f"认证失败: {error}")
@@ -462,59 +463,6 @@ class ChatRoom(QObject):
                         lprint("达到最大重试次数，停止重连")
         except Exception as e:
             lprint(f"处理认证响应失败: {str(e)}")
-            lprint(traceback.format_exc())
-
-    async def _on_room_assigned(self, rooms):
-        """房间分配回调"""
-        try:
-            lprint(f"分配到房间: {rooms}")
-            if isinstance(rooms, dict) and 'rooms' in rooms:
-                rooms = rooms['rooms']
-            
-            if not isinstance(rooms, list):
-                lprint(f"无效的房间数据格式: {rooms}")
-                return
-                
-            # 等待连接和命名空间就绪
-            for _ in range(5):  # 最多等待5次
-                if self.sio.connected and self.namespace in self.sio.namespaces:
-                    break
-                lprint(f"等待连接就绪... 命名空间状态: {self.sio.namespaces}")
-                await asyncio.sleep(0.5)
-            
-            # 再次检查连接状态
-            if not self.sio.connected:
-                lprint("Socket.IO未连接，无法加入房间")
-                return
-                
-            if self.namespace not in self.sio.namespaces:
-                lprint(f"命名空间 {self.namespace} 未连接")
-                return
-            
-            lprint(f"开始加入房间，当前命名空间: {self.namespace}, 状态: {self.sio.namespaces}")
-            
-            for room_data in rooms:
-                try:
-                    if isinstance(room_data, dict) and 'room_name' in room_data:
-                        room = room_data['room_name']
-                    else:
-                        room = room_data
-                        
-                    # 在/chat命名空间下加入房间
-                    await self.sio.emit('join', {'room': room}, namespace=self.namespace)
-                    lprint(f"已加入房间: {room}")
-                    await asyncio.sleep(0.1)  # 短暂等待，避免消息堆积
-                    
-                except socketio.exceptions.BadNamespaceError:
-                    lprint(f"命名空间 {self.namespace} 不可用，跳过房间 {room}")
-                    continue
-                except Exception as e:
-                    lprint(f"加入房间 {room} 失败: {str(e)}")
-                    lprint(traceback.format_exc())
-                    continue
-                    
-        except Exception as e:
-            lprint(f"处理房间分配失败: {str(e)}")
             lprint(traceback.format_exc())
 
     async def _handle_connection_error(self) -> None:

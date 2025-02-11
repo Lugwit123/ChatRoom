@@ -66,6 +66,8 @@ async def send_remote_control_request():
         traceback.print_exc()
     finally:
         # 断开连接
+        import time
+        time.sleep(1)
         if hasattr(client, 'sio') and client.sio.connected:
             await client.sio.disconnect()
 

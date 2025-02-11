@@ -12,8 +12,11 @@ from datetime import datetime
 from app.domain.common.models.tables import BaseMessage
 import uuid
 from app.core.auth.facade.auth_facade import get_auth_facade
+import asyncio
 
-from .dto import SessionManager, ConnectionInfo, UserSession, DeviceSession
+from .dto import ConnectionInfo, UserSession, DeviceSession
+from ..internal.manager import ConnectionManager
+from ..internal.room_manager import RoomManager
 
 lprint = LM.lprint
 
@@ -41,8 +44,8 @@ class WebSocketFacade:
     def __init__(self):
         if not self._initialized:
             self._sio: socketio.AsyncServer
-            self._session_manager = SessionManager()  # 使用新的会话管理器
-            self.group_members: Dict[str, Set[UserID]] = {}  # group -> members
+            self._connection_manager = ConnectionManager()  # 使用连接管理器
+            self._room_manager = RoomManager()  # 使用房间管理器
             self._initialized = True
             
     def init_server(self, sio: socketio.AsyncServer):
@@ -97,7 +100,7 @@ class WebSocketFacade:
             
             # 检查是否已经有相同设备的连接
             old_session = next(
-                (session for session in self._session_manager.device_sessions.values()
+                (session for session in self._connection_manager._device_sessions.values()
                  if session.user_id == str(user.id) and session.device_id == device_id),
                 None
             )
@@ -113,7 +116,7 @@ class WebSocketFacade:
                 await self.disconnect(old_session.sid)
             
             # 添加新会话
-            self._session_manager.add_session(sid, str(user.id), device_id, ip_address)
+            await self._connection_manager.add_connection(sid, str(user.id), device_id, ip_address)
             lprint(f"新连接建立成功: sid={sid}, user_id={user.id}, device_id={device_id}")
             
             # 发送连接成功事件
@@ -122,42 +125,63 @@ class WebSocketFacade:
                 "user_id": str(user.id),
                 "device_id": device_id
             }, room=sid)
-            
-            # 获取用户的聊天伙伴
-            from app.domain.message.facade import get_message_facade
-            message_facade = get_message_facade()
-            chat_partners = await message_facade.private_repo.get_chat_partners(user.id)
-            lprint(f"获取到用户 {user.username} 的聊天伙伴: {chat_partners}")
-            
-            # 构建房间列表
-            rooms = []
-            for partner_id in chat_partners:
-                user_ids = sorted([user.id, partner_id])
-                room_name = f"private_{user_ids[0]}_{user_ids[1]}"
-                rooms.append({"room_name": room_name})
-                lprint(f"创建私聊房间: {room_name}")
-                
-            # 发送房间分配消息
-            await self._sio.emit("room_assigned", {
-                "rooms": rooms
-            }, namespace='/chat')
-            lprint(f"已发送房间分配消息: rooms={rooms},命名空间是")
 
+            # 直接尝试加入房间
+            await self._auto_join_private_rooms(str(user.id), sid)
+        
         except Exception as e:
             lprint(f"处理连接事件失败: {str(e)}")
             lprint(traceback.format_exc())
             await self._sio.disconnect(sid)
+
+    async def _auto_join_private_rooms(self, user_id: str, sid: str):
+        """自动将用户加入私聊房间
         
+        Args:
+            user_id: 用户ID
+            sid: 会话ID
+        """
+        try:
+            # 确保会话已连接
+            if not self._sio.manager.is_connected(sid, namespace='/chat'):
+                lprint(f"会话未连接，等待重试: sid={sid}")
+                # 等待一小段时间后重试
+                await asyncio.sleep(0.5)
+                if not self._sio.manager.is_connected(sid, namespace='/chat'):
+                    lprint(f"会话仍未连接，放弃加入房间: sid={sid}")
+                    return
+                
+            # 获取用户的聊天伙伴
+            from app.domain.message.facade import get_message_facade
+            message_facade = get_message_facade()
+            chat_partners = await message_facade.private_repo.get_chat_partners(int(user_id))
+            
+            # 为每个聊天伙伴创建并加入私聊房间
+            for partner_id in chat_partners:
+                try:
+                    user_ids = sorted([int(user_id), partner_id])
+                    room_name = f"private_{user_ids[0]}_{user_ids[1]}"
+                    await self._room_manager.join_room(sid, room_name)
+                    await self._sio.enter_room(sid, room_name, namespace='/chat')
+                    lprint(f"用户 {user_id} 已加入房间: {room_name}")
+                except Exception as e:
+                    lprint(f"加入房间 {room_name} 失败: {str(e)}")
+                    lprint(traceback.format_exc())
+                    continue
+                    
+        except Exception as e:
+            lprint(f"自动加入私聊房间失败: {str(e)}")
+            lprint(traceback.format_exc())
+            
     def _register_handlers(self):
         """注册Socket.IO事件处理器"""
         if not self._sio:
             return
         else:
-            # 注册连接事件处理器
+            # 只注册连接相关的事件
             self._sio.on('connect')(self.connect) # type: ignore
-
             self._sio.on('disconnect')(self.disconnect) # type: ignore
-
+            
     @property
     def sio(self) -> Optional[socketio.AsyncServer]:
         """获取Socket.IO服务器实例"""
@@ -173,7 +197,7 @@ class WebSocketFacade:
             Optional[str]: 用户ID，如果会话未关联用户则返回None
         """
         try:
-            user_id = self._session_manager.get_user_id(sid)
+            user_id = self._connection_manager.get_user_id(sid)
             if not user_id:
                 lprint(f"无法获取用户ID, sid={sid}")
                 return None
@@ -181,31 +205,6 @@ class WebSocketFacade:
         except Exception as e:
             lprint(f"获取用户ID失败: {str(e)}, sid={sid}")
             return None
-        
-    async def set_user_id(self, sid: str, user_id: str):
-        """设置会话关联的用户ID
-        
-        Args:
-            sid: 会话ID
-            user_id: 用户ID
-        """
-        try:
-            # 检查是否已经存在映射
-            existing_user_id = await self.get_user_id(sid)
-            if existing_user_id:
-                if existing_user_id != user_id:
-                    lprint(f"会话已关联其他用户, sid={sid}, existing_user={existing_user_id}, new_user={user_id}")
-                return
-                
-            # 添加新的映射
-            self._session_manager.sid_to_user[sid] = user_id
-            if user_id not in self._session_manager.user_sessions:
-                self._session_manager.user_sessions[user_id] = UserSession(user_id=user_id)
-            self._session_manager.user_sessions[user_id].add_sid(sid)
-            lprint(f"设置用户ID成功: sid={sid}, user_id={user_id}")
-            
-        except Exception as e:
-            lprint(f"设置用户ID失败: {str(e)}, sid={sid}, user_id={user_id}")
         
     async def broadcast_message(self, message: BaseMessage):
         """广播消息
@@ -223,10 +222,10 @@ class WebSocketFacade:
                 room = f"group_{message.group_id}"
                 await self._sio.emit("message", message.dict(), room=room, namespace='/chat')
             else:
-                # 私聊消息只发送给接收者
-                recipient_sids = self._session_manager.get_user_sids(str(message.recipient_id))
-                for sid in recipient_sids:
-                    await self._sio.emit("message", message.dict(), room=sid, namespace='/chat')
+                # 私聊消息发送到对应的私聊房间
+                user_ids = sorted([str(message.sender_id), str(message.recipient_id)])
+                room_name = f"private_{user_ids[0]}_{user_ids[1]}"
+                await self._sio.emit("message", message.dict(), room=room_name, namespace='/chat')
                     
         except Exception as e:
             lprint(f"广播消息失败: {str(e)}")
@@ -241,13 +240,16 @@ class WebSocketFacade:
         try:
             # 获取会话信息用于日志
             user_id = await self.get_user_id(sid)
-            device_session = self._session_manager.get_device_session(sid)
+            device_session = self._connection_manager.get_device_session(sid)
             device_id = device_session.device_id if device_session else "unknown"
             
             lprint(f"开始断开连接: sid={sid}, user_id={user_id}, device_id={device_id}")
             
+            # 清理房间记录
+            await self._room_manager.remove_sid(sid)
+            
             # 移除会话
-            self._session_manager.remove_session(sid)
+            await self._connection_manager.remove_connection(sid)
             
             # 发送离线通知
             if user_id:
@@ -271,7 +273,7 @@ class WebSocketFacade:
         Returns:
             bool: 是否在线
         """
-        return self._session_manager.is_user_online(user_id)
+        return self._connection_manager.is_user_online(user_id)
         
     async def emit_to_user(self, user_id: UserID, event: str, data: dict):
         """向指定用户发送事件
@@ -285,7 +287,7 @@ class WebSocketFacade:
             lprint("Socket.IO server not initialized")
             return
             
-        for sid in self._session_manager.get_user_sids(user_id):
+        for sid in self._connection_manager.get_user_connections(user_id):
             await self._sio.emit(event, data, room=sid, namespace='/chat')
                 
     async def broadcast_to_users(self, user_ids: Set[str], event: str, data: dict):
@@ -323,13 +325,11 @@ class WebSocketFacade:
             lprint("Socket.IO server not initialized")
             return
             
-        if group not in self.group_members:
-            self.group_members[group] = set()
-        self.group_members[group].add(user_id)
-        
+        room = f"group_{group}"
         # 将用户的所有会话加入群组
-        for sid in self._session_manager.get_user_sids(user_id):
-            await self._sio.enter_room(sid, group)
+        for sid in self._connection_manager.get_user_connections(user_id):
+            await self._room_manager.join_room(sid, room)
+            await self._sio.enter_room(sid, room)
                 
     async def leave_group(self, user_id: str, group: str):
         """用户离开群组
@@ -342,14 +342,11 @@ class WebSocketFacade:
             lprint("Socket.IO server not initialized")
             return
             
-        if group in self.group_members:
-            self.group_members[group].discard(user_id)
-            if not self.group_members[group]:
-                del self.group_members[group]
-                
+        room = f"group_{group}"
         # 将用户的所有会话离开群组
-        for sid in self._session_manager.get_user_sids(user_id):
-            await self._sio.leave_room(sid, group)
+        for sid in self._connection_manager.get_user_connections(user_id):
+            await self._room_manager.leave_room(sid, room)
+            await self._sio.leave_room(sid, room)
                 
     async def broadcast_to_group(self, group: str, event: str, data: dict):
         """向群组广播消息
@@ -359,8 +356,12 @@ class WebSocketFacade:
             event: 事件名
             data: 消息数据
         """
-        if group in self.group_members:
-            await self.broadcast_to_users(self.group_members[group], event, data)
+        if not self._sio:
+            lprint("Socket.IO server not initialized")
+            return
+            
+        room = f"group_{group}"
+        await self._sio.emit(event, data, room=room, namespace='/chat')
             
     def get_group_members(self, group: str) -> Set[str]:
         """获取群组成员
@@ -371,7 +372,8 @@ class WebSocketFacade:
         Returns:
             Set[str]: 群组成员ID集合
         """
-        return self.group_members.get(group, set())
+        room = f"group_{group}"
+        return self._room_manager.get_room_members(room)
         
     def get_user_groups(self, user_id: str) -> Set[str]:
         """获取用户加入的群组
@@ -382,7 +384,24 @@ class WebSocketFacade:
         Returns:
             Set[str]: 群组名集合
         """
-        return {
-            group for group, members in self.group_members.items()
-            if user_id in members
-        }
+        groups = set()
+        for sid in self._connection_manager.get_user_connections(user_id):
+            for room in self._room_manager.get_user_rooms(sid):
+                if room.startswith("group_"):
+                    groups.add(room[6:])  # 移除"group_"前缀
+        return groups
+
+    async def get_session(self, sid: str) -> Optional[DeviceSession]:
+        """获取会话信息
+        
+        Args:
+            sid: 会话ID
+            
+        Returns:
+            Optional[DeviceSession]: 会话信息，如果不存在则返回None
+        """
+        try:
+            return self._connection_manager.get_device_session(sid)
+        except Exception as e:
+            lprint(f"获取会话信息失败: {str(e)}, sid={sid}")
+            return None
