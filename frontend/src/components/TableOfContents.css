@@ -1,0 +1,245 @@
+.table-of-contents {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 280px;
+    height: 100vh;
+    background-color: #1a1f2d;
+    border-right: 1px solid #2d3548;
+    display: flex;
+    flex-direction: column;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    z-index: 100;
+    transition: width 0.1s ease;
+}
+
+.toc-header {
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #2d3548;
+    background-color: #151922;
+}
+
+.toc-header span {
+    font-size: 18px;
+    font-weight: 600;
+    color: #e5e7eb;
+}
+
+.back-button {
+    padding: 6px 12px;
+    border-radius: 6px;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.back-button:hover {
+    background-color: #1d4ed8;
+}
+
+.toc-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 0;
+    min-width: 0;
+    overflow-x: hidden;
+}
+
+.toc-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.toc-content::-webkit-scrollbar-track {
+    background: #1a1f2d;
+}
+
+.toc-content::-webkit-scrollbar-thumb {
+    background: #4b5563;
+    border-radius: 3px;
+}
+
+.toc-content::-webkit-scrollbar-thumb:hover {
+    background: #6b7280;
+}
+
+.toc-item {
+    padding: 8px 16px;
+    color: #94a3b8;
+    cursor: pointer;
+    line-height: 1.5;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.toc-item:hover {
+    color: #e2e8f0;
+    background-color: #2d3548;
+}
+
+.toc-item.active {
+    color: #60a5fa;
+    background-color: rgba(37, 99, 235, 0.1);
+    border-left-color: #60a5fa;
+}
+
+/* 不同级别标题的样式 */
+.toc-item.level-1 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #e2e8f0;
+}
+
+.toc-item.level-2 {
+    font-size: 14px;
+    font-weight: 500;
+    color: #cbd5e1;
+}
+
+.toc-item.level-3 {
+    font-size: 13px;
+    font-weight: 400;
+    color: #94a3b8;
+}
+
+.toc-item.level-4,
+.toc-item.level-5,
+.toc-item.level-6 {
+    font-size: 12px;
+    font-weight: 400;
+    color: #64748b;
+}
+
+/* 内容区域样式 */
+.announcement-container {
+    margin-left: 280px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: margin-left 0.1s ease;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+.announcement-header {
+    padding: 16px 20px;
+    background: linear-gradient(to right, #1e293b, #334155);
+    border-bottom: 1px solid #475569;
+    z-index: 90;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+}
+
+.announcement-header h1 {
+    color: #e2e8f0;
+    margin: 0;
+    font-weight: 600;
+    text-shadow: 0 0 1px rgba(226, 232, 240, 0.1);
+}
+
+.announcement-content {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    box-sizing: border-box;
+    color: #e2e8f0;
+}
+
+/* 代码块基础样式 */
+.announcement-content pre {
+    position: relative;
+    margin: 1em 0;
+    padding: 1em;
+    padding-top: 2.5em;
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border: 1px solid #475569;
+    border-radius: 8px;
+    overflow: auto;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+}
+
+.announcement-content pre code {
+    display: block;
+    color: #f1f5f9;
+    font-family: 'Fira Code', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    background: none;
+    padding: 0;
+}
+
+/* YAML 语法高亮样式 */
+.hljs-attr {
+    color: #93c5fd;
+    text-shadow: 0 0 1px rgba(147, 197, 253, 0.2);
+}
+
+.hljs-string {
+    color: #86efac;
+    text-shadow: 0 0 1px rgba(134, 239, 172, 0.2);
+}
+
+.hljs-number {
+    color: #fca5a5;
+    text-shadow: 0 0 1px rgba(252, 165, 165, 0.2);
+}
+
+/* 复制按钮样式 */
+.copy-button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 6px 12px;
+    background: rgba(147, 197, 253, 0.1);
+    border: 1px solid rgba(147, 197, 253, 0.2);
+    border-radius: 4px;
+    color: #93c5fd;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 60px;
+    backdrop-filter: blur(4px);
+}
+
+.copy-button:hover {
+    background: rgba(147, 197, 253, 0.2);
+    border-color: rgba(147, 197, 253, 0.3);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(147, 197, 253, 0.1);
+}
+
+/* 拖动调整宽度的把手 */
+.resize-handle {
+    position: absolute;
+    top: 0;
+    right: -4px;
+    width: 8px;
+    height: 100%;
+    background-color: transparent;
+    cursor: col-resize;
+    transition: background-color 0.2s;
+    z-index: 1000;
+}
+
+.resize-handle:hover,
+.table-of-contents.dragging .resize-handle {
+    background-color: rgba(37, 99, 235, 0.3);
+}
+
+.table-of-contents.dragging {
+    user-select: none;
+    cursor: col-resize;
+}

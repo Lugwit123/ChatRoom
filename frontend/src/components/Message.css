@@ -1,0 +1,248 @@
+/* 颜色和大小变量 */
+:root {
+    --color-primary: #991414;
+    --color-secondary: #27e0b210;
+    --color-own-background: #2dea590c;
+    --color-own-text: #000000;
+    --color-text-light: #000000;
+    --color-timestamp: #78c42c;
+    --icon-size: 15px;
+    --avatar-size: 25px;
+    --border-radius: 5px;
+    --message-padding: 0px;
+    --max-content-width: 80%;
+    --font-size: 15px;
+}
+
+/* 通用消息样式 */
+.message {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding-bottom: 20px;
+    max-height: none;
+    height: auto; /* 自适应高度 */
+}
+
+.message-main-body{
+    display: flex;
+    align-items: flex-start;
+}
+
+/* 头像样式 */
+.message-avatar {
+    width: var(--avatar-size);
+    height: var(--avatar-size);
+    margin-right: 10px;
+}
+
+.message-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+}
+
+/* 内容区域 */
+.message-content {
+    display: inline-block; /* 让宽度根据内容自动调整 */
+    max-width: var(--max-content-width);
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+    height: auto; /* 自适应高度 */
+}
+
+/* 消息正文样式 */
+.message-text {
+    background-color: var(--color-primary);
+    color: #ffffff!important;
+    padding: 5px 10px 5px 10px; /* 上 右 下 左 */
+    border-radius: var(--border-radius);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1;
+    margin: 0;
+    white-space: normal;
+    font-size: var(--font-size);
+    max-width: 100%;
+    max-height: 100%;
+}
+
+/* 表格样式 */
+.message-text table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 10px 0;
+}
+
+.message-text th,
+.message-text td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: left;
+
+}
+
+.message-text th {
+    background-color: #191f2b;
+    font-weight: bold;
+}
+
+/* 表格按钮样式 */
+.message-text table button {
+    padding: 8px 12px; /* 按钮内边距 */
+    background-color: #4caf50; /* 按钮背景色 */
+    color: #ffffff; /* 按钮文字颜色 */
+    border: none; /* 去除默认边框 */
+    border-radius: 5px; /* 圆角按钮 */
+    cursor: pointer; /* 鼠标悬停时显示手型 */
+    font-size: var(--font-size); /* 按钮字体大小 */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* 添加过渡动画 */
+}
+
+
+
+.message-text table button:hover {
+    background-color: #45a049; /* 鼠标悬停时改变背景色 */
+    transform: scale(1.05); /* 鼠标悬停时放大 */
+}
+
+.message-text table td button {
+    margin: 4px 0; /* 按钮与单元格内容的间距 */
+    display: inline-block; /* 确保按钮在单元格中水平排列 */
+}
+
+.message-timestamp {
+    font-size: 12px;
+    color: var(--color-timestamp);
+}
+
+/* 自己的消息 */
+.ownMessage {
+    flex-direction: row-reverse;
+}
+
+.ownMessage .message-avatar {
+    margin-left: 10px;
+    margin-right: 0;
+}
+
+.ownMessage .message-text {
+    background-color: var(--color-own-background);
+    color: var(--color-own-text);
+    align-self: flex-end;
+}
+
+/* 他人的消息 */
+.otherMessage .message-text {
+    background-color: var(--color-secondary);
+    color: var(--color-text-light);
+    max-height: 100%;
+}
+
+/* 富文本内部元素 */
+.message-text p {
+    margin: 0;
+}
+
+/* 解析路径按钮样式 */
+.parse-path-button {
+    opacity: 0;
+    height: 0;
+    transform: translateY(-3px);
+    transition: opacity 0.6s ease, transform 0.6s ease, height 0.6s ease;
+    position: relative;
+    padding :0px 5px;
+    border: none;
+    border-radius: 8%;
+    background-color: #d915eb76;
+    color: #c7c7c7;
+    margin-left: auto;
+}
+
+.message-content:hover .parse-path-button {
+    opacity: 1;
+    transform: translateY(0);
+    height: 30px;
+    margin-top: 2px;
+
+}
+
+.parse-path-button:hover {
+    background-color: #d915ebe0;
+    border: 2px solid orange;
+}
+
+
+
+/* iframe样式 */
+.message-text iframe {
+    height: 70vh; /* 高度占满视口的 70% */
+    width: 650px;  /* 宽度占满父级 .message-text */
+    border: none; /* 去掉边框 */
+}
+/* 响应式支持 */
+@media (max-width: 600px) {
+    .message-content {
+        max-width: 100%;
+    }
+
+    .message-avatar {
+        width: var(--icon-size);
+        height: var(--icon-size);
+    }
+}
+
+.message-status {
+    font-size: 12px;
+    margin-bottom: 4px;
+    text-align: right;
+    margin-right: 35px;
+    /* align-items: flex-start; */
+}
+
+.message-status.read {
+    color: rgb(172, 223, 172);
+}
+
+.message-status.unread {
+    color: rgb(150, 150, 150);
+}
+
+
+
+.scroll-to-message-fixed {
+    position: fixed;
+    bottom: 10px; /* 距离页面底部的距离 */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 10px 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: left;
+    z-index: 1000; /* 确保固定元素位于最上层 */
+}
+
+.scroll-to-message-fixed input {
+    flex: 1;
+    padding: 8px;
+    margin-right: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.scroll-to-message-fixed button {
+    padding: 8px 16px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.scroll-to-message-fixed button:hover {
+    background-color: #0056b3;
+}

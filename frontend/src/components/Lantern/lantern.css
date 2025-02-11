@@ -1,0 +1,227 @@
+.lantern-container {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: center;
+  gap: 100px;
+  width: auto;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.lantern {
+  position: relative;
+  width: 120px;
+  height: 90px;
+  animation: swing 3s infinite ease-in-out;
+  transform-origin: top center;
+  pointer-events: none;
+}
+
+/* 吊线 */
+.lantern-string {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 20px;
+  background: rgb(255, 215, 0);
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.8);
+}
+
+/* 灯笼主体 */
+.lantern-body {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 0, 0, 0.3);
+  border-radius: 45px;
+  box-shadow: 
+    0 0 30px rgba(255, 0, 0, 0.4),
+    0 0 60px rgba(255, 0, 0, 0.2),
+    inset 0 0 40px rgba(255, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+/* 灯笼光晕 */
+.lantern-glow {
+  position: absolute;
+  width: 150%;
+  height: 150%;
+  left: -25%;
+  top: -25%;
+  background: radial-gradient(
+    circle at center,
+    rgba(255, 255, 200, 0.3) 0%,
+    rgba(255, 0, 0, 0.2) 40%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* 经度线容器 */
+.lantern-lines {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  transform-style: preserve-3d;
+  perspective: 100px;
+}
+
+/* 经度线 */
+.lantern-line {
+  position: absolute;
+  width: 2px;
+  height: 120px;  
+  top: -15px;     
+  left: 50%;
+  transform-origin: 50% 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 215, 0, 1) 0%,
+    rgba(255, 215, 0, 0.8) 40%,
+    rgba(255, 215, 0, 0.4) 70%,
+    rgba(255, 215, 0, 0.1) 100%
+  );
+  box-shadow: 0 0 5px rgba(255, 215, 0, 0.8);
+  backface-visibility: visible;
+}
+
+/* 顶部装饰 */
+.lantern-top {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 8px;
+  background: rgb(255, 215, 0);
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+}
+
+/* 底部装饰 */
+.lantern-bottom {
+  position: absolute;
+  bottom: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 25px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+/* 底部圆环 */
+.lantern-bottom-ring {
+  width: 40px;
+  height: 6px;
+  border: 2px solid rgb(255, 215, 0);
+  border-radius: 3px;
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+  background: rgba(255, 215, 0, 0.2);
+}
+
+/* 底部装饰棒组 */
+.lantern-bottom-sticks {
+  display: flex;
+  justify-content: space-between;
+  width: 30px;
+  height: 15px;
+}
+
+.lantern-bottom-stick {
+  width: 3px;
+  height: 100%;
+  background: rgb(255, 215, 0);
+  border-radius: 2px;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+}
+
+.lantern-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: rgb(255, 255, 150);
+  font-size: 42px;
+  font-weight: bold;
+  font-family: "KaiTi", "楷体", serif;
+  text-shadow: 
+    0 0 15px rgba(255, 255, 0, 0.8),
+    0 0 30px rgba(255, 215, 0, 0.6);
+  z-index: 1;
+  -webkit-text-stroke: 1px rgba(255, 215, 0, 0.5);
+}
+
+/* 流苏容器 */
+.lantern-tassel {
+  position: absolute;
+  bottom: -35px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 25px;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* 流苏线 */
+.lantern-tassel-line {
+  width: 3px;
+  height: 25px;
+  background: rgb(255, 215, 0);
+  border-radius: 1px;
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.8);
+  transform-origin: top center;
+  animation: tasselSwing 3s infinite ease-in-out;
+}
+
+.lantern-tassel-line:nth-child(1) {
+  animation-delay: -0.2s;
+  height: 28px;
+}
+
+.lantern-tassel-line:nth-child(2) {
+  animation-delay: -0.1s;
+  height: 25px;
+}
+
+.lantern-tassel-line:nth-child(3) {
+  animation-delay: 0s;
+  height: 28px;
+}
+
+@keyframes swing {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(3deg);
+  }
+  75% {
+    transform: rotate(-3deg);
+  }
+}
+
+@keyframes tasselSwing {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(8deg) scaleY(1.05);
+  }
+  50% {
+    transform: rotate(0deg) scaleY(1);
+  }
+  75% {
+    transform: rotate(-8deg) scaleY(1.05);
+  }
+}

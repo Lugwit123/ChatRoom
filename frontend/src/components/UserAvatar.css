@@ -1,0 +1,16 @@
+/* frontend/src/components/UserAvatar.css */
+
+.user-avatar {
+    width: 25px; /* Reduced size */
+    height: 25px; /* Reduced size */
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.user-avatar.online {
+    border: 2px solid #4caf50;
+}
+
+.user-avatar.offline {
+    border: 2px solid #f44336;
+}

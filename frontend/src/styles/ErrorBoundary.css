@@ -1,0 +1,21 @@
+.error-boundary {
+    padding: 20px;
+    margin: 20px;
+    border: 2px solid #ff4444;
+    border-radius: 8px;
+    background-color: #fff5f5;
+    color: #333;
+}
+
+.error-boundary h2 {
+    color: #ff4444;
+    margin-bottom: 10px;
+}
+
+.error-boundary details {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+} 

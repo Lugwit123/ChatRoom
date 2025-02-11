@@ -1,0 +1,67 @@
+/* frontend/src/components/CurrentLoginUserDisplay.css */
+
+.CurrentLoginUserDisplay {
+    display: flex;
+    align-items: center;
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 1px solid #ddd;
+    margin: 0; /* 去除子元素的默认外边距 */
+    line-height: 1; /* 确保子元素的行高不会影响高度 */
+}
+
+.current-user-avatar{
+    width: 20px;
+    height: auto;
+    border-radius: 50%;
+}
+
+.user-info-display {
+    display: flex;
+    justify-content: flex-end; /* 将子元素推到右侧 */
+    align-items: center; /* 垂直方向居中 */
+    padding: 0;
+    margin:  10px 20px;
+    width: 40%;
+}
+
+.user-nickname {
+    margin-left: 10px;
+    font-weight: bold;
+}
+
+.logout-button {
+    background-color: rgb(161, 21, 79);
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    margin: 10px 10px;
+}
+
+.ws-status {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    margin-right: 10px;
+}
+
+.ws-status.connected {
+    background-color: #4caf50;
+    color: white;
+}
+
+.ws-status.disconnected {
+    background-color: #f44336;
+    color: white;
+}
+
+.announcement-button {
+    margin-left: 10px;
+}
+
+.announcement-button.active {
+    background-color: #4a90e2;
+    color: white;
+}

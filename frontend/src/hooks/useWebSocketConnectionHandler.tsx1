@@ -1,0 +1,88 @@
+// frontend/src/hooks/useWebSocketConnectionHandler.tsx
+// @ts-nocheck
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Socket } from 'socket.io-client';
+import { jwtDecode } from "jwt-decode";
+import { useWebSocketConnection } from './useWebSocketConnection';
+import { useWebSocketMessageHandler } from './useWebSocketMessageHandler.tsx1';
+import { AccountsMap, MessageBase, JWTPayload } from '../types/types';
+import { apiUrl } from '../services/api';
+
+interface LoadingDetails {
+    step: string;
+    details: string;
+    progress: number;
+}
+
+interface WebSocketHandlerReturn {
+    isConnected: boolean;
+    message: (event: string, payload: MessageBase) => void;
+    socket: Socket | null;
+    connected: boolean;
+    getConnectionInfo: () => { sid: string };
+}
+
+export const useWebSocketConnectionHandler = (
+    currentUsername: string | null,
+    selectedRecipient: string | null,
+    setAccounts: (accounts: AccountsMap | ((prev: AccountsMap) => AccountsMap)) => void,
+    setLoadingDetails: (details: LoadingDetails) => void
+): WebSocketHandlerReturn => {
+    logger.info('6. useWebSocketConnectionHandler 内部初始化');
+    
+    const [isConnected, setIsConnected] = useState(false);
+    const tokenRef = useRef<string | null>(null);
+
+    // 1. 消息处理器
+    const { handleWebSocketMessage } = useWebSocketMessageHandler(
+        currentUsername,
+        selectedRecipient,
+        setAccounts,
+        setLoadingDetails
+    );
+
+    // 2. WebSocket 连接
+    const wsConnection = useWebSocketConnection(
+        apiUrl,
+        tokenRef.current || '',
+        currentUsername || '',
+        handleWebSocketMessage
+    );
+    logger.info('8. WebSocket 连接创建', { isConnected: wsConnection.isConnected });
+
+    // 3. Token 验证
+    useEffect(() => {
+        logger.info('7. Token 验证开始');
+        const token = localStorage.getItem('token');
+        if (!token) {
+            logger.info('7.1 未找到 token');
+            return;
+        }
+
+        try {
+            const decoded = jwtDecode<JWTPayload>(token);
+            logger.info('7.2 Token 解码成功', { username: decoded.sub });
+            const currentTime = Date.now() / 1000;
+            
+            if (decoded.exp > currentTime) {
+                tokenRef.current = token;
+                setIsConnected(true);
+            } else {
+                tokenRef.current = null;
+                setIsConnected(false);
+            }
+        } catch (error) {
+            logger.info('7.3 Token 验证失败', error);
+            tokenRef.current = null;
+            setIsConnected(false);
+        }
+    }, []);
+
+    return {
+        isConnected: wsConnection.isConnected,
+        message: wsConnection.message,
+        socket: wsConnection.socket,
+        connected: wsConnection.isConnected,
+        getConnectionInfo: () => ({ sid: wsConnection.socket?.id || '' })
+    };
+};

@@ -1,0 +1,22 @@
+import React from 'react';
+
+/**
+ * App组件 - 显示简单文本内容的示例组件
+ * 
+ * @returns {JSX.Element} 返回一个包含文字 "123" 的 div 元素
+ */
+const App: React.FC = () => {
+    // 在控制台输出提示信息
+    logger.info("进入APP123");
+
+    return (
+        // 使用React.Fragment包裹返回内容
+        <>
+            {/* 显示纯文本 "123" 的div元素 */}
+            <div>123</div>
+        </>
+    );
+};
+
+// 导出App组件，以便在其他文件中使用
+export default App;

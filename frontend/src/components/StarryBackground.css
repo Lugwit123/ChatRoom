@@ -1,0 +1,25 @@
+/* frontend/src/components/StarryBackground.css */
+
+
+.star-container {
+    position: fixed;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.star {
+    position: absolute;
+    border-radius: 50%;
+    animation: twinkle 2s infinite ease-in-out;
+    overflow: hidden;
+}
+
+@keyframes twinkle {
+    0%, 100% { opacity: 0; }
+    50% { opacity: .1; }
+}

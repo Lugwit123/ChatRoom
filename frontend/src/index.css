@@ -1,0 +1,6 @@
+html, body {
+    overflow: hidden !important;
+    margin: 0px;
+    padding: 0px;
+    background-color: rgba(29, 39, 52, 0.879);
+}

@@ -1,0 +1,43 @@
+// frontend/src/hooks/useUserList.tsx
+
+import { useEffect } from 'react';
+import { UserBaseAndStatus, AccountsMap, Group } from '../types/types';
+
+interface UseUserListProps {
+    token: string | null;
+    current_user: UserBaseAndStatus | null;
+    updateUsers: React.Dispatch<React.SetStateAction<AccountsMap>>;
+    onError: (error: string) => void;
+    setError: React.Dispatch<React.SetStateAction<string | null>>;
+}
+
+export const useUserList = ({
+    token,
+    current_user,
+    updateUsers,
+    onError,
+    setError
+}: UseUserListProps) => {
+    useEffect(() => {
+        const fetchUserList = async () => {
+            try {
+                const response = await getUserInfoDict(token);
+                if (response && response.users) {
+                    // 转换为 AccountsMap
+                    const usersMap: AccountsMap = response.users.reduce((acc, user) => {
+                        acc[user.username] = user;
+                        return acc;
+                    }, {});
+                    updateUsers(usersMap);
+                }
+            } catch (error) {
+                onError(error instanceof Error ? error.message : '获取用户列表失败');
+                setError(error instanceof Error ? error.message : '获取用户列表失败');
+            }
+        };
+
+        if (token) {
+            fetchUserList();
+        }
+    }, [token, updateUsers, onError, setError]);
+};

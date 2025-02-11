@@ -1,0 +1,112 @@
+// logger.js
+
+// 导入 log4javascript 和 stacktrace.js
+import log4javascript from 'log4javascript';
+import StackTrace from 'stacktrace-js';
+
+// 创建 Logger 实例
+const logger = log4javascript.getLogger("MyLogger");
+
+// 创建 ConsoleAppender
+const consoleAppender = new log4javascript.BrowserConsoleAppender();
+
+// 创建 PatternLayout 并设置日志格式
+const layout = new log4javascript.PatternLayout("[%d{ISO8601}]%p%n%m%n");
+
+// 设置布局到 appender
+consoleAppender.setLayout(layout);
+
+// 添加 appender 到 logger
+logger.addAppender(consoleAppender);
+
+// 辅助函数：异步提取调用者信息
+const getCallerInfo = async () => {
+    try {
+        const stackframes = await StackTrace.get();
+        // 遍历堆栈帧，找到第一个不在日志模块中的帧
+        for (let i = 0; i < stackframes.length; i++) {
+            // if (i!==stackframes.length-1) continue;
+            const frame = stackframes[i];
+            // 将路径按 '/' 分割成数组
+            let fileName = frame.fileName ;
+            const parts = fileName.split('/');
+
+            // 取倒数第三个 '/' 后面的部分
+            const desiredParts = parts.slice(-3);
+
+            // 重新拼接为路径
+            fileName  = desiredParts.join('/');
+            const lineNumber = frame.lineNumber || 0;
+            const columnNumber = frame.columnNumber || 0;
+            const functionName = frame.functionName || 'anonymous';
+            //console.log(frame.fileName,i)
+            
+            // 跳过与日志相关的堆栈帧
+            if (
+                fileName.includes('logger.tsx') || // 根据实际文件名调整
+                fileName.includes('node_modules') // 排除 log4javascript 的堆栈帧
+            ) {
+                continue;
+            }
+            // console.log(
+            //     `%cfile:%c${fileName}%c,linenum:%c${lineNumber}%c,func:%c[${functionName}]`,
+            //     'color: green;',      // file 的样式
+            //     'color: initial;',    // fileName 的默认样式
+            //     'color: blue;',       // linenum 的样式
+            //     'color: initial;',    // lineNumber 的默认样式
+            //     'color: red;',        // func 的样式
+            //     'color: initial;'     // functionName 的默认样式
+            // );
+            const timestamp = new Date().toISOString();
+            return [
+                `%c${timestamp}%c file%c :%c ${fileName}%c ,linenum:%c ${lineNumber}%n%c ,func:%c ${functionName} -mes:%c`,
+                'color: #ff8080', // 时间 的样式
+                'color: #sff8040;',      // file 的样式
+                'color: initial;',    // fileName 的默认样式
+                'color: #00ffff;',       // linenum 的样式
+                'color: #84ffff',    // lineNumber 的默认样式
+                'color: #00ff00;',        // func 的样式
+                'color: initial;' ,    // functionName 的默认样式
+                'color: #d1bad8;' ///消息 的默认样式
+
+            ];
+            
+        }
+    } catch (error) {
+        // console.error('Error in getCallerInfo:', error);
+    }
+    return null;
+};
+
+// 通用的日志方法包装函数
+const wrapLoggerMethod = (origMethod) => {
+    return async function(message) {
+        try {
+            const callerInfo = await getCallerInfo();
+            console.log(...callerInfo);
+            console.log(message);;
+            // origMethod.call(logger, `${callerInfo} - ${message}`);
+            // console.log(callerInfo)
+        } catch (error) {
+            origMethod.call(logger, `Error parsing stack: ${error.message} - Original message: ${message}`);
+        }
+    };
+};
+
+// 列出所有需要覆盖的日志方法
+const logMethods = ['debug', 'info', 'warn', 'error', 'fatal', 'trace'];
+
+// // 根据环境决定是否覆盖日志方法
+// if (process.env.NODE_ENV !== 'production') {
+//     logMethods.forEach(method => {
+//         if (typeof logger[method] === 'function') {
+//             logger[method] = wrapLoggerMethod(logger[method]);
+//         }
+//     });
+// }
+
+
+
+// 导出 logger
+export { logger };
+export default logger;

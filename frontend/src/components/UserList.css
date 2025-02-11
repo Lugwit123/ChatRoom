@@ -1,0 +1,282 @@
+/* frontend/src/components/UserList.css */
+/* 颜色变量定义 */
+:root {
+    --group-title-height: 10px; /* 渐变起始颜色 */
+    --group-title-padding: 3px;
+    --title-font-size: 12px;
+}
+    
+
+
+.user-info {
+    padding: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.3s;
+    border-radius: 5px;
+    color: #bbd9df;
+    position: relative; /* 为未读消息徽章定位提供基础 */
+    height: clamp(10px, 10%, 20px);
+    margin: 0 ;
+}
+
+.user-info:hover {
+    background-color: #698d96;
+}
+
+.user-info.selected {
+    background-color: #3d68aa;
+    border: 2px solid #3d68aa;
+}
+
+.current-user {
+    background-color: #e0ffe000;
+    font-weight: bold;
+    border: 2px solid #af770e;
+    margin-bottom: 5px;
+}
+
+.user-avatar {
+    border-radius: 50%;
+    width: clamp(10px, 10%, 30px)!important;
+    height: calc(var(--avatar-width))!important; /* 动态绑定宽度 */
+    aspect-ratio: 1 / 1; /* 保证宽高始终相等 */
+
+}
+
+.user-name {
+    margin: 0px 10px;
+    position: relative;
+    font-size: clamp(10px, 100%, 22px); /* 字体大小在 12px 到 24px 之间，首选值为 2vw */;
+}
+
+
+
+.user-name.online {
+    color: #fdfffd;
+}
+
+.user-name.offline {
+    color: #bec1c4;
+}
+
+[class$="-title"] {
+    padding:var(--group-title-padding);
+    font-size: var(--title-font-size);
+    color: #ffffff;
+    background-color: #5a925a;
+    margin: 0;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    height: var(--group-title-height);
+    padding: 10px;
+    height: var(--group-title-height);
+}
+
+.group-title {
+    background-color: #1abc9c;
+}
+
+.user-title {
+    background-color: #1a81bc;
+}
+
+
+
+
+
+.unread-badge {
+    background-color: #c23a11;
+    color: white;
+    border-radius: 12px;
+    padding: 1px 6px;
+    font-size: 50%;
+    position: absolute;
+    bottom: 0px;
+    right: -30px;
+}
+
+/* 添加组特定样式 */
+.user-info.group {
+    background-color: #1abc9c00; /* 例如绿色背景 */
+    color: #ffffff;
+}
+
+.user-info.group:hover {
+    background-color: #16a085;
+}
+
+.user-info.group.selected {
+    background-color: #148f77;
+    border: 2px solid #148f77;
+}
+
+/* 添加组标题样式 */
+.group-list {
+    margin-bottom: 10px;
+}
+
+
+
+
+
+
+.group-icon {
+    margin-left: 5px;
+    font-size: 14px;
+}
+
+.user-list {
+    width: 200px!important; /* 固定宽度 */
+    border: 1px solid #49443a63;
+    overflow-y: auto;
+    background-color: #2c555f;
+    position: relative; 
+
+}
+
+/* 设置 .user-list 右侧滚动条的宽度 */
+.user-list::-webkit-scrollbar {
+    width: 8px;  /* 垂直滚动条宽度 */
+}
+
+/* 滚动条轨道样式 */
+.user-list::-webkit-scrollbar-track {
+    background-color: #0d77605d; /* 轨道背景 */
+}
+
+/* 滚动条滑块样式 */
+.user-list::-webkit-scrollbar-thumb {
+    background-color: #47beaf; /* 滑块颜色 */
+    border-radius: 10px;    /* 滑块圆角 */
+}
+
+/* 滚动条滑块悬浮时样式 */
+.user-list::-webkit-scrollbar-thumb:hover {
+    background-color: #555;  /* 悬浮时的颜色 */
+}
+
+.user-list-empty {
+    padding: 20px;
+    text-align: center;
+    color: #999;
+}
+
+.user-info {
+    position: relative;
+}
+
+/* 星标图标样式 */
+.star-icon {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    width: var(--icon-size);
+    height: var(--icon-size);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    opacity: 0;
+    color: #e6c926e1;
+    font-size: var(--icon-size);
+}
+
+.star-icon:hover {
+    transform: translateY(-50%) scale(1.1);
+}
+
+.star-icon.visible,
+.user-info:hover .star-icon {
+    opacity: 1;
+}
+
+/* 搜索框容器样式 */
+.user-list-search {
+    padding: 8px;
+    border-bottom: 1px solid #e0e0e0;
+    background: #1609385d;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    box-sizing: border-box;
+    width: 100%;
+    font-size: 0.8em;
+}
+
+.user-list-search input {
+    width: 100%;
+    padding: 4px 8px;
+    border: 1px solid #9fbdc5;
+    border-radius: 4px;
+    font-size: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+    line-height: 1.2;
+    background: transparent;
+    color: #bbd9df;
+}
+
+.user-list-search input:focus {
+    border-color: #3d68aa;
+}
+
+.user-list-search input::placeholder {
+    color: #698d96;
+    font-size: inherit;
+}
+
+/* 历史记录下拉框样式 */
+.search-history {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #2d3436;
+    border: 1px solid #698d96;
+    border-radius: 4px;
+    margin-top: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    z-index: 2;
+    max-height: 200px;
+    overflow-y: auto;
+    font-size: inherit;
+    color: #bbd9df;
+}
+
+.search-history-item {
+    padding: 4px 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: inherit;
+}
+
+.search-history-item:hover {
+    background-color: #698d96;
+}
+
+.search-history-item .delete-btn {
+    color: #bbd9df;
+    visibility: hidden;
+    font-size: 0.8em;
+    padding: 2px 4px;
+    border-radius: 3px;
+    background: transparent;
+    border: 1px solid #698d96;
+    cursor: pointer;
+}
+
+.search-history-item:hover .delete-btn {
+    visibility: visible;
+}
+
+.search-history-item .delete-btn:hover {
+    background-color: #3d68aa;
+    color: #bbd9df;
+}
