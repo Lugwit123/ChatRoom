@@ -98,7 +98,7 @@ export const loginUser = async (username: string, password: string): Promise<Aut
     formData.append('password', password);
     
     try {
-        const response = await api.post('/api/login', formData, {
+        const response = await api.post('/api/auth/login', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             }
@@ -107,13 +107,16 @@ export const loginUser = async (username: string, password: string): Promise<Aut
         const authResponse: AuthResponse = {
             access_token: response.data.access_token,
             token_type: response.data.token_type,
-            token: response.data.token,
+            username: response.data.username,
+            role: response.data.role,
             detail: response.data.detail || '登录成功'
         };
 
         if (authResponse.access_token) {
             localStorage.setItem('token', authResponse.access_token);
-            logger.info('登录成功，Token已保存:', authResponse.access_token);
+            localStorage.setItem('username', authResponse.username);
+            localStorage.setItem('role', authResponse.role);
+            logger.info('登录成功，Token已保存');
         } else {
             throw new Error('未收到有效的访问令牌');
         }
@@ -121,18 +124,9 @@ export const loginUser = async (username: string, password: string): Promise<Aut
         return authResponse;
     } catch (error) {
         if (axios.isAxiosError(error)) {
-            if (error.response?.status === 401) {
-                console.error('认证失败：用户名或密码错误');
-                throw new Error('用户名或密码错误');
-            } else if (error.response?.status === 422) {
-                console.error('请求参数验证失败');
-                throw new Error('请求参数无效');
-            } else {
-                console.error('登录失败:', error.response?.data || error.message);
-                throw new Error(error.response?.data?.detail || '登录失败，请稍后重试');
-            }
+            logger.error('登录失败:', error.response?.data);
+            throw new Error(error.response?.data?.detail || '登录失败');
         }
-        console.error('登录发生未知错误:', error);
         throw error;
     }
 };
