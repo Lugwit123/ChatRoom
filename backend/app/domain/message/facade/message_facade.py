@@ -10,6 +10,7 @@ import zoneinfo
 import traceback
 import asyncio
 from sqlalchemy import select, or_
+import json
 
 from app.domain.message.facade.dto.message_dto import (
     MessageCreateDTO, 
@@ -35,6 +36,7 @@ from app.domain.group.internal.repository.group_repository import GroupRepositor
 from app.domain.user.internal.repository import UserRepository
 from app.domain.common.enums.message import MessageContentType, MessageType, MessageTargetType, MessageStatus
 from app.core.di.container import get_container
+from app.core.di.container import Container
 
 class MessageFacade(BaseFacade):
     """消息门面类,处理所有消息相关操作"""
@@ -42,39 +44,31 @@ class MessageFacade(BaseFacade):
     def __init__(self):
         """初始化消息门面"""
         super().__init__(need_websocket=True)
-        self._private_repo: Optional[PrivateMessageRepository] = None
-        self._group_repo: Optional[GroupMessageRepository] = None
-        self._group_repository: Optional[GroupRepository] = None
-        self._user_repository: Optional[UserRepository] = None
-        # 从全局容器获取WebSocket门面
-        self._websocket_facade = get_container().resolve(WebSocketFacade)
+        self._private_repo = PrivateMessageRepository()
+        self._group_repo = GroupMessageRepository()
+        self._group_repository = GroupRepository()
+        self._user_repository = UserRepository()
+        # 从容器获取WebSocket门面
+        self._websocket_facade = self.resolve(WebSocketFacade)
         
     @property
     def private_repo(self) -> PrivateMessageRepository:
-        """延迟加载私聊消息仓储"""
-        if self._private_repo is None:
-            self._private_repo = PrivateMessageRepository()
+        """获取私聊消息仓储"""
         return self._private_repo
     
     @property
     def group_repo(self) -> GroupMessageRepository:
-        """延迟加载群组消息仓储"""
-        if self._group_repo is None:
-            self._group_repo = GroupMessageRepository()
+        """获取群组消息仓储"""
         return self._group_repo
     
     @property
     def group_repository(self) -> GroupRepository:
-        """延迟加载群组仓储"""
-        if self._group_repository is None:
-            self._group_repository = GroupRepository()
+        """获取群组仓储"""
         return self._group_repository
     
     @property
     def user_repository(self) -> UserRepository:
-        """延迟加载用户仓储"""
-        if self._user_repository is None:
-            self._user_repository = UserRepository()
+        """获取用户仓储"""
         return self._user_repository
 
     @property
@@ -234,10 +228,15 @@ class MessageFacade(BaseFacade):
                 self.lprint(f"类型字段转换失败: {str(e)}")
                 return None
                 
+            # 处理消息内容
+            content = data.get("content", "")
+            if isinstance(content, dict):
+                content = json.dumps(content, ensure_ascii=False)
+                
             # 创建消息实体
             message_data = {
                 "sender_id": sender_id,  # 使用转换后的整数ID
-                "content": data.get("content", ""),
+                "content": content,  # 使用处理后的内容
                 "content_type": content_type,
                 "message_type": message_type,
                 "target_type": target_type,

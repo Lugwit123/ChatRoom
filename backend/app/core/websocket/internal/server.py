@@ -6,7 +6,6 @@ import socketio
 from typing import Optional
 import Lugwit_Module as LM
 from app.core.di.container import Container
-from ..facade.websocket_facade import WebSocketFacade
 
 lprint = LM.lprint
 
@@ -25,7 +24,7 @@ class SocketServer:
         return cls._instance
         
     @classmethod
-    def init_server(cls, container: Container) -> socketio.AsyncServer:
+    def init_server(cls, container: Container) -> Optional[socketio.AsyncServer]:
         """初始化Socket.IO服务器
         
         如果服务器实例不存在，则创建新实例
@@ -45,7 +44,8 @@ class SocketServer:
                 engineio_logger=False
             )
             
-            # 从容器获取WebSocket门面
+            # 延迟导入以避免循环依赖
+            from ..facade.websocket_facade import WebSocketFacade
             websocket_facade = container.resolve(WebSocketFacade)
             websocket_facade.init_server(cls._sio)
             

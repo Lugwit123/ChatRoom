@@ -51,7 +51,7 @@ async def send_remote_control_request():
         await asyncio.sleep(1)
         
         # 保持连接一段时间等待响应
-        await asyncio.sleep(10)
+        await asyncio.sleep(1)
         
         # 打印统计信息
         lprint("\n性能统计:")

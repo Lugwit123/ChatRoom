@@ -10,7 +10,7 @@ from zoneinfo import ZoneInfo
 
 from app.domain.common.models.tables import User, Group, GroupMember
 from app.domain.common.enums.group import GroupMemberRole, GroupStatus
-from app.domain.group.internal.repository.group_repository import GroupRepository
+from app.domain.group.internal.repository.group_repository import GroupRepository, GroupMemberRepository
 from app.domain.group.facade.dto.group_dto import (
     GroupCreate, 
     GroupResponse, 
@@ -22,6 +22,9 @@ from app.domain.group.facade.dto.group_dto import (
 )
 from app.domain.base.facade.dto.base_dto import ResponseDTO
 from app.db.facade.database_facade import DatabaseFacade
+from app.domain.base.facade.base_facade import BaseFacade
+from app.domain.user.facade.user_facade import UserFacade
+from app.core.websocket.facade.websocket_facade import WebSocketFacade
 
 sys.path.append(r'D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib')
 import Lugwit_Module as LM
@@ -41,21 +44,16 @@ def get_group_facade() -> 'GroupFacade':
         _group_facade = GroupFacade()
     return _group_facade
 
-class GroupFacade:
-    """群组模块对外接口
-    
-    提供群组相关的所有功能访问点，包括：
-    - 群组创建
-    - 群组管理
-    - 成员管理
-    - 群组查询等
-    """
+class GroupFacade(BaseFacade):
+    """群组门面类"""
     
     def __init__(self):
         """初始化群组门面"""
-        self._database_facade = DatabaseFacade()
-        self._group_repository = GroupRepository()
-        self.lprint = LM.lprint
+        super().__init__()
+        self._repository = GroupRepository()
+        self._member_repository = GroupMemberRepository()
+        self._user_facade = self.resolve(UserFacade)
+        self._websocket_facade = self.resolve(WebSocketFacade)
         
     async def create_group(self, group: GroupCreate, current_user: User) -> ResponseDTO:
         """创建群组
@@ -75,10 +73,10 @@ class GroupFacade:
                 "owner_id": current_user.id,
                 "extra_data": group.extra_data
             }
-            new_group = await self._group_repository.create(Group(**group_data))
+            new_group = await self._repository.create(Group(**group_data))
             
             # 添加群主为成员
-            await self._group_repository.add_member(
+            await self._repository.add_member(
                 new_group.id,
                 current_user.id,
                 GroupMemberRole.owner
@@ -86,7 +84,7 @@ class GroupFacade:
             
             # 添加初始成员
             for member_id in group.initial_members:
-                await self._group_repository.add_member(
+                await self._repository.add_member(
                     new_group.id,
                     int(member_id),
                     GroupMemberRole.member
@@ -108,7 +106,7 @@ class GroupFacade:
             ResponseDTO: 包含群组列表的响应
         """
         try:
-            groups = await self._group_repository.get_user_groups(current_user.id)
+            groups = await self._repository.get_user_groups(current_user.id)
             return ResponseDTO.success(data=GroupListResponse(
                 groups=[GroupResponse.from_orm(g) for g in groups],
                 total=len(groups)
@@ -127,7 +125,7 @@ class GroupFacade:
             ResponseDTO: 包含群组信息的响应
         """
         try:
-            group = await self._group_repository.get_by_id(int(group_id))
+            group = await self._repository.get_by_id(int(group_id))
             if not group:
                 return ResponseDTO.error(message="群组不存在")
             return ResponseDTO.success(data=GroupResponse.from_orm(group))
@@ -148,7 +146,7 @@ class GroupFacade:
         """
         try:
             # 检查权限
-            group = await self._group_repository.get_by_id(int(group_id))
+            group = await self._repository.get_by_id(int(group_id))
             if not group:
                 return ResponseDTO.error(message="群组不存在")
                 
@@ -156,7 +154,7 @@ class GroupFacade:
                 return ResponseDTO.error(message="只有群主可以添加成员")
                 
             # 添加成员
-            new_member = await self._group_repository.add_member(
+            new_member = await self._repository.add_member(
                 int(group_id),
                 int(member.user_id),
                 member.role
@@ -180,7 +178,7 @@ class GroupFacade:
             ResponseDTO: 包含成员列表的响应
         """
         try:
-            members = await self._group_repository.get_group_members(int(group_id))
+            members = await self._repository.get_group_members(int(group_id))
             return ResponseDTO.success(data=GroupMemberListResponse(
                 members=[GroupMemberInfo.from_orm(m) for m in members],
                 total=len(members)
@@ -203,7 +201,7 @@ class GroupFacade:
         """
         try:
             # 检查权限
-            group = await self._group_repository.get_by_id(int(group_id))
+            group = await self._repository.get_by_id(int(group_id))
             if not group:
                 return ResponseDTO.error(message="群组不存在")
                 
@@ -211,7 +209,7 @@ class GroupFacade:
                 return ResponseDTO.error(message="只有群主可以更新成员信息")
                 
             # 更新成员
-            success = await self._group_repository.update_member_role(
+            success = await self._repository.update_member_role(
                 int(group_id),
                 int(user_id),
                 member.role
@@ -219,7 +217,7 @@ class GroupFacade:
             if not success:
                 return ResponseDTO.error(message="更新成员信息失败")
                 
-            updated_member = await self._group_repository.get_member(int(group_id), int(user_id))
+            updated_member = await self._repository.get_member(int(group_id), int(user_id))
             return ResponseDTO.success(data=GroupMemberInfo.from_orm(updated_member))
             
         except Exception as e:
@@ -239,7 +237,7 @@ class GroupFacade:
         """
         try:
             # 检查权限
-            group = await self._group_repository.get_by_id(int(group_id))
+            group = await self._repository.get_by_id(int(group_id))
             if not group:
                 return ResponseDTO.error(message="群组不存在")
                 
@@ -247,7 +245,7 @@ class GroupFacade:
                 return ResponseDTO.error(message="只有群主可以移除成员")
                 
             # 移除成员
-            success = await self._group_repository.remove_member(int(group_id), int(user_id))
+            success = await self._repository.remove_member(int(group_id), int(user_id))
             if not success:
                 return ResponseDTO.error(message="移除成员失败")
                 
@@ -269,17 +267,17 @@ class GroupFacade:
         """
         try:
             # 检查群组是否存在
-            group = await self._group_repository.get_by_id(int(group_id))
+            group = await self._repository.get_by_id(int(group_id))
             if not group:
                 return ResponseDTO.error(message="群组不存在")
                 
             # 检查是否已经是成员
-            is_member = await self._group_repository.is_member(int(group_id), current_user.id)
+            is_member = await self._repository.is_member(int(group_id), current_user.id)
             if is_member:
                 return ResponseDTO.error(message="已经是群组成员")
                 
             # 添加成员
-            new_member = await self._group_repository.add_member(
+            new_member = await self._repository.add_member(
                 int(group_id),
                 current_user.id,
                 GroupMemberRole.member
@@ -305,7 +303,7 @@ class GroupFacade:
         """
         try:
             # 检查群组是否存在
-            group = await self._group_repository.get_by_id(int(group_id))
+            group = await self._repository.get_by_id(int(group_id))
             if not group:
                 return ResponseDTO.error(message="群组不存在")
                 
@@ -314,12 +312,12 @@ class GroupFacade:
                 return ResponseDTO.error(message="群主不能退出群组")
                 
             # 检查是否是成员
-            is_member = await self._group_repository.is_member(int(group_id), current_user.id)
+            is_member = await self._repository.is_member(int(group_id), current_user.id)
             if not is_member:
                 return ResponseDTO.error(message="不是群组成员")
                 
             # 移除成员
-            success = await self._group_repository.remove_member(int(group_id), current_user.id)
+            success = await self._repository.remove_member(int(group_id), current_user.id)
             if not success:
                 return ResponseDTO.error(message="退出群组失败")
                 
@@ -341,7 +339,7 @@ class GroupFacade:
         """
         try:
             # 检查群组是否存在
-            group = await self._group_repository.get_by_id(int(group_id))
+            group = await self._repository.get_by_id(int(group_id))
             if not group:
                 return ResponseDTO.error(message="群组不存在")
                 
@@ -350,7 +348,7 @@ class GroupFacade:
                 return ResponseDTO.error(message="只有群主可以删除群组")
                 
             # 删除群组
-            success = await self._group_repository.delete(int(group_id))
+            success = await self._repository.delete(int(group_id))
             if not success:
                 return ResponseDTO.error(message="删除群组失败")
                 

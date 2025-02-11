@@ -1,159 +1,200 @@
 
 
-    "启动后端"   2025-02-11 15:08:02----code_context : lprint("启动后端") 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:39, -fn: <module>, None
+    "启动后端"   2025-02-11 18:26:48----code_context : lprint("启动后端") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:41, -fn: <module>, None
 
 
-    "开始初始化应用..."   2025-02-11 15:08:02----code_context : lprint("开始初始化应用...") 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:65, -fn: create_app, 
->>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:195, ->code_context:->app = create_app()->fn:<module>
+    "开始初始化应用..."   2025-02-11 18:26:48----code_context : lprint("开始初始化应用...") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:159, -fn: create_app, None
 
 
-    "依赖注入容器初始化完成"   2025-02-11 15:08:02----code_context : lprint("依赖注入容器初始化完成") 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\di\container.py:27, -fn: __init__, 
->>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:68, ->code_context:->container = Container()->fn:create_app
+    "依赖注入容器初始化完成"   2025-02-11 18:26:48----code_context : lprint("依赖注入容器初始化完成") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\di\container.py:27, -fn: __init__, None
 
 
-    "全局容器已设置"   2025-02-11 15:08:02----code_context : lprint("全局容器已设置") 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\di\container.py:84, -fn: set_container, 
->>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:69, ->code_context:->set_container(container)->fn:create_app
+    "全局容器已设置"   2025-02-11 18:26:48----code_context : lprint("全局容器已设置") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\di\container.py:84, -fn: set_container, None
 
 
-    "容器初始化完成"   2025-02-11 15:08:02----code_context : lprint("容器初始化完成") 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:70, -fn: create_app, 
->>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:195, ->code_context:->app = create_app()->fn:<module>
+    "核心门面初始化完成"   2025-02-11 18:26:48----code_context : self.lprint("核心门面初始化完成") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\base\core_facade.py:29, -fn: __init__, None
 
 
-    "核心门面初始化完成"   2025-02-11 15:08:02----code_context : self.lprint("核心门面初始化完成") 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\base\core_facade.py:27, -fn: __init__, 
->>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:73, ->code_context:->core_facade = CoreFacade(container)->fn:create_app
+    "开始初始化数据库连接..."   2025-02-11 18:26:48----code_context : self.lprint("开始初始化数据库连接...") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\db\facade\database_facade.py:48, -fn: init_sync, None
 
 
-    "开始初始化数据库连接..."   2025-02-11 15:08:02----code_context : self.lprint("开始初始化数据库连接...") 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\db\facade\database_facade.py:48, -fn: init_sync, 
->>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:82, ->code_context:->database_facade.init_sync(database_url)->fn:create_app
+    "数据库连接初始化完成"   2025-02-11 18:26:48----code_context : self.lprint("数据库连接初始化完成") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\db\facade\database_facade.py:76, -fn: init_sync, None
 
 
-    "数据库连接初始化完成"   2025-02-11 15:08:02----code_context : self.lprint("数据库连接初始化完成") 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\db\facade\database_facade.py:76, -fn: init_sync, 
->>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:82, ->code_context:->database_facade.init_sync(database_url)->fn:create_app
+    "开始注册核心服务..."   2025-02-11 18:26:48----code_context : self.lprint("开始注册核心服务...") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\base\core_facade.py:56, -fn: register_core_services, None
 
 
-    "开始注册核心服务..."   2025-02-11 15:08:02----code_context : self.lprint("开始注册核心服务...") 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\base\core_facade.py:43, -fn: register_core_services, 
->>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:85, ->code_context:->core_facade.register_core_services()->fn:create_app
+    "核心门面初始化完成"   2025-02-11 18:26:48----code_context : self.lprint("核心门面初始化完成") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\base\core_facade.py:29, -fn: __init__, None
 
 
-    "注册单例服务: DatabaseFacade"   2025-02-11 15:08:02----code_context : lprint(f"注册单例服务: {interface.__name__}") 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\di\container.py:47, -fn: register_singleton, 
->>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\base\core_facade.py:54, ->code_context:->self.container.register_singleton(DatabaseFacade, database_facade)->fn:register_core_services
+    "订阅事件: auth.login"   2025-02-11 18:26:48----code_context : lprint(f"订阅事件: {event_type}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\events\event_bus_service.py:80, -fn: subscribe, None
 
 
-    "注册单例服务: AuthFacade"   2025-02-11 15:08:02----code_context : lprint(f"注册单例服务: {interface.__name__}") 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\di\container.py:47, -fn: register_singleton, 
->>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\base\core_facade.py:55, ->code_context:->self.container.register_singleton(AuthFacade, auth_facade)->fn:register_core_services
+    "订阅事件: auth.logout"   2025-02-11 18:26:48----code_context : lprint(f"订阅事件: {event_type}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\events\event_bus_service.py:80, -fn: subscribe, None
 
 
-    "核心服务注册完成"   2025-02-11 15:08:02----code_context : self.lprint("核心服务注册完成") 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\base\core_facade.py:57, -fn: register_core_services, 
->>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:85, ->code_context:->core_facade.register_core_services()->fn:create_app
+    "订阅事件: auth.login_failed"   2025-02-11 18:26:48----code_context : lprint(f"订阅事件: {event_type}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\events\event_bus_service.py:80, -fn: subscribe, None
 
 
-    "注册单例服务: DeviceFacade"   2025-02-11 15:08:02----code_context : lprint(f"注册单例服务: {interface.__name__}") 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\di\container.py:47, -fn: register_singleton, 
->>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:89, ->code_context:->container.register_singleton(DeviceFacade, device_facade)->fn:create_app
+    "注册单例服务: DatabaseFacade"   2025-02-11 18:26:48----code_context : lprint(f"注册单例服务: {interface.__name__}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\di\container.py:47, -fn: register_singleton, None
 
 
-    "开始注册WebSocket服务..."   2025-02-11 15:08:02----code_context : lprint("开始注册WebSocket服务...") 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\di.py:21, -fn: register_websocket_services, 
->>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:92, ->code_context:->register_websocket_services(container)->fn:create_app
+    "注册单例服务: AuthFacade"   2025-02-11 18:26:48----code_context : lprint(f"注册单例服务: {interface.__name__}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\di\container.py:47, -fn: register_singleton, None
 
 
-    "注册服务: IConnectionManager -> ConnectionManager"   2025-02-11 15:08:02----code_context : lprint(f"注册服务: {interface.__name__} -> {implementation.__name__}") 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\di\container.py:37, -fn: register, 
->>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\di.py:24, ->code_context:->container.register(IConnectionManager, ConnectionManager)->fn:register_websocket_services
+    "核心服务注册完成"   2025-02-11 18:26:48----code_context : self.lprint("核心服务注册完成") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\base\core_facade.py:70, -fn: register_core_services, None
 
 
-    "注册服务: IRoomManager -> RoomManager"   2025-02-11 15:08:02----code_context : lprint(f"注册服务: {interface.__name__} -> {implementation.__name__}") 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\di\container.py:37, -fn: register, 
->>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\di.py:25, ->code_context:->container.register(IRoomManager, RoomManager)->fn:register_websocket_services
+    "开始注册WebSocket服务..."   2025-02-11 18:26:48----code_context : lprint("开始注册WebSocket服务...") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\di.py:21, -fn: register_websocket_services, None
 
 
-    "连接管理器初始化完成"   2025-02-11 15:08:02----code_context : lprint("连接管理器初始化完成") 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\internal\manager.py:46, -fn: __init__, 
->>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\di.py:28, ->code_context:->connection_manager = ConnectionManager()->fn:register_websocket_services
+    "注册服务: IConnectionManager -> ConnectionManager"   2025-02-11 18:26:48----code_context : lprint(f"注册服务: {interface.__name__} -> {implementation.__name__}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\di\container.py:37, -fn: register, None
 
 
-    "房间管理器初始化完成"   2025-02-11 15:08:02----code_context : lprint("房间管理器初始化完成") 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\internal\manager.py:176, -fn: __init__, 
->>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\di.py:29, ->code_context:->room_manager = RoomManager()->fn:register_websocket_services
+    "注册服务: IRoomManager -> RoomManager"   2025-02-11 18:26:48----code_context : lprint(f"注册服务: {interface.__name__} -> {implementation.__name__}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\di\container.py:37, -fn: register, None
 
 
-    "注册单例服务: IConnectionManager"   2025-02-11 15:08:02----code_context : lprint(f"注册单例服务: {interface.__name__}") 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\di\container.py:47, -fn: register_singleton, 
->>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\di.py:31, ->code_context:->container.register_singleton(IConnectionManager, connection_manager)->fn:register_websocket_services
+    "连接管理器初始化完成"   2025-02-11 18:26:48----code_context : lprint("连接管理器初始化完成") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\internal\manager.py:46, -fn: __init__, None
 
 
-    "注册单例服务: IRoomManager"   2025-02-11 15:08:02----code_context : lprint(f"注册单例服务: {interface.__name__}") 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\di\container.py:47, -fn: register_singleton, 
->>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\di.py:32, ->code_context:->container.register_singleton(IRoomManager, room_manager)->fn:register_websocket_services
+    "房间管理器初始化完成"   2025-02-11 18:26:48----code_context : lprint("房间管理器初始化完成") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\internal\manager.py:176, -fn: __init__, None
 
 
-    "事件处理器初始化完成"   2025-02-11 15:08:02----code_context : lprint("事件处理器初始化完成") 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\internal\handlers.py:37, -fn: __init__, 
->>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\di.py:38, ->code_context:->event_handler = WebSocketHandlers(connection_manager, room_manager, auth_facade)->fn:register_websocket_services
+    "注册单例服务: IConnectionManager"   2025-02-11 18:26:48----code_context : lprint(f"注册单例服务: {interface.__name__}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\di\container.py:47, -fn: register_singleton, None
 
 
-    "注册单例服务: IWebSocketEventHandler"   2025-02-11 15:08:02----code_context : lprint(f"注册单例服务: {interface.__name__}") 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\di\container.py:47, -fn: register_singleton, 
->>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\di.py:39, ->code_context:->container.register_singleton(IWebSocketEventHandler, event_handler)->fn:register_websocket_services
+    "注册单例服务: IRoomManager"   2025-02-11 18:26:48----code_context : lprint(f"注册单例服务: {interface.__name__}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\di\container.py:47, -fn: register_singleton, None
 
 
-    "WebSocket门面初始化完成"   2025-02-11 15:08:02----code_context : lprint("WebSocket门面初始化完成") 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:55, -fn: __init__, 
->>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\di.py:42, ->code_context:->websocket_facade = WebSocketFacade()->fn:register_websocket_services
+    "事件处理器初始化完成"   2025-02-11 18:26:48----code_context : lprint("事件处理器初始化完成") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\internal\handlers.py:37, -fn: __init__, None
 
 
-    "注册单例服务: WebSocketFacade"   2025-02-11 15:08:02----code_context : lprint(f"注册单例服务: {interface.__name__}") 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\di\container.py:47, -fn: register_singleton, 
->>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\di.py:43, ->code_context:->container.register_singleton(WebSocketFacade, websocket_facade)->fn:register_websocket_services
+    "注册单例服务: IWebSocketEventHandler"   2025-02-11 18:26:48----code_context : lprint(f"注册单例服务: {interface.__name__}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\di\container.py:47, -fn: register_singleton, None
 
 
-    "WebSocket服务注册完成"   2025-02-11 15:08:02----code_context : lprint("WebSocket服务注册完成") 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\di.py:45, -fn: register_websocket_services, 
->>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:92, ->code_context:->register_websocket_services(container)->fn:create_app
+    "订阅事件: user.login"   2025-02-11 18:26:48----code_context : lprint(f"订阅事件: {event_type}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\events\event_bus_service.py:80, -fn: subscribe, None
 
 
-    "Socket.IO服务器初始化完成"   2025-02-11 15:08:02----code_context : lprint("Socket.IO服务器初始化完成") 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:69, -fn: init_server, 
->>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\internal\server.py:50, ->code_context:->websocket_facade.init_server(cls._sio)->fn:init_server
+    "订阅事件: user.logout"   2025-02-11 18:26:48----code_context : lprint(f"订阅事件: {event_type}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\events\event_bus_service.py:80, -fn: subscribe, None
 
 
-    "Socket.IO服务器初始化完成"   2025-02-11 15:08:02----code_context : lprint("Socket.IO服务器初始化完成") 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\internal\server.py:52, -fn: init_server, 
->>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:95, ->code_context:->sio = SocketServer.init_server(container)->fn:create_app
+    "订阅事件: user.status_changed"   2025-02-11 18:26:48----code_context : lprint(f"订阅事件: {event_type}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\events\event_bus_service.py:80, -fn: subscribe, None
 
 
-    "应用初始化完成"   2025-02-11 15:08:02----code_context : lprint("应用初始化完成") 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:98, -fn: create_app, 
->>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:195, ->code_context:->app = create_app()->fn:<module>
+    "订阅事件: message.sent"   2025-02-11 18:26:48----code_context : lprint(f"订阅事件: {event_type}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\events\event_bus_service.py:80, -fn: subscribe, None
 
 
-    "应用程序初始化完成"   2025-02-11 15:08:02----code_context : lprint("应用程序初始化完成") 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:191, -fn: create_app, 
->>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:195, ->code_context:->app = create_app()->fn:<module>
+    "订阅事件: message.received"   2025-02-11 18:26:48----code_context : lprint(f"订阅事件: {event_type}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\events\event_bus_service.py:80, -fn: subscribe, None
 
 
-    "后端服务启动..."   2025-02-11 15:08:02----code_context : lprint("后端服务启动...") 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:161, -fn: startup_event, 
->>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\starlette\routing.py:654, ->code_context:->await handler()->fn:startup
+    "订阅事件: device.connected"   2025-02-11 18:26:48----code_context : lprint(f"订阅事件: {event_type}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\events\event_bus_service.py:80, -fn: subscribe, None
 
 
-    "已重置所有设备的在线状态为离线"   2025-02-11 15:08:02----code_context : self.lprint("已重置所有设备的在线状态为离线") 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\device\facade\device_facade.py:46, -fn: init_all_devices_status, 
->>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:155, ->code_context:->await device_facade.init_all_devices_status()->fn:init_device_status
+    "订阅事件: device.disconnected"   2025-02-11 18:26:48----code_context : lprint(f"订阅事件: {event_type}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\events\event_bus_service.py:80, -fn: subscribe, None
 
 
-    "后端服务启动完成"   2025-02-11 15:08:02----code_context : lprint("后端服务启动完成") 
-File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:166, -fn: startup_event, 
->>callBy: File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\python_env\Lib\site-packages\starlette\routing.py:654, ->code_context:->await handler()->fn:startup
+    "订阅事件: websocket.connected"   2025-02-11 18:26:48----code_context : lprint(f"订阅事件: {event_type}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\events\event_bus_service.py:80, -fn: subscribe, None
+
+
+    "订阅事件: websocket.disconnected"   2025-02-11 18:26:48----code_context : lprint(f"订阅事件: {event_type}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\events\event_bus_service.py:80, -fn: subscribe, None
+
+
+    "WebSocket门面初始化完成"   2025-02-11 18:26:48----code_context : lprint("WebSocket门面初始化完成") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:73, -fn: __init__, None
+
+
+    "注册单例服务: WebSocketFacade"   2025-02-11 18:26:48----code_context : lprint(f"注册单例服务: {interface.__name__}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\di\container.py:47, -fn: register_singleton, None
+
+
+    "WebSocket服务注册完成"   2025-02-11 18:26:48----code_context : lprint("WebSocket服务注册完成") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\di.py:45, -fn: register_websocket_services, None
+
+
+    "Socket.IO服务器初始化完成"   2025-02-11 18:26:48----code_context : lprint("Socket.IO服务器初始化完成") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\facade\websocket_facade.py:216, -fn: init_server, None
+
+
+    "Socket.IO服务器初始化完成"   2025-02-11 18:26:48----code_context : lprint("Socket.IO服务器初始化完成") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\websocket\internal\server.py:52, -fn: init_server, None
+
+
+    "核心门面初始化完成"   2025-02-11 18:26:48----code_context : self.lprint("核心门面初始化完成") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\base\core_facade.py:29, -fn: __init__, None
+
+
+    "注册单例服务: DeviceFacade"   2025-02-11 18:26:48----code_context : lprint(f"注册单例服务: {interface.__name__}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\di\container.py:47, -fn: register_singleton, None
+
+
+    "核心门面初始化完成"   2025-02-11 18:26:48----code_context : self.lprint("核心门面初始化完成") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\base\core_facade.py:29, -fn: __init__, None
+
+
+    "注册单例服务: MessageFacade"   2025-02-11 18:26:48----code_context : lprint(f"注册单例服务: {interface.__name__}") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\di\container.py:47, -fn: register_singleton, None
+
+
+    "容器初始化完成"   2025-02-11 18:26:48----code_context : lprint("容器初始化完成") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:163, -fn: create_app, None
+
+
+    "核心门面初始化完成"   2025-02-11 18:26:48----code_context : self.lprint("核心门面初始化完成") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\core\base\core_facade.py:29, -fn: __init__, None
+
+
+    "应用初始化完成"   2025-02-11 18:26:48----code_context : lprint("应用初始化完成") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:174, -fn: create_app, None
+
+
+    "后端服务启动..."   2025-02-11 18:26:48----code_context : lprint("后端服务启动...") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:133, -fn: lifespan, None
+
+
+    "已重置所有设备的在线状态为离线"   2025-02-11 18:26:48----code_context : self.lprint("已重置所有设备的在线状态为离线") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\device\facade\device_facade.py:31, -fn: init_all_devices_status, None
+
+
+    "注册消息处理器事件"   2025-02-11 18:26:48----code_context : self.lprint("注册消息处理器事件") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\message\facade\message_facade.py:81, -fn: register_handlers, None
+
+
+    "消息处理器事件注册完成"   2025-02-11 18:26:48----code_context : self.lprint("消息处理器事件注册完成") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\domain\message\facade\message_facade.py:86, -fn: register_handlers, None
+
+
+    "后端服务启动完成"   2025-02-11 18:26:48----code_context : lprint("后端服务启动完成") 
+File: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend\app\main.py:143, -fn: lifespan, None

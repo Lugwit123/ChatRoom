@@ -248,20 +248,23 @@ class RoomManager(IRoomManager):
         return self._sid_rooms.get(sid, set())
         
     async def remove_sid(self, sid: str) -> None:
-        """清理用户的所有房间记录
-        
-        工作流程:
-        1. 获取用户加入的所有房间
-        2. 从每个房间中移除用户
+        """清理SID的所有房间记录
         
         Args:
-            sid: Socket.IO会话ID
+            sid: 会话ID
         """
-        # 获取用户的所有房间
-        rooms = self.get_user_rooms(sid)
-        
-        # 从每个房间中移除该会话
-        for room in rooms:
-            await self.leave_room(sid, room)
+        try:
+            # 创建房间列表的副本进行遍历
+            rooms = list(self._sid_rooms.get(sid, set()))
+            for room in rooms:
+                await self.leave_room(sid, room)
             
-        lprint(f"已清理SID {sid} 的所有房间记录")
+            # 清理记录
+            if sid in self._sid_rooms:
+                del self._sid_rooms[sid]
+                
+            lprint(f"已清理SID {sid} 的所有房间记录")
+            
+        except Exception as e:
+            lprint(f"清理SID {sid} 的房间记录失败: {str(e)}")
+            raise

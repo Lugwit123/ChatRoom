@@ -26,14 +26,13 @@ class BaseFacade(CoreFacade, Generic[T]):
     4. WebSocket支持
     """
     
-    def __init__(self, container: Optional[Container] = None, need_websocket: bool = False):
+    def __init__(self, need_websocket: bool = False):
         """初始化基础门面
         
         Args:
-            container: 可选的容器实例
             need_websocket: 是否需要WebSocket支持
         """
-        super().__init__(container)
+        super().__init__()
         self._sio: Optional[socketio.AsyncServer] = None
         if need_websocket:
             self._sio = SocketServer.get_server()
