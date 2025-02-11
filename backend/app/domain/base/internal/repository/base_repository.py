@@ -9,14 +9,14 @@ from sqlalchemy import select, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.internal.base import Base
-from app.core.base.internal.repository.base_repository import CoreBaseRepository
+from app.core.base.internal.repository.core_repository import CoreRepository
 
 ModelType = TypeVar("ModelType", bound=Base)
 
-class BaseRepository(CoreBaseRepository[ModelType]):
+class BaseRepository(CoreRepository[ModelType]):
     """领域基础仓储类
     
-    继承自核心基础仓储类，可以在这里添加领域特定的功能
+    继承自核心仓储类，可以在这里添加领域特定的功能
     """
     
     def __init__(self, model: Type[ModelType]):

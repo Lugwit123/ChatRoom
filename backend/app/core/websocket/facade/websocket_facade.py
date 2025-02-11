@@ -15,8 +15,10 @@ from app.core.auth.facade.auth_facade import get_auth_facade
 import asyncio
 
 from .dto import ConnectionInfo, UserSession, DeviceSession
+from ..interfaces import IConnectionManager, IRoomManager
 from ..internal.manager import ConnectionManager
-from ..internal.room_manager import RoomManager
+from ..internal.manager import RoomManager
+from app.core.di.container import Container
 
 lprint = LM.lprint
 
@@ -42,11 +44,15 @@ class WebSocketFacade:
         return cls._instance
         
     def __init__(self):
+        """初始化WebSocket门面"""
         if not self._initialized:
-            self._sio: socketio.AsyncServer
-            self._connection_manager = ConnectionManager()  # 使用连接管理器
-            self._room_manager = RoomManager()  # 使用房间管理器
+            self._sio: Optional[socketio.AsyncServer] = None
+            # 从容器获取管理器实例
+            container = Container()
+            self._connection_manager = container.resolve(IConnectionManager)
+            self._room_manager = container.resolve(IRoomManager)
             self._initialized = True
+            lprint("WebSocket门面初始化完成")
             
     def init_server(self, sio: socketio.AsyncServer):
         """初始化Socket.IO服务器
@@ -60,7 +66,7 @@ class WebSocketFacade:
         # 注册/chat命名空间
         self._sio.on('connect', self.connect, namespace='/chat')
         self._sio.on('disconnect', self.disconnect, namespace='/chat')
-        lprint("WebSocket门面初始化完成")
+        lprint("Socket.IO服务器初始化完成")
         
     async def connect(self, sid: str, environ: dict, auth: Optional[dict] = None) -> None:
         """连接事件处理器

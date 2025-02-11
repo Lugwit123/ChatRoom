@@ -16,9 +16,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.common.models.tables import User
 from app.domain.common.enums import UserRole, UserStatusEnum
-from app.core.base.internal.repository.base_repository import CoreBaseRepository
+from app.core.base.internal.repository.core_repository import CoreRepository
 
-class AuthRepository(CoreBaseRepository[User]):
+class AuthRepository(CoreRepository[User]):
     """认证仓库类"""
     
     def __init__(self):

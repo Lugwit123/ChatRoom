@@ -34,6 +34,7 @@ from app.domain.message.internal.repository.group import GroupMessageRepository
 from app.domain.group.internal.repository.group_repository import GroupRepository
 from app.domain.user.internal.repository import UserRepository
 from app.domain.common.enums.message import MessageContentType, MessageType, MessageTargetType, MessageStatus
+from app.core.di.container import get_container
 
 class MessageFacade(BaseFacade):
     """消息门面类,处理所有消息相关操作"""
@@ -45,7 +46,8 @@ class MessageFacade(BaseFacade):
         self._group_repo: Optional[GroupMessageRepository] = None
         self._group_repository: Optional[GroupRepository] = None
         self._user_repository: Optional[UserRepository] = None
-        self._websocket_facade = WebSocketFacade()  # 使用单例
+        # 从全局容器获取WebSocket门面
+        self._websocket_facade = get_container().resolve(WebSocketFacade)
         
     @property
     def private_repo(self) -> PrivateMessageRepository:

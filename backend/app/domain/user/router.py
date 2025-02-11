@@ -19,36 +19,110 @@ from app.domain.common.models.tables import User
 from app.domain.common.enums.user import UserRole, UserStatusEnum
 from app.domain.user.internal.repository import UserRepository
 from app.domain.user.facade.dto.user_dto import (
-    UserCreate, UserUpdate, UserResponse, 
-    UsersInfoDictResponse, UserMessageInfo, UserBase, UserMapInfo
+    UserCreate, 
+    UserUpdate, 
+    UserResponse, 
+    UsersInfoDictResponse, 
+    UserMessageInfo, 
+    UserBase, 
+    UserMapInfo
 )
 from app.domain.user.facade.user_facade import UserFacade, get_user_facade
 from app.domain.message.facade import get_message_facade
 from app.domain.message.facade.message_facade import MessageFacade
 from app.core.auth import get_current_user
+from app.domain.base.facade.dto.base_dto import ResponseDTO
 
 auth_facade = get_auth_facade()
 database_facade = DatabaseFacade()
 
 # 路由器
 router = APIRouter(
-    prefix="/api/users",
+    prefix="/users",
     tags=["用户管理"],
     responses={404: {"description": "Not found"}},
 )
 
 get_current_user = auth_facade.get_current_user
 
-@router.get("/online", response_model=List[UserBase])
-async def get_online_users(
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(database_facade.get_session)
+@router.post("", response_model=ResponseDTO)
+async def create_user(user_data: UserCreate):
+    """创建新用户"""
+    user_facade = get_user_facade()
+    return await user_facade.create_user(user_data)
+
+@router.get("/me", response_model=ResponseDTO)
+async def get_current_user_info(current_user: User = Depends(get_current_user)):
+    """获取当前用户信息"""
+    user_facade = get_user_facade()
+    return await user_facade.get_user_info(current_user.id)
+
+@router.get("/{username}", response_model=ResponseDTO)
+async def get_user(username: str, current_user: User = Depends(get_current_user)):
+    """获取用户信息"""
+    try:
+        user_facade = get_user_facade()
+        return await user_facade.get_user_by_username(username)
+    except Exception as e:
+        lprint(f"获取用户信息失败: {str(e)}")
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
+@router.put("/me", response_model=ResponseDTO)
+async def update_current_user(
+    user_data: UserUpdate,
+    current_user: User = Depends(get_current_user)
 ):
+    """更新当前用户信息"""
+    user_facade = get_user_facade()
+    return await user_facade.update_user(current_user.id, user_data)
+
+@router.get("", response_model=ResponseDTO)
+async def get_users(
+    current_user: User = Depends(get_current_user),
+    skip: int = 0,
+    limit: int = 10
+):
+    """获取用户列表"""
+    user_facade = get_user_facade()
+    return await user_facade.get_users(skip, limit)
+
+@router.get("/search/{query}", response_model=ResponseDTO)
+async def search_users(
+    query: str,
+    current_user: User = Depends(get_current_user)
+):
+    """搜索用户"""
+    user_facade = get_user_facade()
+    return await user_facade.search_users(query)
+
+@router.get("/me/devices", response_model=ResponseDTO)
+async def get_user_devices(current_user: User = Depends(get_current_user)):
+    """获取当前用户的设备列表"""
+    user_facade = get_user_facade()
+    return await user_facade.get_user_devices(current_user.id)
+
+@router.get("/me/messages", response_model=ResponseDTO)
+async def get_user_messages(current_user: User = Depends(get_current_user)):
+    """获取当前用户的消息列表"""
+    message_facade = get_message_facade()
+    return await message_facade.get_user_messages_map(current_user.id)
+
+@router.get("/me/chat_partners", response_model=ResponseDTO)
+async def get_chat_partners(current_user: User = Depends(get_current_user)):
+    """获取当前用户的聊天伙伴列表"""
+    message_facade = get_message_facade()
+    return await message_facade.get_chat_partners(current_user.id)
+
+@router.get("/online", response_model=ResponseDTO)
+async def get_online_users(current_user: User = Depends(get_current_user)):
     """获取在线用户列表"""
     try:
-        user_repo = UserRepository(db)
-        users = await user_repo.get_online_users()
-        return [UserBase.model_validate(user) for user in users]
+        user_facade = get_user_facade()
+        return await user_facade.get_online_users()
     except Exception as e:
         lprint(f"获取在线用户列表失败: {str(e)}")
         traceback.print_exc()
@@ -56,20 +130,6 @@ async def get_online_users(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e)
         )
-
-@router.get("", response_model=List[UserBase])
-async def get_users(
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(database_facade.get_session)
-):
-    """获取用户列表"""
-    try:
-        user_repo = UserRepository(db)
-        users = await user_repo.get_users()
-        return [UserBase.model_validate(user) for user in users]
-    except Exception as e:
-        lprint(f"获取用户列表失败: {str(e)}")
-        raise HTTPException(status_code=400, detail=str(e)) from e
 
 @router.get("/users_map", response_model=UsersInfoDictResponse)
 async def get_users_map(
@@ -118,52 +178,34 @@ async def get_users_map(
             detail="获取用户映射信息失败"
         )
 
-@router.get("/{username}", response_model=UserResponse)
-async def get_user(
-    username: str,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(database_facade.get_session)
-):
-    """获取用户信息"""
-    try:
-        user_repo = UserRepository(db)
-        user = await user_repo.get_by_username(username)
-        if not user:
-            raise HTTPException(status_code=404, detail="用户不存在")
-        return UserResponse.model_validate(user)
-    except HTTPException:
-        raise
-    except Exception as e:
-        lprint(f"获取用户信息失败: {str(e)}")
-        raise HTTPException(status_code=400, detail=str(e)) from e
-
-@router.put("/{username}", response_model=UserResponse)
+@router.put("/{username}", response_model=ResponseDTO)
 async def update_user(
     username: str,
     user_update: UserUpdate,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(database_facade.get_session)
+    current_user: User = Depends(get_current_user)
 ):
     """更新用户信息"""
     try:
         if current_user.username != username:
             raise HTTPException(status_code=403, detail="无权修改其他用户信息")
         
-        user_repo = UserRepository(db)
-        user = await user_repo.update_user(username, user_update)
-        return UserResponse.model_validate(user)
+        user_facade = get_user_facade()
+        return await user_facade.update_user_by_username(username, user_update)
     except HTTPException:
         raise
     except Exception as e:
         lprint(f"更新用户信息失败: {str(e)}")
-        raise HTTPException(status_code=400, detail=str(e)) from e
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
 
-@router.put("/{username}/status", response_model=UserResponse)
+@router.put("/{username}/status", response_model=ResponseDTO)
 async def update_user_status(
     username: str,
     status: str,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(database_facade.get_session)
+    current_user: User = Depends(get_current_user)
 ):
     """更新用户状态"""
     try:
@@ -174,21 +216,14 @@ async def update_user_status(
                 detail="只有管理员可以修改用户状态"
             )
             
-        # 更新状态
-        user_repo = UserRepository(db)
-        success = await user_repo.update_status(username, status)
-        if not success:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="更新用户状态失败"
-            )
-            
-        return UserResponse.model_validate(await user_repo.get_by_username(username))
+        user_facade = get_user_facade()
+        return await user_facade.update_user_status(username, status)
     except HTTPException:
         raise
     except Exception as e:
-        lprint(f"更新用户状态失败: {traceback.format_exc()}")
+        lprint(f"更新用户状态失败: {str(e)}")
+        traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"更新用户状态失败: {str(e)}"
-        ) from e
+            detail=str(e)
+        )

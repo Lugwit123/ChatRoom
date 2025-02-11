@@ -1,4 +1,6 @@
-"""基础仓储类"""
+"""核心仓储模块
+提供所有仓储的基础功能实现
+"""
 import sys
 sys.path.append(r'D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib')
 import Lugwit_Module as LM
@@ -9,12 +11,11 @@ from sqlalchemy import select, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.internal.base import Base
-from app.db.facade.database_facade import DatabaseFacade
 
 ModelType = TypeVar("ModelType", bound=Base)
 
-class CoreBaseRepository(Generic[ModelType]):
-    """核心基础仓储类，提供基本的CRUD操作
+class CoreRepository(Generic[ModelType]):
+    """核心仓储类，提供基本的CRUD操作
     
     这个类是所有仓储类的基类，提供了以下功能：
     1. 基本的CRUD操作（创建、读取、更新、删除）
@@ -24,7 +25,7 @@ class CoreBaseRepository(Generic[ModelType]):
     
     使用示例:
     ```python
-    class UserRepository(CoreBaseRepository[User]):
+    class UserRepository(CoreRepository[User]):
         def __init__(self):
             super().__init__(User)
             

@@ -14,6 +14,7 @@ from sqlalchemy.orm import sessionmaker
 from ..internal.base import Base
 from ..internal.session import SessionManager
 from ..internal.transaction import TransactionManager
+from app.core.base.internal.repository.core_repository import CoreRepository
 
 class DatabaseFacade:
     """数据库门面类"""
@@ -36,144 +37,140 @@ class DatabaseFacade:
             self._transaction_manager: Optional[TransactionManager] = None
             self._shared_session: Optional[AsyncSession] = None
             self.initialized = True
-        
-    async def init(self, database_url: str):
-        """初始化数据库连接
-        
-        Args:
-            database_url: 数据库连接URL
-        """
-        try:
-            # 创建数据库引擎
-            self._engine = create_async_engine(
-                database_url,
-                echo=False,
-                pool_pre_ping=True,
-                future=True
-            )
             
-            # 创建会话管理器
-            self._session_manager = SessionManager(self._engine)
-            self._transaction_manager = TransactionManager()
-            
-            # 创建共享会话
-            self._shared_session = self._session_manager.create_session()
-            
-            # 设置核心仓储的共享会话
-            from app.core.base.internal.repository.base_repository import CoreBaseRepository
-            CoreBaseRepository.set_session(self._shared_session)
-            
-            # 设置领域仓储的共享会话
-            from app.domain.base.internal.repository.base_repository import BaseRepository
-            BaseRepository.set_session(self._shared_session)
-            
-            self.lprint(f"数据库连接初始化成功,会话为{self._shared_session}")
-        except Exception as e:
-            self.lprint(f"数据库连接初始化失败: {str(e)}")
-            raise
-            
-    def init_sync(self, database_url: str):
+    def init_sync(self, database_url: str) -> None:
         """同步初始化数据库连接
         
         Args:
             database_url: 数据库连接URL
         """
         try:
-            # 创建数据库引擎
+            self.lprint("开始初始化数据库连接...")
+            
+            # 创建异步引擎
             self._engine = create_async_engine(
                 database_url,
                 echo=False,
-                pool_pre_ping=True,
                 future=True
             )
             
-            # 创建会话管理器
-            self._session_manager = SessionManager(self._engine)
-            self._transaction_manager = TransactionManager()
+            # 创建会话工厂
+            async_session = sessionmaker(
+                self._engine,
+                class_=AsyncSession,
+                expire_on_commit=False
+            )
             
             # 创建共享会话
-            self._shared_session = self._session_manager.create_session()
+            self._shared_session = async_session()
             
-            # 设置核心仓储的共享会话
-            from app.core.base.internal.repository.base_repository import CoreBaseRepository
-            CoreBaseRepository.set_session(self._shared_session)
+            # 设置共享会话到仓储基类
+            CoreRepository.set_session(self._shared_session)
             
-            # 设置领域仓储的共享会话
-            from app.domain.base.internal.repository.base_repository import BaseRepository
-            BaseRepository.set_session(self._shared_session)
+            # 创建会话管理器
+            self._session_manager = SessionManager(async_session)
             
-            self.lprint(f"数据库连接初始化成功,会话为{self._shared_session}")
+            # 创建事务管理器
+            self._transaction_manager = TransactionManager(self._shared_session)
+            
+            self.lprint("数据库连接初始化完成")
+            
         except Exception as e:
             self.lprint(f"数据库连接初始化失败: {str(e)}")
+            traceback.print_exc()
             raise
-
-    async def create_tables(self) -> bool:
-        """创建所有数据库表"""
-        try:
-            async with self.engine.begin() as conn:
-                await conn.run_sync(Base.metadata.create_all)
-            return True
-        except Exception as e:
-            print(f"数据库表创建失败: {str(e)}\n{traceback.format_exc()}")
-            return False
-
-    async def get_session(self) -> AsyncGenerator[AsyncSession, None]:
-        """获取数据库会话，用于依赖注入
+            
+    async def init_async(self, database_url: str) -> None:
+        """异步初始化数据库连接
         
-        Yields:
+        Args:
+            database_url: 数据库连接URL
+        """
+        try:
+            self.lprint("开始初始化数据库连接...")
+            
+            # 创建异步引擎
+            self._engine = create_async_engine(
+                database_url,
+                echo=False,
+                future=True
+            )
+            
+            # 创建会话工厂
+            async_session = sessionmaker(
+                self._engine,
+                class_=AsyncSession,
+                expire_on_commit=False
+            )
+            
+            # 创建共享会话
+            self._shared_session = async_session()
+            
+            # 设置共享会话到仓储基类
+            CoreRepository.set_session(self._shared_session)
+            
+            # 创建会话管理器
+            self._session_manager = SessionManager(async_session)
+            
+            # 创建事务管理器
+            self._transaction_manager = TransactionManager(self._shared_session)
+            
+            # 创建所有表
+            async with self._engine.begin() as conn:
+                await conn.run_sync(Base.metadata.create_all)
+            
+            self.lprint("数据库连接初始化完成")
+            
+        except Exception as e:
+            self.lprint(f"数据库连接初始化失败: {str(e)}")
+            traceback.print_exc()
+            raise
+            
+    @asynccontextmanager
+    async def session(self) -> AsyncGenerator[AsyncSession, None]:
+        """获取数据库会话
+        
+        Returns:
             AsyncSession: 数据库会话
         """
         if not self._session_manager:
-            raise RuntimeError("数据库未初始化")
+            raise RuntimeError("Database not initialized")
             
-        async with self._session_manager.get_session() as session:
+        async with self._session_manager.session() as session:
+            # 设置共享会话到仓储基类
+            CoreRepository.set_session(session)
             try:
                 yield session
-                await session.commit()
-            except Exception as e:
-                await session.rollback()
-                raise
+            finally:
+                await session.close()
                 
-    @property
-    def engine(self) -> AsyncEngine:
-        """获取数据库引擎"""
-        if not self._engine:
-            raise RuntimeError("数据库未初始化")
-        return self._engine
-
-    @property
-    def session(self) -> AsyncSession:
-        """获取共享会话"""
-        if not self._shared_session:
-            raise RuntimeError("数据库未初始化")
-        return self._shared_session
-
-    async def create_session(self) -> AsyncSession:
-        """创建新的数据库会话"""
-        if not self._session_manager:
-            raise RuntimeError("数据库未初始化")
+    @asynccontextmanager
+    async def transaction(self) -> AsyncGenerator[AsyncSession, None]:
+        """开启事务
+        
+        Returns:
+            AsyncSession: 数据库会话
+        """
+        if not self._transaction_manager:
+            raise RuntimeError("Database not initialized")
             
-        session = self._session_manager.create_session()
-        
-        # 设置核心仓储的共享会话
-        from app.core.base.internal.repository.base_repository import CoreBaseRepository
-        CoreBaseRepository.set_session(session)
-        
-        # 设置领域仓储的共享会话
-        from app.domain.base.internal.repository.base_repository import BaseRepository
-        BaseRepository.set_session(session)
-        
-        return session
-        
-    async def cleanup(self):
+        async with self._transaction_manager.transaction() as session:
+            yield session
+            
+    async def cleanup(self) -> None:
         """清理数据库资源"""
-        if self._shared_session:
-            await self._shared_session.close()
-            self._shared_session = None
+        try:
+            self.lprint("开始清理数据库资源...")
             
-        if self._engine:
-            await self._engine.dispose()
-            self._engine = None
-        self._session_manager = None
-        self._transaction_manager = None
-        self.lprint("数据库资源清理成功")
+            if self._shared_session:
+                await self._shared_session.close()
+                
+            if self._engine:
+                await self._engine.dispose()
+                
+            self.lprint("数据库资源清理完成")
+            
+        except Exception as e:
+            self.lprint(f"数据库资源清理失败: {str(e)}")
+            traceback.print_exc()
+            raise

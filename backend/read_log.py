@@ -1,35 +1,79 @@
-import sys
-import os
-import chardet
+from typing import Dict, Type, TypeVar, Any, cast
+from abc import ABC, abstractmethod
 
-# 设置控制台编码为UTF-8
-sys.stdout.reconfigure(encoding='utf-8')
+T = TypeVar('T')
 
-def read_log_file(file_path):
-    try:
-        # 以二进制模式读取文件
-        with open(file_path, 'rb') as file:
-            # 读取文件内容
-            raw_data = file.read()
-            
-            # 检测编码
-            result = chardet.detect(raw_data)
-            encoding = result['encoding']
-            confidence = result['confidence']
-            
-            print(f"\n检测到的编码: {encoding}, 置信度: {confidence:.2f}\n")
-            
-            # 解码文件内容
-            content = raw_data.decode(encoding)
-            
-            print("=== 日志文件内容 (" + file_path + ") ===\n")
-            print(content)
-            print("\n=== 日志文件结束 ===\n")
-            
-    except Exception as e:
-        print(f"读取日志文件时出错: {str(e)}")
+class Container:
+    """依赖注入容器，管理所有依赖的注册和解析"""
+    _instance = None  # 存储唯一实例
+    _initialized = False
 
-if __name__ == "__main__":
-    # 获取日志文件路径
-    log_file = os.path.join(os.getcwd(), "logs", "server.log")
-    read_log_file(log_file)
+    def __new__(cls):
+        """确保只创建一个 Container 实例（单例模式）"""
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
+    def __init__(self):
+        """初始化存储依赖的字典"""
+        if not self._initialized:
+            self._services: Dict[Type, Any] = {}     # 普通服务（接口 -> 实现类）
+            self._singletons: Dict[Type, Any] = {}  # 单例服务（接口 -> 实例）
+            self._initialized = True
+            print("✅ 依赖注入容器初始化完成")
+
+    def register(self, interface: Type[T], implementation: Type[T]) -> None:
+        """注册普通服务（接口 -> 实现类）"""
+        self._services[interface] = implementation
+        print(f"🔹 注册普通服务: {interface.__name__} -> {implementation.__name__}")
+
+    def register_singleton(self, interface: Type[T], instance: T) -> None:
+        """注册单例服务（接口 -> 实例）"""
+        self._singletons[interface] = instance
+        print(f"🔸 注册单例服务: {interface.__name__}")
+
+    def resolve(self, interface: Type[T]) -> T:
+        """解析依赖"""
+        # 1️⃣ 先查找单例
+        if interface in self._singletons:
+            print(f"🔄 解析单例服务: {interface.__name__}")
+            return cast(T, self._singletons[interface])
+
+        # 2️⃣ 再查找普通服务
+        if interface not in self._services:
+            raise KeyError(f"❌ 依赖未注册: {interface.__name__}")
+
+        print(f"🔄 解析普通服务: {interface.__name__}")
+        implementation = self._services[interface]
+        instance = implementation()  # 创建实例
+        return cast(T, instance)
+
+
+# ==================== 🎯 依赖注入示例 ====================
+
+# 1️⃣ 定义接口（抽象基类）
+class Logger(ABC):
+    @abstractmethod
+    def log(self, message: str):
+        pass
+
+# 2️⃣ 定义不同的实现类
+class ConsoleLogger(Logger):
+    def log(self, message: str):
+        print(f"🖥️ ConsoleLogger: {message}")
+
+class FileLogger(Logger):
+    def log(self, message: str):
+        print(f"📁 FileLogger: {message}")
+
+# 3️⃣ 创建容器 & 注册依赖
+container = Container()
+container.register(Logger, ConsoleLogger)  # 注册普通服务
+container.register_singleton(str, "🌍 这是一个单例字符串")  # 注册单例
+
+# 4️⃣ 解析依赖并使用
+logger = container.resolve(Logger)  # 获取 Logger 的实例
+logger.log("Hello Dependency Injection!")  # 🖥️ ConsoleLogger: Hello Dependency Injection!
+
+singleton_str = container.resolve(str)  # 获取单例
+print(singleton_str)  # 🌍 这是一个单例字符串
