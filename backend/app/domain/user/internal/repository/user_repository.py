@@ -45,86 +45,52 @@ class UserRepository(BaseRepository[User]):
         return value
 
     async def get_by_username(self, username: str) -> Optional[User]:
-        """根据用户名获取用户
-        
-        Args:
-            username: 用户名
-            
-        Returns:
-            Optional[User]: 找到的用户或None
-        """
+        """根据用户名获取用户"""
         try:
-            lprint(f"[数据库查询{self.model.__tablename__}] 开始查询用户名: {username}")
-            # 使用 selectinload 加载设备关联
-            query: Select = select(self.model).options(
-                selectinload(self.model.devices)
-            ).where(self.model.username == username)
-            lprint(f"[数据库查询{self.model.__tablename__}] SQL查询: {query}")
-            
-            result = await self.session.execute(query)
-            user: Optional[User] = result.scalar_one_or_none()
-            
-            if user:
-                lprint(f"[数据库查询{self.model.__tablename__}] 找到用户: {user.username}")
-                # 记录设备信息
-                devices_info: List[str] = [
-                    f"设备ID: {device.device_id}, 在线状态: {device.is_online}"
-                    for device in user.devices
-                ] if user.devices else []
-                lprint(f"[数据库查询{self.model.__tablename__}] 用户设备信息: {devices_info}")
-            else:
-                lprint(f"[数据库查询{self.model.__tablename__}] 未找到用户: {username}")
-            return user
-            
+            async with self.get_session() as session:
+                query = select(self.model).where(self.model.username == username)
+                result = await session.execute(query)
+                user = result.scalar_one_or_none()
+                
+                if not user:
+                    lprint(f"[数据库查询{self.model.__tablename__}] 未找到用户: {username}")
+                return user
         except Exception as e:
-            lprint(f"[数据库查询{self.model.__tablename__}] 查询失败: {str(e)}")
+            lprint(f"获取用户失败: {str(e)}")
             traceback.print_exc()
             return None
 
-    async def create_user(self, 
-                       username: str, 
-                       email: Optional[str] = None, 
-                       password: Optional[str] = None,
-                       nickname: Optional[str] = None,
-                       role: Optional[str] = None) -> Optional[User]:
-        """创建用户
-        
-        Args:
-            username: 用户名
-            email: 邮箱
-            password: 密码
-            nickname: 昵称
-            role: 角色
-            
-        Returns:
-            Optional[User]: 创建的用户或None
-            
-        Raises:
-            ValueError: 用户名已存在
-        """
+    async def create_user(self, username: str, email: Optional[str] = None, 
+                          password: Optional[str] = None, nickname: Optional[str] = None, 
+                          role: Optional[str] = None) -> Optional[User]:
+        """创建用户"""
         try:
-            # 检查用户名是否已存在
-            existing_user = await self.get_by_username(username)
-            if existing_user:
-                raise ValueError(f"用户名 {username} 已存在")
-            
-            # 创建用户实例
-            user = User(
-                username=username,
-                email=email,
-                hashed_password=password,
-                nickname=nickname,
-                role=role,
-                status=UserStatusEnum.normal,
-                created_at=datetime.now(ZoneInfo("Asia/Shanghai")),
-                updated_at=datetime.now(ZoneInfo("Asia/Shanghai"))
-            )
-            
-            # 使用父类的 create 方法创建用户
-            return await super().create(**user.__dict__)
+            async with self.transaction() as session:
+                # 检查用户名是否存在
+                query = select(self.model).where(self.model.username == username)
+                result = await session.execute(query)
+                if result.scalar_one_or_none():
+                    raise ValueError(f"用户名 {username} 已存在")
+                
+                user = User(
+                    username=username,
+                    email=email,
+                    hashed_password=password,
+                    nickname=nickname,
+                    role=role,
+                    status=UserStatusEnum.normal,
+                    created_at=datetime.now(ZoneInfo("Asia/Shanghai")),
+                    updated_at=datetime.now(ZoneInfo("Asia/Shanghai"))
+                )
+                
+                session.add(user)
+                await session.flush()
+                await session.refresh(user)
+                return user
         except Exception as e:
-            print(f"[用户创建] 创建用户 {username} 失败: {traceback.format_exc()}")
-            raise
+            lprint(f"创建用户失败: {str(e)}")
+            traceback.print_exc()
+            return None
 
     async def get_all_users_with_devices(self) -> List[User]:
         """获取所有用户(包含devices)
@@ -133,14 +99,14 @@ class UserRepository(BaseRepository[User]):
             List[User]: 所有用户列表
         """
         try:
-            async with self.session as session:
+            async with self.get_session() as session:
                 query = select(User).options(selectinload(User.devices))
                 result = await session.execute(query)
                 return list(result.scalars().all())
         except Exception as e:
-            self.lprint(f"获取所有用户失败: {str(e)}")
+            lprint(f"获取所有用户失败: {str(e)}")
             traceback.print_exc()
-            raise
+            return []
 
     async def get_user_with_devices(self, user_id: int) -> Optional[User]:
         """获取用户信息(包含devices)
@@ -152,32 +118,37 @@ class UserRepository(BaseRepository[User]):
             Optional[User]: 用户信息
         """
         try:
-            async with self.session as session:
+            async with self.get_session() as session:
                 query = select(User).options(selectinload(User.devices)).where(User.id == user_id)
                 result = await session.execute(query)
                 return result.scalar_one_or_none()
         except Exception as e:
-            self.lprint(f"获取用户信息失败: {str(e)}")
+            lprint(f"获取用户信息失败: {str(e)}")
             traceback.print_exc()
             raise
 
     async def update_last_login(self, user_id: int) -> bool:
-        """更新用户最后登录时间
-        
-        Args:
-            user_id: 用户ID
-            
-        Returns:
-            bool: 是否成功
-        """
+        """更新用户最后登录时间"""
         try:
-            await self.update(
-                user_id,
-                last_login=datetime.now(ZoneInfo("Asia/Shanghai"))
+            if not user_id:  # 添加参数验证
+                lprint("无效的用户ID")
+                return False
+                
+            stmt = (
+                update(User)
+                .where(User.id == user_id)
+                .values(
+                    last_login=datetime.now(ZoneInfo("Asia/Shanghai")),
+                    updated_at=datetime.now(ZoneInfo("Asia/Shanghai"))
+                )
             )
+            async with self.get_session() as session:
+                await session.execute(stmt)
+                await session.commit()  # 确保提交事务
             return True
         except Exception as e:
-            self.lprint(f"更新最后登录时间失败: {str(e)}")
+            lprint(f"更新最后登录时间失败: {str(e)}")
+            traceback.print_exc()
             return False
 
     async def update_status(self, username: str, status: UserStatusEnum) -> bool:
@@ -199,36 +170,33 @@ class UserRepository(BaseRepository[User]):
                     updated_at=datetime.now(ZoneInfo("Asia/Shanghai"))
                 )
             )
-            await self.session.execute(stmt)
-            await self.session.commit()
+            async with self.get_session() as session:
+                await session.execute(stmt)
+                await session.commit()
             return True
         except Exception as e:
-            self.lprint(f"更新用户状态失败: {str(e)}")
+            lprint(f"更新用户状态失败: {str(e)}")
             return False
 
     async def get_online_users(self) -> List[User]:
-        """获取在线用户
-        
-        Returns:
-            List[User]: 在线用户列表
-        """
+        """获取在线用户"""
         try:
-            # 查询至少有一个在线设备的用户
             query = (
                 select(User)
                 .join(User.devices)
                 .where(
                     and_(
-                        expression.true() == Device.login_status,  # 设备在线
-                        User.status == UserStatusEnum.normal  # 用户状态正常
+                        Device.login_status == True,  # 使用标准布尔比较
+                        User.status == UserStatusEnum.normal
                     )
                 )
                 .group_by(User.id)
             )
-            result = await self.session.execute(query)
-            return list(result.scalars().all())
+            async with self.get_session() as session:
+                result = await session.execute(query)
+                return list(result.scalars().all())
         except Exception as e:
-            self.lprint(f"获取在线用户失败: {str(e)}")
+            lprint(f"获取在线用户失败: {str(e)}")
             return []
 
     async def update_user(self, user_id: int, update_data: Dict[str, Any]) -> Optional[User]:
@@ -244,12 +212,13 @@ class UserRepository(BaseRepository[User]):
         try:
             # 更新用户
             update_data['updated_at'] = datetime.now(ZoneInfo("Asia/Shanghai"))
-            await self.update(user_id, **update_data)
+            async with self.transaction() as session:
+                await self.update(user_id, **update_data)
             
             # 获取更新后的用户信息
             return await self.get_user_with_devices(user_id)
         except Exception as e:
-            self.lprint(f"更新用户信息失败: {str(e)}")
+            lprint(f"更新用户信息失败: {str(e)}")
             return None
 
     async def get_by_email(self, email: str) -> Optional[User]:
@@ -262,53 +231,37 @@ class UserRepository(BaseRepository[User]):
             Optional[User]: 找到的用户或None
         """
         try:
-            print(f"[数据库查询] 开始查询邮箱: {email}")
             query = select(self.model).where(self.model.email == email)
-            result = await self.session.execute(query)
-            user = result.scalar_one_or_none()
-            if not user:
-                print(f"[数据库查询] 邮箱 {email} 不存在")
-            else:
-                print(f"[数据库查询] 找到邮箱 {email}")
-            return user
+            async with self.get_session() as session:
+                result = await session.execute(query)
+                user = result.scalar_one_or_none()
+                return user
         except Exception as e:
             print(f"[数据库查询] 异常: {str(e)}\n{traceback.format_exc()}")
             raise
 
     async def get_users_by_status(self, status: UserStatusEnum) -> List[User]:
-        """根据状态获取用户
-        
-        Args:
-            status: 用户状态
-            
-        Returns:
-            List[User]: 指定状态的用户列表
-        """
+        """根据状态获取用户"""
         try:
-            query = select(self.model).where(self.model.status == status)
-            result = await self.session.execute(query)
-            users = list(result.scalars().all())
-            print(f"获取到 {len(users)} 个状态为 {status} 的用户")
-            return users
+            query = select(self.model).where(self.model.status == status)  # 使用标准比较
+            async with self.get_session() as session:
+                result = await session.execute(query)
+                users = list(result.scalars().all())
+                print(f"获取到 {len(users)} 个状态为 {status} 的用户")
+                return users
         except Exception as e:
             print(f"根据状态获取用户失败: {traceback.format_exc()}")
             return []
 
     async def get_users_by_role(self, role: UserRole) -> List[User]:
-        """根据角色获取用户
-        
-        Args:
-            role: 用户角色
-            
-        Returns:
-            List[User]: 指定角色的用户列表
-        """
+        """根据角色获取用户"""
         try:
-            query = select(self.model).where(self.model.role == role)
-            result = await self.session.execute(query)
-            users = list(result.scalars().all())
-            print(f"获取到 {len(users)} 个角色为 {role} 的用户")
-            return users
+            query = select(self.model).where(self.model.role == role)  # 使用标准比较
+            async with self.get_session() as session:
+                result = await session.execute(query)
+                users = list(result.scalars().all())
+                print(f"获取到 {len(users)} 个角色为 {role} 的用户")
+                return users
         except Exception as e:
             print(f"根据角色获取用户失败: {traceback.format_exc()}")
             return []
@@ -328,10 +281,11 @@ class UserRepository(BaseRepository[User]):
                     selectinload(User.received_private_messages)
                 )
             )
-            result = await self.session.execute(query)
-            return list(result.scalars().all())
+            async with self.get_session() as session:
+                result = await session.execute(query)
+                return list(result.scalars().all())
         except Exception as e:
-            lprint(traceback.format_exc())
+            traceback.print_exc()
             raise Exception(f"获取注册用户失败: {str(e)}")
 
     async def get_all_users(self) -> List[User]:
@@ -370,31 +324,23 @@ class UserRepository(BaseRepository[User]):
             List[Device]: 设备列表
         """
         try:
-            self.lprint(f"查询用户 {user_id} 的设备列表")
+            lprint(f"查询用户 {user_id} 的设备列表")
             query = select(Device).where(Device.user_id == user_id)
-            result = await self.session.execute(query)
-            devices = list(result.scalars().all())
-            self.lprint(f"查询到设备列表: {devices}")
-            return devices
+            async with self.get_session() as session:
+                result = await session.execute(query)
+                devices = list(result.scalars().all())
+                lprint(f"查询到设备列表: {devices}")
+                return devices
         except Exception as e:
-            self.lprint(f"查询用户设备失败: {str(e)}\n{traceback.format_exc()}")
+            lprint(f"查询用户设备失败: {str(e)}\n{traceback.format_exc()}")
             return []
 
     async def search_users(self, query: str) -> List[User]:
-        """搜索用户
-        
-        根据用户名、昵称或邮箱搜索用户
-        
-        Args:
-            query: 搜索关键词
-            
-        Returns:
-            List[User]: 匹配的用户列表
-        """
+        """搜索用户"""
         try:
             stmt = select(self.model).where(
                 and_(
-                    self.model.status != UserStatusEnum.deleted,
+                    self.model.status != UserStatusEnum.deleted,  # 使用标准比较
                     or_(
                         self.model.username.ilike(f"%{query}%"),
                         self.model.nickname.ilike(f"%{query}%"),
@@ -402,45 +348,11 @@ class UserRepository(BaseRepository[User]):
                     )
                 )
             )
-            result = await self.session.execute(stmt)
-            users = list(result.scalars().all())
-            print(f"搜索到 {len(users)} 个匹配的用户")
-            return users
+            async with self.get_session() as session:
+                result = await session.execute(stmt)
+                users = list(result.scalars().all())
+                print(f"搜索到 {len(users)} 个匹配的用户")
+                return users
         except Exception as e:
             print(f"搜索用户失败: {traceback.format_exc()}")
             raise
-    async def get_all_users_with_devices(self) -> List[User]:
-        """获取所有用户(包含devices)
-        
-        Returns:
-            List[User]: 所有用户列表
-        """
-        try:
-            async with self.session as session:
-                query = select(User).options(selectinload(User.devices))
-                result = await session.execute(query)
-                return list(result.scalars().all())
-        except Exception as e:
-            self.lprint(f"获取所有用户失败: {str(e)}")
-            traceback.print_exc()
-            raise
-
-    async def get_user_with_devices(self, user_id: int) -> Optional[User]:
-        """获取用户信息(包含devices)
-        
-        Args:
-            user_id: 用户ID
-            
-        Returns:
-            Optional[User]: 用户信息
-        """
-        try:
-            async with self.session as session:
-                query = select(User).options(selectinload(User.devices)).where(User.id == user_id)
-                result = await session.execute(query)
-                return result.scalar_one_or_none()
-        except Exception as e:
-            self.lprint(f"获取用户信息失败: {str(e)}")
-            traceback.print_exc()
-            raise
-

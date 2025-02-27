@@ -25,6 +25,7 @@ class Container:
             self._singletons: Dict[Type, Any] = {}
             self._initialized = True
             lprint("依赖注入容器初始化完成")
+            # 注册服务将在register_websocket_dependencies中完成
             
     def register(self, interface: Type[T], implementation: Type[T]) -> None:
         """注册服务
@@ -88,10 +89,19 @@ def get_container() -> Container:
     
     Returns:
         Container: 容器实例
-        
-    Raises:
-        RuntimeError: 如果容器未初始化
     """
+    global _global_container
     if _global_container is None:
-        raise RuntimeError("容器未初始化，请先调用set_container")
+        # 如果容器未初始化，则进行初始化
+        _global_container = Container()
+        lprint("全局容器已初始化")
     return _global_container 
+
+def register_websocket_dependencies(container):
+    """注册WebSocket相关的依赖"""
+    # 延迟导入，避免循环依赖
+    from app.core.websocket.internal.manager import ConnectionManager, RoomManager
+    from app.core.websocket.interfaces import IConnectionManager, IRoomManager
+    
+    container.register(IConnectionManager, ConnectionManager)
+    container.register(IRoomManager, RoomManager)

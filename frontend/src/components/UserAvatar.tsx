@@ -1,10 +1,10 @@
 // UserAvatar.tsx
 
 import React from 'react';
-import { UserBaseAndStatus } from '../types/types';
+import { UserBaseAndDevices } from '../types/types';
 
 interface UserAvatarProps {
-    user: UserBaseAndStatus;
+    user: UserBaseAndDevices;
     className?: string; // 允许传入自定义类名
 }
 

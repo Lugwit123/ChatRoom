@@ -10,8 +10,6 @@ import traceback
 
 # 第三方库
 from sqlalchemy import select, and_, update, delete, text, or_, desc, case
-from sqlalchemy.sql import expression
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import aliased
 
 # 本地模块
@@ -26,7 +24,7 @@ class MessageWithUsernames(NamedTuple):
     """消息及用户名信息"""
     message: PrivateMessage
     sender_username: str
-    recipient_username: str
+    recipient: str
     other_username: str
 
 class PrivateMessageRepository(BaseMessageRepository):
@@ -37,25 +35,61 @@ class PrivateMessageRepository(BaseMessageRepository):
         super().__init__()
         self.model = PrivateMessage
         
-    async def save_message(self, message_data: dict) -> PrivateMessage:
-        """保存私聊消息
+    async def save_message(self, message_data: Dict[str, Any]) -> PrivateMessage:
+        """保存或更新私聊消息
         
         Args:
-            message_data: 消息数据
+            message_data: 消息数据字典，如果包含 id 字段且不为 '-1'，则更新已存在的消息
             
         Returns:
-            PrivateMessage: 保存的消息
+            PrivateMessage: 保存或更新的消息
         """
         try:
-            # 检查必要字段
-            if not message_data.get("recipient_id"):
-                raise ValueError("私聊消息必须指定接收者ID")
-                
-            # 保存消息
+            message_id = int(message_data.get('id'))
+            
+            # 如果消息ID存在且不是'-1'，则更新消息
+            if message_id != -1 :
+                # 确保ID是整数类型
+                try:
+                    if isinstance(message_id, str):
+                        message_id = int(message_id)
+                    # 使用CoreRepository中的get_by_id方法查询现有消息
+                    existing_message = await self.get_by_id(message_id)
+                    lprint(f"查询结果: {existing_message}")
+                    
+                    if existing_message:
+                        async with self.transaction() as session:
+                            # 更新消息内容
+                            for key, value in message_data.items():
+                                # 排除id、发送者ID和接收者ID，这些字段不应该被修改
+                                if key != 'id' and key != 'sender_id' and key != 'recipient_id' and hasattr(existing_message, key):
+                                    lprint(f"更新字段 {key}: {value}")
+                                    setattr(existing_message, key, value)
+                            
+                            # 更新修改时间
+                            existing_message.updated_at = datetime.now(ZoneInfo('Asia/Shanghai'))
+                            
+                            # 使用merge而不是add，避免主键冲突
+                            merged_message = await session.merge(existing_message)
+                            
+                            # 刷新以获取最新状态
+                            await session.flush()
+                            
+                            # 返回合并后的对象
+                            return merged_message
+                except ValueError as e:
+                    lprint(f"ID转换错误: {e}")
+                except Exception as e:
+                    lprint(f"查询或更新消息时出错: {e}")
+                    traceback.print_exc()
+            
+            # 如果消息不存在或ID为'-1'，则创建新消息
+            lprint("创建新消息")
             return await super().save_message(message_data)
             
         except Exception as e:
-            self.lprint(f"保存私聊消息失败: {str(e)}")
+            lprint(f"保存或更新私聊消息失败: {str(e)}")
+            traceback.print_exc()
             raise
             
     async def get_messages(self, user_id: int, limit: int = 20) -> Sequence[PrivateMessage]:
@@ -160,33 +194,55 @@ class PrivateMessageRepository(BaseMessageRepository):
             List[int]: 聊天伙伴ID列表
         """
         try:
-            # 使用独立的会话
-            async with self.get_session() as session:
-                # 查询用户作为发送者的所有私聊消息的接收者
-                query = select(PrivateMessage.recipient_id).where(
-                    PrivateMessage.sender_id == user_id
-                ).distinct()
+
+            # 查询用户作为发送者的所有私聊消息的接收者
+            query = select(PrivateMessage.recipient_id).where(
+                PrivateMessage.sender_id == user_id
+            ).distinct()
+            
+            # 查询用户作为接收者的所有私聊消息的发送者
+            query2 = select(PrivateMessage.sender_id).where(
+                PrivateMessage.recipient_id == user_id
+            ).distinct()
+            
+            # 执行查询
+            result1 = await self.session.execute(query)
+            result2 = await self.session.execute(query2)
+            
+            # 获取所有不重复的用户ID
+            partner_ids = set()
+            for row in result1:
+                partner_ids.add(row[0])
+            for row in result2:
+                partner_ids.add(row[0])
                 
-                # 查询用户作为接收者的所有私聊消息的发送者
-                query2 = select(PrivateMessage.sender_id).where(
-                    PrivateMessage.recipient_id == user_id
-                ).distinct()
-                
-                # 执行查询
-                result1 = await session.execute(query)
-                result2 = await session.execute(query2)
-                
-                # 获取所有不重复的用户ID
-                partner_ids = set()
-                for row in result1:
-                    partner_ids.add(row[0])
-                for row in result2:
-                    partner_ids.add(row[0])
-                    
-                self.lprint(f"用户 {user_id} 的聊天伙伴: {partner_ids}")
-                return list(partner_ids)
+            lprint(f"用户 {user_id} 的聊天伙伴: {partner_ids}")
+            return list(partner_ids)
                 
         except Exception as e:
-            self.lprint(f"获取聊天伙伴失败: {str(e)}")
-            self.lprint(traceback.format_exc())
+            lprint(f"获取聊天伙伴失败: {str(e)}")
+            traceback.print_exc()
             return []
+
+    async def mark_as_unread(self, message_id: int) -> bool:
+        """标记消息为未读
+        
+        Args:
+            message_id: 消息ID
+            
+        Returns:
+            bool: 是否成功
+        """
+        try:
+            # 更新消息状态为未读
+            result = await self.session.execute(
+                update(PrivateMessage)
+                .where(PrivateMessage.id == message_id)
+                .values(status=MessageStatus.unread.value)
+            )
+            await self.session.commit()
+            return bool(result.rowcount > 0)
+        except Exception as e:
+            lprint(f"标记私聊消息未读失败: {str(e)}")
+            traceback.print_exc()
+            return False

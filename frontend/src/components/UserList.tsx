@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import './UserList.css';
 import { pinyin } from 'pinyin-pro';
 import UserAvatar from './UserAvatar';
-import { UserBaseAndStatus, UserRole, Group, UsersInfoDictResponse } from '../types/types';
+import { UserBaseAndDevices, UserRole, Group, UsersInfoDictResponse } from '../types/types';
 import useCurrentSelectedUserStore from '../stores/useCurrentSelectedUserStore';
 import { AiFillStar, AiOutlineStar } from 'react-icons/ai';
 
@@ -80,7 +80,7 @@ const UserList: React.FC<{
         });
     };
 
-    const handleSelectUser = (user: UserBaseAndStatus): void => {
+    const handleSelectUser = (user: UserBaseAndDevices): void => {
         selectUser(user);
         setSelectedRecipient(user.username);
         setSelectedType('user');
@@ -279,7 +279,7 @@ const UserList: React.FC<{
 
 // 用户项组件
 const UserItem: React.FC<{
-    user: UserBaseAndStatus;
+    user: UserBaseAndDevices;
     isSelected: boolean;
     onClick: () => void;
     isSystemUser?: boolean;

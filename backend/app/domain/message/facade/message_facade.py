@@ -2,18 +2,19 @@
 消息模块门面
 提供消息相关功能的统一访问接口，包括消息发送、接收、查询等功能
 """
+import json
 import Lugwit_Module as LM
-from typing import List, Optional, Dict, Union, Sequence
+from typing import List, Optional, Dict, Union, Sequence, Any
 import socketio
 from datetime import datetime, timedelta
 import zoneinfo
 import traceback
 import asyncio
 from sqlalchemy import select, or_
-import json
 
 from app.domain.message.facade.dto.message_dto import (
-    MessageCreateDTO, 
+    PrivateMessageCreateDTO,
+    GroupMessageCreateDTO,
     PrivateMessageDTO,
     GroupMessageDTO,
     PrivateMessageExportDTO,
@@ -28,7 +29,12 @@ from app.domain.message.facade.dto.message_dto import (
 from app.domain.base.facade.dto.base_dto import ResponseDTO
 from app.domain.base.facade.base_facade import BaseFacade
 from app.core.websocket.facade.websocket_facade import WebSocketFacade
-from app.domain.common.models.tables import BaseMessage, PrivateMessage
+from app.domain.common.models.tables import (
+    BaseMessage, 
+    PrivateMessage, 
+    create_group_message_table,
+    generate_public_id
+)
 from app.core.exceptions import BusinessError
 from app.domain.message.internal.repository.private import PrivateMessageRepository
 from app.domain.message.internal.repository.group import GroupMessageRepository
@@ -37,6 +43,15 @@ from app.domain.user.internal.repository import UserRepository
 from app.domain.common.enums.message import MessageContentType, MessageType, MessageTargetType, MessageStatus
 from app.core.di.container import get_container
 from app.core.di.container import Container
+from app.core.services.service_core import  get_websocket_facade,get_user_facade
+from app.domain.common.models.tables import User
+from app.domain.message.internal.handle.handler import (
+    PrivateMessageHandler, GroupMessageHandler, RemoteControlMessageHandler
+)
+
+from app.core.websocket.internal.manager.private_room_manager import PrivateRoomManager
+
+lprint = LM.lprint
 
 class MessageFacade(BaseFacade):
     """消息门面类,处理所有消息相关操作"""
@@ -46,11 +61,26 @@ class MessageFacade(BaseFacade):
         super().__init__(need_websocket=True)
         self._private_repo = PrivateMessageRepository()
         self._group_repo = GroupMessageRepository()
-        self._group_repository = GroupRepository()
-        self._user_repository = UserRepository()
-        # 从容器获取WebSocket门面
-        self._websocket_facade = self.resolve(WebSocketFacade)
+        # 从 service_core 获取 WebSocketFacade
+        self._websocket_facade = get_websocket_facade()
+        # 获取用户服务
+        self._user_facade = get_user_facade()
+        self._room_manager = PrivateRoomManager()
         
+        # 直接初始化处理器
+        self._handlers = {MessageTargetType.user:{
+                MessageType.chat: PrivateMessageHandler(),
+                MessageType.remote_control: RemoteControlMessageHandler(),
+            },
+            MessageTargetType.group:{
+                MessageType.chat: GroupMessageHandler(),
+                MessageType.remote_control: RemoteControlMessageHandler(),
+            }
+        }
+        
+    def get_handler(self,target_type:MessageTargetType,message_type:MessageType):
+        return self._handlers.get(target_type,{}).get(message_type)
+    
     @property
     def private_repo(self) -> PrivateMessageRepository:
         """获取私聊消息仓储"""
@@ -60,16 +90,6 @@ class MessageFacade(BaseFacade):
     def group_repo(self) -> GroupMessageRepository:
         """获取群组消息仓储"""
         return self._group_repo
-    
-    @property
-    def group_repository(self) -> GroupRepository:
-        """获取群组仓储"""
-        return self._group_repository
-    
-    @property
-    def user_repository(self) -> UserRepository:
-        """获取用户仓储"""
-        return self._user_repository
 
     @property
     def sio(self) -> Optional[socketio.AsyncServer]:
@@ -78,259 +98,135 @@ class MessageFacade(BaseFacade):
 
     async def register_handlers(self):
         """注册消息处理器的事件处理函数"""
-        self.lprint("注册消息处理器事件")
-        if self.sio:
-            # 直接注册消息处理事件
-            self.sio.on("message", self.handle_socket_message, namespace='/chat')
-            self.sio.on("read_message", self.handle_read_message, namespace='/chat')
-            self.lprint("消息处理器事件注册完成")
-        else:
-            self.lprint("Socket.IO服务器未初始化,无法注册事件处理器")
-            
-    async def handle_socket_message(self, sid: str, data: dict):
-        """处理Socket.IO消息事件
-        
-        Args:
-            sid: 会话ID
-            data: 消息数据
-        """
         try:
-            self.lprint(f"收到Socket.IO消息: {data}")
-            
-            # 获取发送者ID
-            user_id = await self._websocket_facade.get_user_id(sid)
-            if not user_id:
-                self.lprint(f"无法获取发送者ID, sid={sid}")
+            if not isinstance(self.sio, socketio.AsyncServer):
+                lprint("Socket.IO服务器未初始化或类型不正确")
                 return
-                
-            # 添加发送者ID到消息数据
-            data['sender_id'] = user_id
-            
-            # 如果是远程控制消息，添加发送者IP
-            if data.get('message_type') == MessageType.remote_control.value:
-                # 获取发送者IP
-                session = await self._websocket_facade.get_session(sid)
-                if session and hasattr(session, 'ip_address'):
-                    if isinstance(data.get('content'), str):
-                        data['content'] = {
-                            'type': data['content'],  # 原始内容作为类型
-                            'ip': session.ip_address  # 添加发送者IP
+
+            # 定义消息处理器
+            async def message_handler(sid: str, data: dict):
+                """处理消息事件"""
+                try:
+                    lprint(f"收到消息: {data}")
+                    # 从消息数据中获取命名空间
+                    namespace = data.get('namespace', '/chat/private')
+                    
+                    # 如果消息中缺少发送者或接收者ID，尝试从会话中获取
+                    if not data.get('sender_id'):
+                        # 从连接管理器中获取用户ID
+                        user_id = self._websocket_facade._connection_manager.get_user_id_by_sid(sid)
+                        if user_id:
+                            data['sender_id'] = int(user_id)
+                            lprint(f"从会话中获取发送者ID: {data['sender_id']}")
+                    
+                    # 如果是私聊消息且缺少接收者ID，尝试从消息内容中获取
+                    if namespace == '/chat/private' and not data.get('recipient_id'):
+                        # 尝试从消息内容中获取接收者用户名
+                        recipient_username = data.get('recipient_username')
+                        if recipient_username:
+                            # 通过用户名获取用户ID
+                            recipient = await self._user_facade.get_user_by_username(recipient_username)
+                            if recipient:
+                                data['recipient_id'] = recipient.id
+                                lprint(f"从用户名获取接收者ID: {data['recipient_id']}")
+                    
+                    message = await self.handle_socket_message(data, sid, namespace)
+                    if message:
+                        # 返回消息处理结果
+                        return {
+                            "status": "success",
+                            "message_id": message.id,
+                            "public_id": message.public_id,
+                            "timestamp": message.created_at.isoformat()
                         }
-            
-            # 处理消息
-            await self.process_message(data)
-            
+                    lprint(message)
+                    return {"status": "error", "message": "消息处理失败"}
+                except Exception as e:
+                    lprint(f"处理消息失败: {str(e)}")
+                    traceback.print_exc()
+                    return {"status": "error", "message": str(e)}
+
+            async def read_message_handler(sid: str, data: dict):
+                await self.handle_read_message(sid, data)
+
+            # 注册消息处理器
+            for namespace in ['/chat/private', '/chat/group', '/chat/private/system']:
+                self.sio.on("message", message_handler, namespace=namespace)
+                # 为私聊和群聊注册read_message事件
+                if namespace in ['/chat/private', '/chat/group']:
+                    self.sio.on("read_message", read_message_handler, namespace=namespace)
+
+            lprint("消息处理器注册完成")
+
         except Exception as e:
-            self.lprint(f"处理Socket.IO消息失败: {str(e)}")
+            lprint(f"注册消息处理器失败: {str(e)}")
             traceback.print_exc()
+
             
-    async def process_message(self, data: dict) -> Optional[BaseMessage]:
-        """处理消息的主要逻辑
+    def _get_message_namespace(self, message: Union[PrivateMessage, BaseMessage]) -> str:
+        """获取消息的命名空间
         
         Args:
-            data: 消息数据，包含sender_id
+            message: 消息对象
             
         Returns:
-            Optional[BaseMessage]: 处理后的消息对象
+            str: 命名空间
         """
-        try:
-            self.lprint(f"开始处理消息: {data}")
-            
-            # 保存消息到数据库
-            message = await self.save_message_to_db(data)
-            if not message:
-                return None
-                
-            # 通过WebSocket发送消息
-            await self.send_message_via_socket(message)
-            
-            # 根据消息类型处理特殊逻辑
-            message_type = data.get('message_type')
-            if message_type == MessageType.remote_control.value:
-                await self.handle_remote_control_message(data)
-            elif message_type == MessageType.open_path.value:
-                await self.handle_open_path(data)
-                
-            return message
-            
-        except Exception as e:
-            self.lprint(f"消息处理失败: {str(e)}")
-            traceback.print_exc()
-            return None
+        # 根据消息目标类型确定命名空间
+        if hasattr(message, 'target_type'):
+            target_type = int(str(message.target_type))  # 转换为整数进行比较
+            if target_type == MessageTargetType.user.value:
+                return '/chat/private'
+            elif target_type == MessageTargetType.group.value:
+                return '/chat/group'
+        return '/chat/private/system'
 
-    async def send(self, message: BaseMessage) -> Optional[BaseMessage]:
-        """保存消息到数据库
-        
-        Args:
-            message: 消息实体
-            
-        Returns:
-            Optional[BaseMessage]: 保存成功的消息，失败返回None
-        """
-        try:
-            if message.group_id is not None:
-                self.lprint(f"保存群组消息: {message.content} 到群组 {message.group_id}")
-                return await self.group_repo.save_message(message)
-            else:
-                self.lprint(f"保存私聊消息: {message.content} 到用户 {message.recipient_id}")
-                return await self.private_repo.save_message(message)
-        except Exception as e:
-            self.lprint(f"保存消息失败: {str(e)}")
-            self.lprint(traceback.format_exc())
-            return None
-
-    async def save_message_to_db(self, data: dict) -> Optional[BaseMessage]:
-        """保存消息到数据库
-        
-        Args:
-            data: 消息数据
-            
-        Returns:
-            Optional[BaseMessage]: 保存的消息对象，如果失败则返回None
-        """
-        try:
-            # 获取发送者ID并确保是整数
-            sender_id = data.get("sender_id")
-            if not sender_id:
-                self.lprint("消息缺少发送者ID")
-                return None
-                
-            try:
-                sender_id = int(sender_id)
-            except (TypeError, ValueError):
-                self.lprint(f"无效的sender_id格式: {sender_id}")
-                return None
-
-            # 确定消息类型
-            group_id = data.get("group_id")
-            is_group_message = group_id is not None
-            
-            # 验证枚举值
-            try:
-                content_type = int(data.get("content_type", 0))
-                message_type = int(data.get("message_type", 0))
-                target_type = int(data.get("target_type", 0))
-                
-                # 验证枚举值是否合法
-                if content_type not in [e.value for e in MessageContentType]:
-                    self.lprint(f"无效的content_type值: {content_type}")
-                    return None
-                    
-                if message_type not in [e.value for e in MessageType]:
-                    self.lprint(f"无效的message_type值: {message_type}")
-                    return None
-                    
-                if target_type not in [e.value for e in MessageTargetType]:
-                    self.lprint(f"无效的target_type值: {target_type}")
-                    return None
-                    
-            except (TypeError, ValueError) as e:
-                self.lprint(f"类型字段转换失败: {str(e)}")
-                return None
-                
-            # 处理消息内容
-            content = data.get("content", "")
-            if isinstance(content, dict):
-                content = json.dumps(content, ensure_ascii=False)
-                
-            # 创建消息实体
-            message_data = {
-                "sender_id": sender_id,  # 使用转换后的整数ID
-                "content": content,  # 使用处理后的内容
-                "content_type": content_type,
-                "message_type": message_type,
-                "target_type": target_type,
-                "status": [MessageStatus.unread.value]  # 使用枚举值
-            }
-            
-            if is_group_message:
-                # 群聊消息
-                message_data["group_id"] = int(group_id)
-                message = await self.group_repo.save_message(message_data)
-                self.lprint(f"群聊消息保存成功: {message}")
-            else:
-                # 私聊消息
-                recipient_id = data.get("recipient_id")
-                if not recipient_id:
-                    self.lprint("私聊消息缺少接收者ID")
-                    return None
-                    
-                # 通过用户名查找用户ID
-                recipient = await self.user_repository.get_by_username(recipient_id)
-                if not recipient:
-                    self.lprint(f"找不到接收者: {recipient_id}")
-                    return None
-                    
-                message_data["recipient_id"] = recipient.id
-                message = await self.private_repo.save_message(message_data)
-                self.lprint(f"私聊消息保存成功: {message}")
-            
-            return message
-            
-        except Exception as e:
-            self.lprint(f"保存消息失败: {str(e)}")
-            traceback.print_exc()
-            return None
-
-    async def send_message_via_socket(self, message: BaseMessage):
+    async def send_message_via_socket(self, message: Union[PrivateMessageDTO, BaseMessage], namespace: str = '/chat/private'):
         """通过WebSocket发送消息
         
         Args:
             message: 消息对象
+            namespace: 命名空间
         """
         try:
-            if not self.sio:
-                self.lprint("Socket.IO服务器未初始化")
-                return
-                
-            # 获取发送者信息
-            sender = await self.user_repository.get_by_id(message.sender_id)
-            if not sender:
-                self.lprint(f"未找到发送者: id={message.sender_id}")
-                return
-            self.lprint(f"发送者信息: id={sender.id}, username={sender.username}")
-
-            # 准备消息数据
-            message_data = message.to_dict()
-            message_data['sender_username'] = sender.username
-
-            # 根据消息类型处理
-            if message.group_id is not None:
-                # 群聊消息
-                group = await self.group_repository.get_by_id(message.group_id)
-                if group:
-                    message_data["group_name"] = group.name
-                    self.lprint(f"群组信息: id={group.id}, name={group.name}")
-                else:
-                    self.lprint(f"未找到群组信息: group_id={message.group_id}")
-                room = f"group_{message.group_id}"
-                self.lprint(f"发送群组消息到房间: {room}")
+            lprint(f"开始处理发送的消息{message}")
+            # 将消息对象转换为可序列化的字典
+            if hasattr(message, 'to_dict'):
+                message_data = message.to_dict()
             else:
-                # 私聊消息
-                recipient = await self.user_repository.get_by_id(message.recipient_id)
-                if recipient:
-                    self.lprint(f"接收者信息: id={recipient.id}, username={recipient.username}")
-                    # 使用两个用户ID的组合作为房间名
-                    user_ids = sorted([sender.id, recipient.id])
-                    room = f"private_{user_ids[0]}_{user_ids[1]}"
-                    self.lprint(f"发送私聊消息到房间: {room}")
-                    
-                    # 获取房间内的所有会话
-                    if hasattr(self.sio, 'manager') and hasattr(self.sio.manager, 'rooms'):
-                        room_sids = self.sio.manager.rooms.get(room, set())
-                        self.lprint(f"房间 {room} 内的所有会话ID: {room_sids}")
-                    
-                    message_data['recipient_username'] = recipient.username
-                    # 发送到组合房间
-                    await self.sio.emit('message', message_data, room=room, namespace='/chat')
-                    self.lprint(f"私聊消息已发送到房间: {room}, 消息内容: {message_data}")
+                message_data = message.model_dump()
+
+            # 获取发送者和接收者信息
+            sender = await self._user_facade.get_user_by_id(int(str(message_data.get('sender_id'))))
+            recipient = None
+            if message_data.get('recipient_id'):
+                recipient = await self._user_facade.get_user_by_id(int(str(message_data.get('recipient_id'))))
+                recipient = recipient.to_dict()
+            sender=sender.to_dict()
+            lprint(sender)
+            # 根据消息类型处理房间
+            if message_data.get('target_type') == MessageTargetType.group.value:
+                group_id = message_data.get('group_id')
+                if group_id:
+                    room = f"group_{group_id}"
+                    lprint(f"发送群组消息: {message_data},消息房间: {room}")
+                    await self.sio.emit('message', message_data, room=room, namespace=namespace)
                 else:
-                    self.lprint(f"未找到接收者信息: recipient_id={message.recipient_id}")
-                
-            self.lprint(f"消息发送成功确认已发送到客户端, message_id={message.id}")
+                    lprint(f"未找到群组: group_id={message_data.get('group_id')}")
+            elif message_data.get('target_type') == MessageTargetType.user.value:
+                if recipient:
+                    # 使用房间管理器生成房间名称
+                    user_ids = ([int(str(sender['id'])), int(str(recipient['id']))])
+                    room = self._room_manager.generate_room_name(user_ids[0], user_ids[1])
+                    lprint(f"发送私聊消息: {message_data},消息房间: {room}")
+                    await self.sio.emit('message', message_data, room=room, namespace=namespace)
+                else:
+                    lprint(f"未找到接收者: recipient_id={message_data.get('recipient_id')}")
+            
+            lprint(f"消息发送完成: message_id={message_data.get('id')}")
         except Exception as e:
-            self.lprint(f"发送消息失败: {str(e)}")
-            self.lprint(traceback.format_exc())
+            lprint(f"发送消息失败: {str(e)}")
+            traceback.print_exc()
 
     async def handle_read_message(self, sid: str, data: dict):
         """处理消息已读事件
@@ -351,92 +247,88 @@ class MessageFacade(BaseFacade):
                 await self.mark_as_read(int(message_id), int(user_id))
                 
         except Exception as e:
-            self.lprint(f"处理消息已读事件失败: {str(e)}")
+            lprint(f"处理消息已读事件失败: {str(e)}")
             
     async def send_message(
         self,
         content: str,
         sender_username: str,
-        recipient_username: Optional[str] = None,
+        recipient: Optional[str] = None,
         group_name: Optional[str] = None,
         reply_to_id: Optional[str] = None,
         content_type: str = "text",
-        mentioned_users: List[str] = None
+        mentioned_users: Optional[List[str]] = None
     ) -> ResponseDTO:
-        """发送消息
-        
-        Args:
-            content: 消息内容
-            sender_username: 发送者用户名
-            recipient_username: 接收者用户名(私聊)
-            group_name: 群组名称(群聊)
-            reply_to_id: 回复的消息ID
-            content_type: 消息类型
-            mentioned_users: @提到的用户列表
-            
-        Returns:
-            ResponseDTO: 统一响应格式
-        """
+        """发送消息"""
         try:
-            self.lprint(f"开始处理消息: content={content}, sender={sender_username}, recipient={recipient_username}, group={group_name}")
+            lprint(f"开始处理消息: content={content}, sender={sender_username}, recipient={recipient}, group={group_name}")
             
-            # 获取发送者ID
-            sender = await self.user_repository.get_by_username(sender_username)
+            # 获取发送者信息
+            sender = await self._user_facade.get_user_by_username(sender_username)
             if not sender:
                 return ResponseDTO.error(message=f"发送者不存在: {sender_username}")
-                
-            # 创建基础消息对象
-            message = BaseMessage(
-                sender_id=sender.id,
-                content=content,
-                reply_to_id=reply_to_id
-            )
-            
-            if recipient_username:
-                # 私聊消息
-                recipient = await self.user_repository.get_by_username(recipient_username)
-                if not recipient:
-                    return ResponseDTO.error(message=f"接收者不存在: {recipient_username}")
-                message.recipient_id = recipient.id
-                
-            elif group_name:
+
+            # 根据目标类型创建对应的DTO
+            if group_name:
                 # 群聊消息
-                group = await self.group_repository.get_by_name(group_name)
+                group = await self._get_group_by_name(group_name)
                 if not group:
                     return ResponseDTO.error(message=f"群组不存在: {group_name}")
-                message.group_id = group.id
-                
-                # 处理@提醒
+                    
+                # 获取被@用户的ID列表
+                mentioned_ids = []
                 if mentioned_users:
-                    mentioned_ids = []
                     for username in mentioned_users:
-                        user = await self.user_repository.get_by_username(username)
+                        user = await self._user_facade.get_user_by_username(username)
                         if user:
-                            mentioned_ids.append(str(user.id))
-                    message.extra_data = {"mentioned_users": mentioned_ids}
+                            mentioned_ids.append(int(user.get('id', 0)))
+                            
+                message_dto = GroupMessageCreateDTO(
+                    sender_id=int(sender.get('id', 0)),
+                    content=content,
+                    message_type=MessageType.chat.value,
+                    content_type=MessageContentType.plain_text.value,
+                    group_id=int(group.get('id', 0)),
+                    mentioned_users=mentioned_ids
+                )
+                result = await self.save_group_message(message_dto)
+                
+            elif recipient:
+                # 私聊消息
+                recipient_info = await self._user_facade.get_user_by_username(recipient)
+                if not recipient_info:
+                    return ResponseDTO.error(message=f"接收者不存在: {recipient}")
+                    
+                message_dto = PrivateMessageCreateDTO(
+                    sender_id=int(sender.get('id', 0)),
+                    content=content,
+                    message_type=MessageType.chat.value,
+                    content_type=MessageContentType.plain_text.value,
+                    recipient_id=int(recipient_info.get('id', 0))
+                )
+                result = await self.save_private_message(message_dto)
+                
             else:
                 return ResponseDTO.error(message="必须指定接收者或群组")
                 
-            # 保存消息
-            result = await self.send(message)
-            self.lprint(f"消息保存结果: {result}")
-            
+            if not result:
+                return ResponseDTO.error(message="消息发送失败")
+                
             # 异步发送消息
-            if result:
-                asyncio.create_task(self.send_message_via_socket(result))
+            asyncio.create_task(self.send_message_via_socket(result))
             
             # 构造响应
-            if result.group_id is not None:
+            if hasattr(result, 'group_id') and result.group_id is not None:
                 response = ResponseDTO.success(data=GroupMessageDTO.from_db(result))
             else:
                 response = ResponseDTO.success(data=PrivateMessageDTO.from_db(result))
                 
-            self.lprint(f"消息处理完成: {response}")
+            lprint(f"消息处理完成: {response}")
             return response
             
         except Exception as e:
-            self.lprint(f"消息处理失败: {str(e)}")
-            self.lprint(traceback.format_exc())
+            lprint(f"消息处理失败: {str(e)}")
+            traceback.print_exc()
             return ResponseDTO.error(message=str(e))
 
     async def get_messages(
@@ -457,15 +349,15 @@ class MessageFacade(BaseFacade):
         """
         try:
             if group_id is not None:
-                self.lprint(f"获取群组 {group_id} 的消息")
+                lprint(f"获取群组 {group_id} 的消息")
                 messages = await self.group_repo.get_messages(group_id)
                 return [msg for msg in messages if isinstance(msg, BaseMessage)]
             else:
-                self.lprint(f"获取用户 {user_id} 的私聊消息")
+                lprint(f"获取用户 {user_id} 的私聊消息")
                 messages = await self.private_repo.get_messages(user_id)
                 return [msg.message for msg in messages if hasattr(msg, 'message')]
         except Exception as e:
-            self.lprint(f"获取消息列表失败: {str(e)}")
+            lprint(f"获取消息列表失败: {str(e)}")
             raise
 
     async def mark_as_read(self, message_id: int, user_id: int) -> bool:
@@ -485,8 +377,28 @@ class MessageFacade(BaseFacade):
             # 如果不是私聊消息，尝试标记群组消息
             return await self.group_repo.mark_as_read(message_id)
         except Exception as e:
-            self.lprint(f"标记消息已读失败: {str(e)}")
+            lprint(f"标记消息已读失败: {str(e)}")
             raise
+
+    async def mark_as_unread(self, message_id: int) -> bool:
+        """标记消息为未读
+        
+        Args:
+            message_id: 消息ID
+            
+        Returns:
+            bool: 是否成功
+        """
+        try:
+            # 先尝试标记私聊消息
+            if await self.private_repo.mark_as_unread(message_id):
+                return True
+            # 如果不是私聊消息，尝试标记群组消息
+            return await self.group_repo.mark_as_unread(message_id)
+        except Exception as e:
+            lprint(f"标记消息未读失败: {str(e)}")
+            traceback.print_exc()
+            return False
 
     async def get_user_messages_map(self, user_id: int) -> Dict[str, List[Union[PrivateMessageDTO, GroupMessageDTO]]]:
         """获取用户的消息映射
@@ -526,7 +438,7 @@ class MessageFacade(BaseFacade):
             return messages_map
             
         except Exception as e:
-            self.lprint(f"获取用户消息映射失败: {str(e)}")
+            lprint(f"获取用户消息映射失败: {str(e)}")
             traceback.print_exc()
             return {}
 
@@ -545,7 +457,7 @@ class MessageFacade(BaseFacade):
             # TODO: 实现消息删除逻辑
             return True
         except Exception as e:
-            self.lprint(f"删除消息失败: {str(e)}")
+            lprint(f"删除消息失败: {str(e)}")
             return False
             
     async def forward_messages(
@@ -570,7 +482,7 @@ class MessageFacade(BaseFacade):
             # TODO: 实现消息转发逻辑
             return True
         except Exception as e:
-            self.lprint(f"转发消息失败: {str(e)}")
+            lprint(f"转发消息失败: {str(e)}")
             return False
             
     async def add_reaction(self, message_id: str, emoji: str, user_id: int) -> bool:
@@ -588,7 +500,7 @@ class MessageFacade(BaseFacade):
             # TODO: 实现添加表情回应逻辑
             return True
         except Exception as e:
-            self.lprint(f"添加表情回应失败: {str(e)}")
+            lprint(f"添加表情回应失败: {str(e)}")
             return False
             
     async def remove_reaction(self, message_id: str, emoji: str, user_id: int) -> bool:
@@ -606,7 +518,7 @@ class MessageFacade(BaseFacade):
             # TODO: 实现移除表情回应逻辑
             return True
         except Exception as e:
-            self.lprint(f"移除表情回应失败: {str(e)}")
+            lprint(f"移除表情回应失败: {str(e)}")
             return False
             
     async def search_messages(
@@ -641,7 +553,7 @@ class MessageFacade(BaseFacade):
                 has_more=False
             )
         except Exception as e:
-            self.lprint(f"搜索消息失败: {str(e)}")
+            lprint(f"搜索消息失败: {str(e)}")
             raise
             
     async def get_unread_count(self, user_id: int) -> int:
@@ -657,7 +569,7 @@ class MessageFacade(BaseFacade):
             # TODO: 实现获取未读消息数量逻辑
             return 0
         except Exception as e:
-            self.lprint(f"获取未读消息数量失败: {str(e)}")
+            lprint(f"获取未读消息数量失败: {str(e)}")
             return 0
 
     async def get_chat_partners(self, user_id: int) -> List[int]:
@@ -674,37 +586,10 @@ class MessageFacade(BaseFacade):
             return await self.private_repo.get_chat_partners(user_id)
                 
         except Exception as e:
-            self.lprint(f"获取聊天伙伴失败: {str(e)}")
-            self.lprint(traceback.format_exc())
+            lprint(f"获取聊天伙伴失败: {str(e)}")
+            traceback.print_exc()
             return []
 
-    async def handle_remote_control_message(self, data: dict) -> None:
-        """处理远程控制消息
-        
-        Args:
-            data: 消息数据
-        """
-        try:
-            # 获取消息内容
-            content = data.get('content', {})
-            if not isinstance(content, dict):
-                self.lprint(f"无效的远程控制消息内容: {content}")
-                return
-                
-            # 获取控制类型和IP
-            control_type = content.get('type')
-            remote_ip = content.get('ip')
-            
-            if not all([control_type, remote_ip]):
-                self.lprint(f"远程控制消息缺少必要参数: {content}")
-                return
-                
-            self.lprint(f"处理远程控制消息: type={control_type}, ip={remote_ip}")
-            
-        except Exception as e:
-            self.lprint(f"处理远程控制消息失败: {str(e)}")
-            self.lprint(traceback.format_exc())
-            
     async def handle_open_path(self, data: dict) -> None:
         """处理打开路径消息
         
@@ -715,17 +600,179 @@ class MessageFacade(BaseFacade):
             # 获取消息内容
             content = data.get('content', {})
             if not isinstance(content, dict):
-                self.lprint(f"无效的打开路径消息内容: {content}")
+                lprint(f"无效的打开路径消息内容: {content}")
                 return
                 
             # 获取路径
             local_path = content.get('localPath')
             if not local_path:
-                self.lprint("打开路径消息缺少路径参数")
+                lprint("打开路径消息缺少路径参数")
                 return
                 
-            self.lprint(f"处理打开路径消息: path={local_path}")
+            lprint(f"处理打开路径消息: path={local_path}")
             
         except Exception as e:
-            self.lprint(f"处理打开路径消息失败: {str(e)}")
-            self.lprint(traceback.format_exc())
+            lprint(f"处理打开路径消息失败: {str(e)}")
+            traceback.print_exc()
+
+    async def save_private_message(self, message_dto: PrivateMessageCreateDTO) -> Optional[PrivateMessage]:
+        """保存私聊消息"""
+        try:
+            # 验证发送者和接收者
+            sender = await self._user_facade.get_user_by_id(message_dto.sender_id)
+            if not sender:
+                lprint(f"发送者不存在: {message_dto.sender_id}")
+                return None
+                
+            recipient = await self._user_facade.get_user_by_id(message_dto.recipient_id)
+            if not recipient:
+                lprint(f"接收者不存在: {message_dto.recipient_id}")
+                return None
+                
+            # 补充消息数据
+            message_data = message_dto.to_db_dict()
+            message_data.update({
+                "public_id": generate_public_id("pm"),  # 生成私聊消息ID
+                "created_at": datetime.now(zoneinfo.ZoneInfo("Asia/Shanghai")),
+                "updated_at": datetime.now(zoneinfo.ZoneInfo("Asia/Shanghai"))
+            })
+            
+            # 保存消息
+            return await self.private_repo.save_message(message_data)
+            
+        except Exception as e:
+            lprint(f"保存私聊消息失败: {str(e)}")
+            traceback.print_exc()
+            return None
+            
+    async def save_group_message(self, message_dto: GroupMessageCreateDTO) -> Optional[BaseMessage]:
+        """保存群聊消息"""
+        try:
+            # 验证发送者和群组
+            sender = await self._user_facade.get_user_by_id(message_dto.sender_id)
+            if not sender:
+                lprint(f"发送者不存在: {message_dto.sender_id}")
+                return None
+                
+            group = await self._get_group(message_dto.group_id)
+            if not group:
+                lprint(f"群组不存在: {message_dto.group_id}")
+                return None
+                
+            # 检查发送者是否是群成员
+            is_member = await self._check_group_member(message_dto.group_id, message_dto.sender_id)
+            if not is_member:
+                lprint(f"发送者不是群成员: sender_id={message_dto.sender_id}, group_id={message_dto.group_id}")
+                return None
+                
+            # 补充消息数据
+            message_data = message_dto.to_db_dict()
+            message_data.update({
+                "public_id": generate_public_id("gm"),  # 生成群聊消息ID
+                "created_at": datetime.now(zoneinfo.ZoneInfo("Asia/Shanghai")),
+                "updated_at": datetime.now(zoneinfo.ZoneInfo("Asia/Shanghai"))
+            })
+            
+            # 保存消息
+            return await self.group_repo.save_message(message_data)
+            
+        except Exception as e:
+            lprint(f"保存群聊消息失败: {str(e)}")
+            traceback.print_exc()
+            return None
+
+    async def _get_group_by_name(self, group_name: str) -> Optional[Dict[str, Any]]:
+        """通过群组名称获取群组信息"""
+        return await self._user_facade.get_group_by_name(group_name)
+
+    async def _check_group_member(self, group_id: int, user_id: int) -> bool:
+        """通过用户服务检查用户是否是群组成员"""
+        return await self._user_facade.check_group_member(group_id, user_id)
+
+    async def handle_socket_message(self, data: Dict[str, Any], sid: str, namespace: str = '/chat/private') -> Optional[BaseMessage]:
+        """处理WebSocket消息"""
+        try:
+            # 1. 获取发送者ID
+            lprint(f"开始处理WebSocket消息: {data}")
+            user_id = await self._websocket_facade.get_user_id_by_sid(sid)
+            if not user_id:
+                lprint(f"无法获取发送者ID, sid={sid}")
+                return None
+                
+            # 2. 确保user_id是整数类型
+            try:
+                user_id = int(user_id)
+            except (TypeError, ValueError):
+                lprint(f"无效的用户ID格式: {user_id}")
+                return None
+                
+            # 3. 添加发送者ID到消息数据
+            data['sender_id'] = user_id
+            
+            # 4. 确保消息类型正确
+            if 'message_type' not in data:
+                data['message_type'] = MessageType.chat.value
+            elif isinstance(data['message_type'], str):
+                # 将字符串类型转换为枚举值
+                message_type_map = {
+                    'chat': MessageType.chat.value,
+                    'remote_control': MessageType.remote_control.value,
+                    'open_path': MessageType.open_path.value
+                }
+                data['message_type'] = message_type_map.get(data['message_type'], MessageType.chat.value)
+            
+            # 5. 设置目标类型
+            data['target_type'] = MessageTargetType.user.value
+
+            # 6. 根据命名空间设置消息类型和目标类型
+            if 'private' in namespace:
+                # 转换recipient为recipient_id
+                if 'recipient_username' not in data:
+                    lprint("缺少接收者信息")
+                    return None
+                    
+                # 检查接收者信息是否已经是ID
+                recipient_id = None
+                if isinstance(data['recipient_username'], (int, str)):
+                    if isinstance(data['recipient_username'], str) and not data['recipient_username'].isdigit():
+                        # 如果是用户名，需要转换为ID
+                        recipient = await self._user_facade.get_user_by_username(data['recipient_username'])
+                        lprint(f"接收者recipient: {recipient}")
+                        if not recipient:
+                            lprint(f"接收者不存在: {data['recipient_username']}")
+                            return None
+                        recipient_id = recipient.id
+                    else:
+                        # 如果是ID，验证用户是否存在
+                        try:
+                            recipient_id = int(data['recipient_username'])
+                            recipient = await self._user_facade.get_user_by_id(recipient_id)
+                            if not recipient:
+                                lprint(f"接收者不存在: ID={recipient_id}")
+                                return None
+                        except (ValueError, TypeError):
+                            lprint(f"无效的接收者ID格式: {data['recipient_username']}")
+                            return None
+                else:
+                    lprint(f"无效的接收者格式: {data['recipient_username']}")
+                    return None
+                    
+                data['recipient_id'] = recipient_id
+                lprint(f"接收者ID设置为: {recipient_id}")
+                
+            # 7. 获取对应消息类型的处理器
+            handler = self.get_handler(MessageTargetType(data['target_type']),MessageType(data['message_type']))
+            if not handler:
+                lprint(f"未找到消息类型 {data['message_type']} 的处理器")
+                return None
+                
+            # 8. 处理消息
+            lprint(f"开始处理消息: {data},处理器是{handler}")
+            message = await handler.handle(data, sid)
+            await self.send_message_via_socket(message, namespace)
+            return message
+            
+        except Exception as e:
+            print(traceback.format_exc())
+            print(f"处理消息失败: {str(e)}")
+            return None

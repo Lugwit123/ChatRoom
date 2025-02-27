@@ -2,9 +2,10 @@
 菜单相关代码
 """
 from PySide6.QtCore import QPropertyAnimation, QPoint, QTimer, QEasingCurve, QRect, Qt, Signal, QThread, QObject
-from PySide6.QtWidgets import QMenu, QMessageBox, QWidget, QMainWindow
+from PySide6.QtWidgets import QMenu, QMessageBox, QWidget, QMainWindow, QLabel, QInputDialog, QLineEdit
 from PySide6.QtGui import QScreen, QGuiApplication, QIcon, QAction
 import os
+import re
 import json
 import asyncio
 import aiohttp
@@ -16,9 +17,22 @@ lprint = LM.lprint
 import time
 import yaml
 import subprocess
+from functools import partial
+
+from ..vnc.vnc_connector import vnc_connector  # VNC连接器
+from ..vnc.vnc_installer import install_vnc  # VNC安装器
+from ..handlers.chat_handler import ChatHandler  # 改为新的类名
+
 
 if TYPE_CHECKING:
     from clientend.pyqt_chatroom import MainWindow
+
+clientDir_match = re.search('.+/clientend',__file__.replace(os.sep, '/'))
+if clientDir_match:
+    clientDir = clientDir_match.group()
+else:
+    clientDir = ''
+iconDir = os.path.join(clientDir, 'icons')
 
 class ActionWorker(QObject):
     """处理菜单动作的工作线程"""
@@ -38,7 +52,7 @@ class ActionWorker(QObject):
             self.finished.emit()
         except Exception as e:
             lprint(f"工作线程执行失败: {str(e)}")
-            lprint(traceback.format_exc())
+            traceback.print_exc()
             self.error.emit(str(e))
 
 class HoverMenu(QMenu):
@@ -46,45 +60,39 @@ class HoverMenu(QMenu):
     
     # 定义信号
     message_received = Signal(dict)  # 收到新消息的信号
-    login_status_changed = Signal(bool)  # 登录状态变化信号
     
     def __init__(self, parent: Optional['MainWindow'] = None):
-        try:
-            super().__init__(parent)
-            self._parent_window = parent  # 保存父窗口引用
-            
-            # 消息相关
-            self.unread_messages = {}  # 存储未读消息 {用户名: 消息数量}
-            self.message_received.connect(self.handle_new_message)
-            
-            # 登录相关
-            self.is_logged_in = False
-            self.token = None
-            self.username = None
-            
-            # 设置UI
-            self.setup_menu_actions()  # 先设置菜单项
-            self.setup_login_ui()      # 再设置登录UI
-        except Exception as e:
-            lprint(f"HoverMenu 初始化失败: {str(e)}")
-            lprint(traceback.format_exc())
-            raise
+        super().__init__(parent)
+        self._parent_window = parent  # 保存父窗口引用
+        self.chat_handler = ChatHandler.get_instance()  # 使用新的类名
+        
+        # 消息相关
+        self.unread_messages = {}  # 存储未读消息 {用户名: 消息数量}
+        self.message_received.connect(self.handle_new_message)
+        
+        # 设置UI
+        self.init_login_ui()      # 先设置登录UI
+        self.setup_menu_actions()  # 再设置菜单项
+        
+        # 样式已移到 dark_theme.qss，这里不需要重复定义
         
     def get_main_window(self) -> Optional['MainWindow']:
         """获取主窗口实例"""
         return self._parent_window
         
-    def setup_login_ui(self):
+    def init_login_ui(self):
         """设置登录相关UI"""
         try:
             # 用户信息按钮
             main_window = self.get_main_window()
             if main_window and hasattr(main_window, 'userName'):
                 username = main_window.userName
+                lprint(f"用户名: {username}")
                 if username:
                     # 创建用户信息动作
-                    self.user_action = QAction(QIcon(os.path.join(os.path.dirname(__file__), '..', '..', 'icons', 'user.svg')), 
-                                          f"当前用户: {username}", self)
+                    lprint(os.path.exists(os.path.join(iconDir, 'user.svg')))
+                    self.user_action = QAction(QIcon(os.path.join(iconDir, 'user.svg')), 
+                                        "等待连接", self)  
                     
                     # 设置工具提示
                     project_info = getattr(main_window, 'project_info', {})
@@ -96,6 +104,10 @@ class HoverMenu(QMenu):
                         tooltip_text += f"<tr><td><b>邮箱:</b></td><td style='padding-left:10px'>{project_info.get('Email', '')}</td></tr>"
                         tooltip_text += f"<tr><td><b>用户组:</b></td><td style='padding-left:10px'>{', '.join(group['name'] for group in project_info.get('userGroups', []))}</td></tr>"
                         tooltip_text += f"<tr><td><b>自定义组:</b></td><td style='padding-left:10px'>{', '.join(project_info.get('customGroups', []))}</td></tr>"
+                        # 添加设备ID信息
+                        device_id = project_info.get('device_id', '待获取')
+                        if device_id:
+                            tooltip_text += f"<tr><td><b>设备ID:</b></td><td style='padding-left:10px'>{device_id}</td></tr>"
                         tooltip_text += "</table>"
                         tooltip_text += "</body></html>"
                         self.user_action.setToolTip(tooltip_text)
@@ -104,26 +116,14 @@ class HoverMenu(QMenu):
                         self.setToolTipDuration(10000)  # 设置为10秒
                     
                     self.user_action.triggered.connect(self.show_user_info)
+
+                    self.addAction(self.user_action)
                     
-                    # 将用户信息动作插入到菜单最顶部
-                    actions = self.actions()
-                    if actions:
-                        self.insertAction(actions[0], self.user_action)
-                    else:
-                        self.addAction(self.user_action)
-                    
-                    # 添加分隔线
-                    if actions:
-                        self.insertSeparator(actions[0])
-                    else:
-                        self.addSeparator()
-                        
-                    # 默认隐藏用户信息按钮,等登录后显示
-                    self.user_action.setVisible(False)
+                    self.addSeparator()
                         
         except Exception as e:
             lprint(f"设置登录UI失败: {str(e)}")
-            lprint(traceback.format_exc())
+            traceback.print_exc()
 
     def show_user_info(self):
         """显示用户详情"""
@@ -143,11 +143,64 @@ class HoverMenu(QMenu):
                         QMessageBox.information(main_window, "用户信息", info_text)
         except Exception as e:
             lprint(f"显示用户信息失败: {str(e)}")
-            lprint(traceback.format_exc())
+            traceback.print_exc()
+
+    def check_remote_control_permission(self, action_type: str = 'request') -> bool:
+        """检查是否有远程控制权限
+        
+        Args:
+            action_type: 控制类型,'request'表示请求对方控制,'control'表示主动控制对方
+            
+        Returns:
+            bool: 是否有权限
+        """
+        try:
+            # 如果是请求对方控制,直接返回True
+            if action_type == 'accept':
+                return True
+                
+            # 以下是主动请求控制的权限验证
+            main_window = self.get_main_window()
+            if not main_window or not hasattr(main_window, 'project_info'):
+                return False
+                
+            project_info = main_window.project_info
+            if not isinstance(project_info, dict):
+                return False
+                
+            # 检查用户组
+            user_groups = project_info.get('userGroups', [])
+            lprint(user_groups)
+            for group in user_groups:
+                if isinstance(group, dict) and group.get('name') == 'TD':
+                    return True
+                    
+            # 如果不在TD组,弹出密码输入对话框
+            password, ok = QInputDialog.getText(
+                self,
+                "远程控制验证",
+                "请输入远程控制密码:",
+                QLineEdit.EchoMode.Password
+            )
+            
+            if ok and password == "fqq":
+                return True
+                
+            return False
+            
+        except Exception as e:
+            lprint(f"检查远程控制权限失败: {str(e)}")
+            traceback.print_exc()
+            return False
 
     def setup_menu_actions(self):
-        """设置菜单动作"""
+        # NOTE """设置菜单动作"""
         try:
+            # 创建控制子菜单
+            self.control_menu = QMenu("主动控制", self)
+            self.control_menu.setIcon(QIcon(os.path.join(os.path.dirname(__file__), '..', '..', 'icons', 'control.svg')))
+            self.addMenu(self.control_menu)
+            
             # 从yaml配置文件读取远程控制选项
             config_path = os.path.join(os.path.dirname(__file__), '..', '..', 'config', 'remote_control.yaml')
             try:
@@ -158,27 +211,25 @@ class HoverMenu(QMenu):
                         try:
                             lprint(f"添加远程控制选项: {option['label']}")
                             action = QAction(QIcon(os.path.join(os.path.dirname(__file__), '..', '..', 'icons', 'remote.svg')), 
-                                          option['label'], self)
+                                        option['label'], self)
+                            # 邀请控制列表
                             if option['action'] == 'request':
-                                action.triggered.connect(
-                                    lambda checked, opt=option: self.request_remote_control(
-                                        username, opt.get('username'), opt.get('type')
-                                    )
-                                )
+                                action.triggered.connect(lambda checked=False, opt=option: asyncio.create_task(self.handle_request(opt)))
+                                self.addAction(action)
                             elif option['action'] == 'connect':
                                 action.triggered.connect(
                                     lambda checked, host=option['host'], port=option['port'], 
-                                           password=option['password']: self.connect_vnc(host, port, password)
+                                       password=option['password']: self.connect_vnc(host, port, password, 'request')
                                 )
-                            self.addAction(action)
+                                self.control_menu.addAction(action)
                             lprint(f"远程控制选项 {option['label']} 添加成功")
                         except Exception as e:
                             lprint(f"添加远程控制选项 {option.get('label', '未知')} 失败: {str(e)}")
-                            lprint(traceback.format_exc())
+                            traceback.print_exc()
                 lprint("远程控制选项添加完成")
             except Exception as e:
                 lprint(f"加载远程控制配置失败: {str(e)}")
-                lprint(traceback.format_exc())
+                traceback.print_exc()
 
             # 添加分隔线
             self.addSeparator()
@@ -196,7 +247,7 @@ class HoverMenu(QMenu):
             
             # 添加登录/登出按钮
             self.login_action = QAction(QIcon(os.path.join(os.path.dirname(__file__), '..', '..', 'icons', 'login.svg')), 
-                                      "登录", self)
+                                      "登录/重新登录", self)
             self.login_action.triggered.connect(self.handle_login)
             self.addAction(self.login_action)
             
@@ -217,9 +268,10 @@ class HoverMenu(QMenu):
                     lprint("设置退出按钮动作")
                     self.exit_action.triggered.connect(self.handle_exit_action)
             self.addAction(self.exit_action)
+            self.addAction(QAction("", self))
         except Exception as e:
             lprint(f"设置菜单动作失败: {str(e)}")
-            lprint(traceback.format_exc())
+            traceback.print_exc()
 
     def handle_action_in_thread(self, action_name: str, callback: Callable):
         """在线程中处理动作"""
@@ -245,7 +297,7 @@ class HoverMenu(QMenu):
             
         except Exception as e:
             lprint(f"创建工作线程失败: {str(e)}")
-            lprint(traceback.format_exc())
+            traceback.print_exc()
 
     def handle_new_message(self, message_data: dict):
         """处理新消息"""
@@ -262,7 +314,7 @@ class HoverMenu(QMenu):
                     main_window.start_blinking()
         except Exception as e:
             lprint(f"处理新消息错误: {str(e)}")
-            lprint(traceback.format_exc())
+            traceback.print_exc()
             
     def update_menu_items(self):
         """更新菜单项显示"""
@@ -281,7 +333,7 @@ class HoverMenu(QMenu):
                             action.setIcon(QIcon(icon_path))
         except Exception as e:
             lprint(f"更新菜单项显示错误: {str(e)}")
-            lprint(traceback.format_exc())
+            traceback.print_exc()
             
     def mark_messages_read(self, sender: str):
         """标记指定发送者的消息为已读"""
@@ -295,185 +347,82 @@ class HoverMenu(QMenu):
                     main_window.stop_blinking()
         except Exception as e:
             lprint(f"标记消息已读错误: {str(e)}")
-            lprint(traceback.format_exc())
+            traceback.print_exc()
             
     def showEvent(self, event):
-        """显示菜单时的事件处理"""
+        """菜单显示时更新状态标签位置"""
         try:
             super().showEvent(event)
-            # 使用QTimer添加一个很小的延迟
-            QTimer.singleShot(10, self.update_menu_items)
+            
+            # 更新用户状态
+            if self._parent_window and hasattr(self._parent_window, 'chat_handler'):
+                is_connected = self._parent_window.chat_handler.is_connected
+                self.update_login_status(is_connected)
+                    
         except Exception as e:
-            lprint(f"菜单显示错误: {str(e)}")
-            lprint(traceback.format_exc())
+            lprint(f"显示菜单事件处理失败: {str(e)}")
+            traceback.print_exc()
 
     def hideEvent(self, event):
-        """隐藏事件处理"""
+        """菜单隐藏时隐藏状态标签"""
         try:
             super().hideEvent(event)
         except Exception as e:
-            lprint(f"处理菜单隐藏事件失败: {str(e)}")
-            lprint(traceback.format_exc())
+            lprint(f"隐藏菜单事件处理失败: {str(e)}")
+            traceback.print_exc()
             
-    def mousePressEvent(self, event):
-        """鼠标按下事件"""
-        try:
-            action = self.actionAt(event.pos())
-            if action:
-                lprint(f"菜单项被点击: {action.text()}")
-            super().mousePressEvent(event)
-        except Exception as e:
-            lprint(f"鼠标按下事件错误: {str(e)}")
-            lprint(traceback.format_exc())
-            
-    def mouseReleaseEvent(self, event):
-        """鼠标释放事件"""
-        try:
-            # 先调用父类的事件处理
-            super().mouseReleaseEvent(event)
-            
-            # 获取点击的动作
-            action = self.actionAt(event.pos())
-            if action:
-                lprint(f"处理菜单项点击: {action.text()}, 按键: {event.button()}")
-                if action == self.exit_action and event.button() == Qt.MouseButton.LeftButton:
-                    event.accept()
-                    return
-                
-        except Exception as e:
-            lprint(f"处理鼠标释放事件失败: {str(e)}")
-            lprint(traceback.format_exc())
             
     @asyncSlot()
     async def handle_login(self):
         """处理登录/登出操作"""
         try:
-            if not self.is_logged_in:
-                # 获取用户名和密码
-                main_window = self.get_main_window()
-                if main_window and hasattr(main_window, 'userName'):
-                    username = main_window.userName
-                    password = "666"  # 固定密码
-                    if username:
-                        try:
-                            success = await self.login(username, password)
-                            if success:
-                                lprint("登录成功")
-                            else:
-                                lprint("登录失败")
-                        except Exception as e:
-                            lprint(f"登录过程出错: {str(e)}")
-                            lprint(traceback.format_exc())
-            else:
-                # 处理登出
-                self.logout()
-        except Exception as e:
-            lprint(f"处理登录/登出操作失败: {str(e)}")
-            lprint(traceback.format_exc())
-
-    async def login(self, username: str, password: str) -> bool:
-        """登录到服务器"""
-        try:
-            # 获取服务器地址
-            server_ip = os.getenv('SERVER_IP', 'localhost')
-            server_port = int(os.getenv('SERVER_PORT', '1026'))
-            base_url = f'http://{server_ip}:{server_port}'
-            
-            async with aiohttp.ClientSession() as session:
-                data = aiohttp.FormData()
-                data.add_field('username', username)
-                data.add_field('password', password)
-                data.add_field('grant_type', 'password')
-                data.add_field('scope', '')
-                data.add_field('client_id', '')
-                data.add_field('client_secret', '')
-                
-                headers = {
-                    'Accept': 'application/json',
-                }
-                
-                async with session.post(
-                    f'{base_url}/api/auth/login',
-                    data=data,
-                    headers=headers
-                ) as response:
-                    if response.status == 200:
-                        result = await response.json()
-                        self.token = result.get('access_token')
-                        self.username = username
-                        self.is_logged_in = True
-                        self.update_login_status()
-                        # 通知父窗口登录成功
-                        main_window = self.get_main_window()
-                        if main_window and hasattr(main_window, 'on_login_success'):
-                            await main_window.on_login_success(self.token)
-                        return True
-                    else:
-                        response_text = await response.text()
-                        lprint(f"登录失败: {response_text}")
-                        return False
-        except Exception as e:
-            lprint(f"登录过程出错: {str(e)}")
-            lprint(traceback.format_exc())
-            return False
-
-    def logout(self):
-        """登出"""
-        try:
-            self.is_logged_in = False
-            self.token = None
-            self.username = None
-            self.update_login_status()
-            # 通知父窗口登出
-            main_window = self.get_main_window()
-            if main_window and hasattr(main_window, 'on_logout'):
-                main_window.on_logout()
-        except Exception as e:
-            lprint(f"登出过程出错: {str(e)}")
-            lprint(traceback.format_exc())
-            
-    def update_login_status(self):
-        """更新登录状态显示"""
-        if self.is_logged_in:
-            # 更新登录按钮
-            self.login_action.setText(f"登出 ({self.username})")
-            self.login_action.setIcon(QIcon(os.path.join(os.path.dirname(__file__), '..', '..', 'icons', 'logout.svg')))
-            
-            # 更新用户信息按钮
-            if hasattr(self, 'user_action'):
-                self.user_action.setText(f"当前用户: {self.username}")
-                self.user_action.setIcon(QIcon(os.path.join(os.path.dirname(__file__), '..', '..', 'icons', 'user.svg')))
-                self.user_action.setVisible(True)
-        else:
-            # 更新登录按钮
-            self.login_action.setText("登录")
-            self.login_action.setIcon(QIcon(os.path.join(os.path.dirname(__file__), '..', '..', 'icons', 'login.svg')))
-            
-            # 隐藏用户信息按钮
-            if hasattr(self, 'user_action'):
-                self.user_action.setVisible(False)
-                
-    def handle_exit_action(self):
-        """处理退出动作的确认对话框"""
-        try:
-            lprint("触发退出按钮")
             main_window = self.get_main_window()
             if main_window:
-                msg_box = QMessageBox(main_window)
-                msg_box.setWindowTitle("确认退出")
-                msg_box.setText("确定要退出程序吗？")
-                msg_box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-                msg_box.setDefaultButton(QMessageBox.StandardButton.No)
-                
-                reply = msg_box.exec()
-                if reply == QMessageBox.StandardButton.Yes:
-                    lprint("用户确认退出")
-                    self.handle_action_in_thread("退出", main_window.exit_application)
-                else:
-                    lprint("用户取消退出")
+                await main_window.handle_login()
         except Exception as e:
-            lprint(f"处理退出动作失败: {str(e)}")
-            lprint(traceback.format_exc())
+            lprint(f"处理登录/登出操作失败: {str(e)}")
+            traceback.print_exc()
+
+
+    def update_login_status(self, is_connected: bool):
+        """更新用户状态显示"""
+        try:
+            if hasattr(self, 'user_action'):
+                if is_connected:
+                    self.user_action.setText(f"{self._parent_window.userName}   已连接")
+                    self.update_tooltip()  # 更新工具提示
+                else:
+                    self.user_action.setText("等待连接")
+        except Exception as e:
+            lprint(f"更新登录状态失败: {str(e)}")
+            traceback.print_exc()
+
+    def update_tooltip(self):
+        """更新工具提示"""
+        try:
+            main_window = self.get_main_window()
+            if main_window and hasattr(main_window, 'userName'):
+                username = main_window.userName
+                if username and hasattr(self, 'user_action'):
+                    project_info = getattr(main_window, 'project_info', {})
+                    if project_info:
+                        tooltip_text = "<html><body style='white-space:pre;'>"
+                        tooltip_text += "<table style='border-spacing: 5px;'>"
+                        tooltip_text += f"<tr><td><b>用户名:</b></td><td style='padding-left:10px'>{username}</td></tr>"
+                        tooltip_text += f"<tr><td><b>全名:</b></td><td style='padding-left:10px'>{project_info.get('FullName', '')}</td></tr>"
+                        tooltip_text += f"<tr><td><b>邮箱:</b></td><td style='padding-left:10px'>{project_info.get('Email', '')}</td></tr>"
+                        tooltip_text += f"<tr><td><b>用户组:</b></td><td style='padding-left:10px'>{', '.join(group['name'] for group in project_info.get('userGroups', []))}</td></tr>"
+                        tooltip_text += f"<tr><td><b>自定义组:</b></td><td style='padding-left:10px'>{', '.join(project_info.get('customGroups', []))}</td></tr>"
+                        # 添加设备ID信息
+                        device_id = project_info.get('device_id', '待获取')
+                        if device_id:
+                            tooltip_text += f"<tr><td><b>设备ID:</b></td><td style='padding-left:10px'>{device_id}</td></tr>"
+                        tooltip_text += "</table>"
+                        tooltip_text += "</body></html>"
+                        self.user_action.setToolTip(tooltip_text)
+        except Exception as e:
+            lprint(f"更新工具提示失败: {str(e)}")
+            traceback.print_exc()
 
     def popup(self, pos):
         """重写popup方法来调整菜单位置"""
@@ -507,7 +456,7 @@ class HoverMenu(QMenu):
             
         except Exception as e:
             lprint(f"显示菜单错误: {str(e)}")
-            lprint(traceback.format_exc())
+            traceback.print_exc()
             # 如果出错，使用默认位置显示
             super().popup(pos) 
 
@@ -531,150 +480,72 @@ class HoverMenu(QMenu):
         if main_window:
             main_window.restart_application()
 
-    def connect_vnc(self, host: str, port: int, password: str) -> None:
-        """连接VNC服务器"""
-        try:
-            # 尝试连接VNC服务器
-            app = Application().start(
-                f'"D:\\TD_Depot\\Software\\ProgramFilesLocal\\RealVNC\\VNC Viewer\\vncviewer.exe" {host}:{port}'
-            )
-            
-            # 等待认证窗口出现
-            try:
-                dlg = app.window(title='Authentication')
-                dlg.wait('exists', timeout=5)  # 增加超时时间
-            except Exception as e:
-                reply = QMessageBox.warning(
-                    parent=self,
-                    title="连接失败",
-                    text="无法连接到VNC服务器，请检查服务器是否在线",
-                    button0=QMessageBox.StandardButton.Ok,
-                    button1=QMessageBox.StandardButton.Ok
-                )
-                return
-                
-            # 输入密码
-            try:
-                password_input = dlg.child_window(class_name="Edit", found_index=1)
-                password_input.type_keys(password, with_spaces=True)
-                
-                ok_button = dlg.child_window(title="OK", class_name="Button")
-                ok_button.click()
-            except Exception as e:
-                reply = QMessageBox.warning(
-                    parent=self,
-                    title="认证失败",
-                    text="无法完成VNC认证，请检查密码是否正确",
-                    button0=QMessageBox.StandardButton.Ok,
-                    button1=QMessageBox.StandardButton.Ok
-                )
-                return
-                
-        except Exception as e:
-            reply = QMessageBox.warning(
-                parent=self,
-                title="连接失败",
-                text=f"连接VNC服务器时发生错误: {str(e)}",
-                button0=QMessageBox.StandardButton.Ok,
-                button1=QMessageBox.StandardButton.Ok
-            )
-
-    @asyncSlot()
-    async def request_remote_control(self, sender: Optional[str], recipient: Optional[str], role_type: Optional[str]):
-        """请求远程控制"""
-        if not all([sender, recipient, role_type]):
-            reply = QMessageBox.warning(
-                parent=self,
-                title="参数错误",
-                text="远程控制请求缺少必要参数",
-                button0=QMessageBox.StandardButton.Ok,
-                button1=QMessageBox.StandardButton.Ok
-            )
-            return
-
-        main_window = self.get_main_window()
-        if not main_window:
-            return
-
-        # 检查VNC版本和运行状态
-        is_v7, version = main_window.check_vnc_version()
+    def connect_vnc(self, host: str, port: int, password: str, action_type: str = 'request') -> None:
+        """连接VNC服务器
         
-        if is_v7:
-            # 如果是7.x版本，检查是否在运行
-            if main_window.is_vnc_running():
-                # VNC已在运行，直接发送远程控制请求
-                if sender and recipient and role_type:  # Type narrowing
-                    await main_window.chat_handler._send_remote_control_message(sender, recipient, role_type)
-                return
-            else:
-                # VNC 7.x已安装但未运行，启动服务
-                try:
-                    subprocess.run(['net', 'start', 'vncserver'], check=True)
-                    if sender and recipient and role_type:  # Type narrowing
-                        await main_window.chat_handler._send_remote_control_message(sender, recipient, role_type)
-                    return
-                except subprocess.CalledProcessError:
-                    reply = QMessageBox.warning(
-                        parent=self,
-                        title="启动服务失败",
-                        text="VNC服务启动失败，请手动启动服务或重新安装。",
-                        button0=QMessageBox.StandardButton.Ok,
-                        button1=QMessageBox.StandardButton.Ok
-                    )
-                    return
-        else:
-            # 不是7.x版本，提示安装
-            reply = QMessageBox.question(
-                parent=self,
-                title="安装VNC Server",
-                text=f"当前{'未安装VNC Server' if not version else f'VNC版本为{version}'}\n"
-                     "需要安装VNC Server 7.x版本才能使用远程控制功能。\n"
-                     "是否现在安装？",
-                button0=QMessageBox.StandardButton.Yes,
-                button1=QMessageBox.StandardButton.No
-            )
-            
-            if reply != QMessageBox.StandardButton.Yes:
-                return
-
-        # 复制VNC服务器文件
-        subprocess.run(['robocopy','/MIR',
-            LM.ProgramFilesLocal_Public+r'\VNC-Server',
-            r'D:\TD_Depot\Temp\VNC-Server'
-        ])
-        os.makedirs(r'D:\TD_Depot\Temp\VNC-Server',exist_ok=True)
-
+        Args:
+            host: 主机地址
+            port: 端口号
+            password: 密码
+        """
         try:
-            # 运行安装程序
-            result = subprocess.run(
-                [r'D:\TD_Depot\Temp\VNC-Server\Installer.exe', '/qn'],
-                capture_output=True,
-                text=True
-            )
-            
-            if result.stderr:
-                lprint(f"VNC安装错误输出: {result.stderr}")
-                reply = QMessageBox.warning(
-                    parent=self,
-                    title="安装失败",
-                    text=f"VNC服务安装失败\n{result.stderr}",
-                    button0=QMessageBox.StandardButton.Ok,
-                    button1=QMessageBox.StandardButton.Ok
+            # 检查权限,传入action_type='request'表示主动请求控制
+            if not self.check_remote_control_permission(action_type):
+                QMessageBox.warning(
+                    self,
+                    "权限不足",
+                    "您没有远程控制权限,请联系管理员或输入正确的密码。",
+                    QMessageBox.StandardButton.Ok,
+                    QMessageBox.StandardButton.Ok
                 )
+                return
+            
+            # 使用vnc_connector模块连接
+            if vnc_connector.connect(host):
+                lprint(f"VNC连接成功: {host}:{port}")
             else:
-                lprint("VNC安装成功")
-                # 等待服务启动
-                await asyncio.sleep(2)
-                # 发送远程控制请求
-                if sender and recipient and role_type:  # Type narrowing
-                    await main_window.chat_handler._send_remote_control_message(sender, recipient, role_type)
-
+                QMessageBox.warning(
+                    self,
+                    "连接失败",
+                    "无法连接到VNC服务器，请检查服务器是否在线",
+                    QMessageBox.StandardButton.Ok,
+                    QMessageBox.StandardButton.Ok
+                )
+                
         except Exception as e:
-            lprint(f"远程控制准备失败: {str(e)}")
-            reply = QMessageBox.warning(
-                parent=self,
-                title="远程控制准备",
-                text=f"远程控制准备失败: {str(e)}",
-                button0=QMessageBox.StandardButton.Ok,
-                button1=QMessageBox.StandardButton.Ok
-            ) 
+            lprint(f"连接VNC服务器失败: {str(e)}")
+            traceback.print_exc()
+            QMessageBox.warning(
+                self,
+                "连接失败",
+                f"连接VNC服务器时发生错误: {str(e)}",
+                QMessageBox.StandardButton.Ok,
+                QMessageBox.StandardButton.Ok
+            )
+
+
+    def handle_exit_action(self):
+        """处理退出动作的确认对话框"""
+        try:
+            lprint("触发退出按钮")
+            main_window = self.get_main_window()
+            if main_window:
+                msg_box = QMessageBox(main_window)
+                msg_box.setWindowTitle("确认退出")
+                msg_box.setText("确定要退出程序吗？")
+                msg_box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+                msg_box.setDefaultButton(QMessageBox.StandardButton.No)
+                
+                reply = msg_box.exec()
+                if reply == QMessageBox.StandardButton.Yes:
+                    lprint("用户确认退出")
+                    self.handle_action_in_thread("退出", main_window.exit_application)
+                else:
+                    lprint("用户取消退出")
+        except Exception as e:
+            lprint(f"处理退出动作失败: {str(e)}")
+            traceback.print_exc()
+
+    async def handle_request(self, option):
+        """处理远程控制请求"""
+        await self.chat_handler._send_remote_control_message(option) 

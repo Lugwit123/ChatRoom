@@ -5,7 +5,7 @@
 import Lugwit_Module as LM
 from typing import Dict, Any, Optional, TypeVar, Type
 import socketio
-from .events.event_bus_service import EventBusService
+from app.core.events.event_bus_service import EventBusService
 import hashlib
 import jwt
 from datetime import datetime, timedelta

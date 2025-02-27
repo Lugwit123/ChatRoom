@@ -21,7 +21,7 @@ class IConnectionManager(ABC):
         pass
         
     @abstractmethod
-    def get_user_id(self, sid: str) -> Optional[str]:
+    def get_user_id_by_sid(self, sid: str) -> Optional[str]:
         """获取会话对应的用户ID"""
         pass
         
@@ -65,7 +65,22 @@ class IRoomManager(ABC):
         
     @abstractmethod
     async def remove_sid(self, sid: str) -> None:
-        """清理用户的所有房间记录"""
+        """移除会话ID对应的所有房间记录"""
+        pass
+        
+    @abstractmethod
+    def generate_room_name(self, user1_id: int, user2_id: int) -> str:
+        """生成私聊房间名称
+        
+        按照房间命名规则生成私聊房间名称，确保两个用户ID按升序排列
+        
+        Args:
+            user1_id: 用户1的ID
+            user2_id: 用户2的ID
+            
+        Returns:
+            str: 生成的房间名称，格式为 private_{user1_id}_{user2_id}
+        """
         pass
 
 class IWebSocketEventHandler(ABC):

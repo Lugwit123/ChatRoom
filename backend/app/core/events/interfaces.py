@@ -9,31 +9,37 @@ from enum import Enum, auto
 
 T = TypeVar('T')
 
-class EventType(Enum):
+class EventType(str, Enum):
     """事件类型枚举"""
     # 用户事件
-    USER_LOGIN = "user.login"
-    USER_LOGOUT = "user.logout"
-    USER_CREATED = "user.created"
-    USER_UPDATED = "user.updated"
-    USER_DELETED = "user.deleted"
-    USER_STATUS_CHANGED = "user.status_changed"
+    user_login = "user.login"
+    user_logout = "user.logout"
+    user_created = "user.created"
+    user_updated = "user.updated"
+    user_deleted = "user.deleted"
+    user_status_changed = "user.status_changed"
+    user_query = "user.query"  # 用户查询
     
     # 消息事件
-    MESSAGE_SENT = "message.sent"
-    MESSAGE_RECEIVED = "message.received"
-    MESSAGE_READ = "message.read"
-    MESSAGE_DELETED = "message.deleted"
+    private_message_sent = "message.private.sent"
+    group_message_sent = "message.group.sent"
+    message_received = "message.received"
+    message_read = "message.read"
+    message_deleted = "message.deleted"
+    
+    # 群组事件
+    group_query = "group.query"  # 群组查询
+    group_member_check = "group.member.check"  # 群组成员检查
     
     # 设备事件
-    DEVICE_CONNECTED = "device.connected"
-    DEVICE_DISCONNECTED = "device.disconnected"
-    DEVICE_STATUS_CHANGED = "device.status_changed"
+    device_connected = "device.connected"
+    device_disconnected = "device.disconnected"
+    device_status_changed = "device.status_changed"
     
     # WebSocket事件
-    WEBSOCKET_CONNECTED = "websocket.connected"
-    WEBSOCKET_DISCONNECTED = "websocket.disconnected"
-    WEBSOCKET_ERROR = "websocket.error"
+    websocket_connected = "websocket.connected"
+    websocket_disconnected = "websocket.disconnected"
+    websocket_error = "websocket.error"
 
 @runtime_checkable
 class Event(Protocol):
@@ -47,6 +53,11 @@ class BaseEvent:
     event_type: EventType
     created_at: datetime = field(default_factory=datetime.now)
     metadata: Dict[str, Any] = field(default_factory=dict)
+    
+    def __lt__(self, other):
+        if not isinstance(other, BaseEvent):
+            return NotImplemented
+        return self.created_at < other.created_at
 
 @dataclass
 class UserEvent:
@@ -57,6 +68,11 @@ class UserEvent:
     data: Dict[str, Any] = field(default_factory=dict)
     created_at: datetime = field(default_factory=datetime.now)
     metadata: Dict[str, Any] = field(default_factory=dict)
+    
+    def __lt__(self, other):
+        if not isinstance(other, UserEvent):
+            return NotImplemented
+        return self.created_at < other.created_at
 
 @dataclass
 class MessageEvent:
@@ -69,6 +85,18 @@ class MessageEvent:
     metadata: Dict[str, Any] = field(default_factory=dict)
     recipient_id: Optional[int] = field(default=None)
     group_id: Optional[int] = field(default=None)
+    _process_count: int = field(default=0)  # 处理计数器
+    MAX_PROCESS_COUNT: int = 3  # 最大处理次数
+    
+    def __lt__(self, other):
+        if not isinstance(other, MessageEvent):
+            return NotImplemented
+        return self.created_at < other.created_at
+        
+    def increment_process_count(self) -> bool:
+        """增加处理计数，并返回是否可以继续处理"""
+        self._process_count += 1
+        return self._process_count <= self.MAX_PROCESS_COUNT
 
 @dataclass
 class DeviceEvent:
@@ -80,6 +108,11 @@ class DeviceEvent:
     created_at: datetime = field(default_factory=datetime.now)
     metadata: Dict[str, Any] = field(default_factory=dict)
     ip_address: Optional[str] = field(default=None)
+    
+    def __lt__(self, other):
+        if not isinstance(other, DeviceEvent):
+            return NotImplemented
+        return self.created_at < other.created_at
 
 @dataclass
 class WebSocketEvent:
@@ -91,9 +124,14 @@ class WebSocketEvent:
     metadata: Dict[str, Any] = field(default_factory=dict)
     user_id: Optional[int] = field(default=None)
     device_id: Optional[str] = field(default=None)
+    
+    def __lt__(self, other):
+        if not isinstance(other, WebSocketEvent):
+            return NotImplemented
+        return self.created_at < other.created_at
 
 # 修改事件处理器类型定义
-EventHandler = Union[Callable[[Event], None], Callable[[Event], Awaitable[None]]]
+EventHandler = Union[Callable[[Event], Any], Callable[[Event], Awaitable[Any]]]
 
 @runtime_checkable
 class EventSubscriber(Protocol):

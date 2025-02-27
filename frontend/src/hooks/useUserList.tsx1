@@ -1,11 +1,11 @@
 // frontend/src/hooks/useUserList.tsx
 
 import { useEffect } from 'react';
-import { UserBaseAndStatus, AccountsMap, Group } from '../types/types';
+import { UserBaseAndDevices, AccountsMap, Group } from '../types/types';
 
 interface UseUserListProps {
     token: string | null;
-    current_user: UserBaseAndStatus | null;
+    current_user: UserBaseAndDevices | null;
     updateUsers: React.Dispatch<React.SetStateAction<AccountsMap>>;
     onError: (error: string) => void;
     setError: React.Dispatch<React.SetStateAction<string | null>>;

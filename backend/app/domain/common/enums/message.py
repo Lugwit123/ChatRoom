@@ -195,8 +195,6 @@ class MessageTargetType(IntEnum):
     """
     user = 1
     group = 2
-    broadcast = 3
-    all = 4
 
 class MessageDirection(IntEnum):
     """消息方向枚举
@@ -212,6 +210,72 @@ class MessageDirection(IntEnum):
     """
     response = 1
     request = 2
+    unknown = 3
+
+class RemoteControlResponseStatus(IntEnum):
+    """远程控制响应状态枚举
+    
+    用于定义远程控制请求的响应状态。
+    
+    Attributes:
+        accepted:
+            接受远程控制请求
+        
+        rejected:
+            拒绝远程控制请求
+    """
+    wait_server_return_message_id = 1
+    accepted = 2
+    rejected = 3
+
+
+class RemoteControlResponse:
+    """远程控制响应结构
+    
+    用于定义远程控制响应的数据结构。
+    
+    Attributes:
+        status (RemoteControlResponseStatus): 响应状态
+        reason (str): 响应原因
+        nickname (str): 响应用户昵称
+        ip (str): 响应用户IP地址
+    """
+    def __init__(self, status: RemoteControlResponseStatus, reason: str, nickname: str, ip: str):
+        self.status = status
+        self.reason = reason
+        self.nickname = nickname
+        self.ip = ip
+        
+    def to_dict(self) -> Dict[str, Any]:
+        """转换为字典格式
+        
+        Returns:
+            Dict[str, Any]: 字典格式的响应数据
+        """
+        return {
+            'status': self.status.name,
+            'reason': self.reason,
+            'nickname': self.nickname,
+            'ip': self.ip
+        }
+        
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'RemoteControlResponse':
+        """从字典创建响应对象
+        
+        Args:
+            data (Dict[str, Any]): 字典格式的响应数据
+            
+        Returns:
+            RemoteControlResponse: 响应对象
+        """
+        status = RemoteControlResponseStatus.accepted if data['status'] == 'accepted' else RemoteControlResponseStatus.rejected
+        return cls(
+            status=status,
+            reason=data['reason'],
+            nickname=data['nickname'],
+            ip=data['ip']
+        )
 
 def get_all_enums() -> Dict[str, Dict[str, Any]]:
     """获取所有枚举的定义

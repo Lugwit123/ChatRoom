@@ -1,4 +1,8 @@
 ---
+description: 
+globs: 
+---
+---
 description: 客户端(PC端规则文件)
 globs: 
 ---
@@ -8,6 +12,7 @@ globs:
 - 向前声明防止循环依赖，确保类型提示永无误
 - 在Qt应用中处理异步菜单动作时，不要使用lambda: asyncio.create_task()的方式，而应该使用@asyncSlot()装饰器创建处理器函数，并在其中调用handle_action_triggered方法，以确保异步任务能在Qt事件循环中正确执行。
 - 在Qt应用中，使用closeEvent处理窗口最小化到托盘时可能导致程序崩溃，特别是在显示托盘右键菜单时。这是因为closeEvent会使窗口进入"准关闭"状态，影响子组件（如托盘菜单）的事件处理机制。正确的做法是使用hideEvent，它只是简单隐藏窗口而不改变窗口的内部状态，保持所有组件的正常工作。这个问题很容易被忽视，因为只有在特定条件下（窗口最小化且点击托盘右键）才会触发，但影响却很严重
+- 记住QMessageBox.warning要传入两个button
 
 ## 项目结构
 ```
@@ -101,7 +106,7 @@ try:
     result = await async_operation()
 except Exception as e:
     lprint(f"操作失败: {str(e)}")
-    lprint(traceback.format_exc())
+    traceback.print_exc()
 ```
 
 ### 日志规范

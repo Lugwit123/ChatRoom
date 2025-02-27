@@ -209,7 +209,7 @@ async def init_db() -> None:
             device_repo = DeviceRepository(session)
             
             # 创建服务实例
-            user_service = UserService(user_repo)
+            service_core = UserService(user_repo)
             group_service = GroupService(group_repo, member_repo, user_repo)
             message_service = MessageService(
                 private_repo=private_message_repo,
@@ -232,7 +232,7 @@ async def init_db() -> None:
                     with open(users_file, "r", encoding="utf-8") as f:
                         users_data = json.load(f)
                         for user_data in users_data:
-                            await user_service.create_user(**user_data)
+                            await service_core.create_user(**user_data)
                             users_count += 1
                         await session.commit()
                 

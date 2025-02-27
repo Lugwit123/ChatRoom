@@ -5,9 +5,19 @@
 import socketio
 from typing import Optional
 import Lugwit_Module as LM
-from app.core.di.container import Container
 
 lprint = LM.lprint
+
+# Use a function to get the container when needed
+def get_container_instance():
+    from app.core.di.container import get_container, set_container, Container
+    try:
+        return get_container()
+    except RuntimeError:
+        # 如果容器未初始化，则进行初始化
+        container = Container()
+        set_container(container)
+        return container
 
 class SocketServer:
     """Socket.IO服务器管理类
@@ -24,7 +34,7 @@ class SocketServer:
         return cls._instance
         
     @classmethod
-    def init_server(cls, container: Container) -> Optional[socketio.AsyncServer]:
+    def init_server(cls, container: get_container_instance) -> Optional[socketio.AsyncServer]:
         """初始化Socket.IO服务器
         
         如果服务器实例不存在，则创建新实例

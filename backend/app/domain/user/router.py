@@ -111,7 +111,7 @@ async def get_user_messages(current_user: User = Depends(get_current_user)):
     message_facade = get_message_facade()
     return await message_facade.get_user_messages_map(current_user.id)
 
-@router.get("/me/chat_partners", response_model=ResponseDTO)
+@router.get("/me/chat/private_partners", response_model=ResponseDTO)
 async def get_chat_partners(current_user: User = Depends(get_current_user)):
     """获取当前用户的聊天伙伴列表"""
     message_facade = get_message_facade()
@@ -202,7 +202,7 @@ async def update_user(
         )
 
 @router.put("/{username}/status", response_model=ResponseDTO)
-async def update_user_status(
+async def update_login_status(
     username: str,
     status: str,
     current_user: User = Depends(get_current_user)
@@ -217,7 +217,7 @@ async def update_user_status(
             )
             
         user_facade = get_user_facade()
-        return await user_facade.update_user_status(username, status)
+        return await user_facade.update_login_status(username, status)
     except HTTPException:
         raise
     except Exception as e:

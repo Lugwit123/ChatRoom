@@ -2,10 +2,10 @@
 import React from 'react';
 import './UserList.css';
 import UserAvatar from './UserAvatar';
-import { UserBaseAndStatus, UserRole, AccountsMap, Group } from '../types/types';
+import { UserBaseAndDevices, UserRole, AccountsMap, Group } from '../types/types';
 
 interface UserListProps {
-    current_user: UserBaseAndStatus;
+    current_user: UserBaseAndDevices;
     accounts: AccountsMap;
     groups: Group[];
     onUserSelect: (recipient: string, recipientType: 'user' | 'group') => void;

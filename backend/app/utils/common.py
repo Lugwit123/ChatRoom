@@ -1,11 +1,12 @@
 """通用工具函数"""
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 import json
 import random
 import string
 from Lugwit_Module import lprint
 import traceback
+import hashlib
 
 def get_utc_now() -> datetime:
     """获取当前UTC时间
@@ -151,3 +152,23 @@ def get_avatar_index(username: str) -> int:
     except Exception as e:
         lprint(f"生成头像索引失败: {traceback.format_exc()}")
         return 0
+
+
+
+def generate_device_id(client_ip: str, username: str, user_agent: str) -> str:
+    """生成设备ID
+    
+    根据客户端IP、用户名和用户代理信息生成唯一的设备ID
+    
+    Args:
+        client_ip: 客户端IP地址
+        username: 用户名
+        user_agent: 用户代理字符串
+        
+    Returns:
+        str: 生成的设备ID (32位MD5哈希)
+    """
+    device_name = user_agent if user_agent else 'unknown_device'
+    # 组合设备ID字符串
+    device_id_str = f"{device_name}_{username}_{client_ip}"
+    return hashlib.md5(device_id_str.encode()).hexdigest()

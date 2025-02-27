@@ -6,13 +6,17 @@
 # 标准库
 import uuid
 from datetime import datetime
-from typing import Dict, Any, List, Optional, Union
+from typing import Dict, Any, List, Optional, Union, Type, TypeVar
 from zoneinfo import ZoneInfo
 from typing import Type
+import json
+import traceback
+from dataclasses import dataclass, field
+
 # 第三方库
 from sqlalchemy import (
     Column, Integer, String, ForeignKey, DateTime, Boolean, Enum as SQLAlchemyEnum, 
-    Text, func, Index, JSON, ARRAY
+    Text, func, Index, JSON, ARRAY, BigInteger
 )
 from sqlalchemy.orm import relationship, declarative_base, backref
 from sqlalchemy.orm.attributes import InstrumentedAttribute
@@ -29,6 +33,76 @@ from app.domain.common.enums.device import DeviceType, DeviceStatus
 
 # 本地模块 - 基类
 from app.db.internal.base import Base
+
+@dataclass
+class PrivateMessageDTO:
+    """私聊消息DTO结构体
+    
+    用于规范化私聊消息数据传输格式
+    
+    Attributes:
+        id (str): 消息ID
+        public_id (str): 公开ID
+        sender_id (str): 发送者ID
+        recipient_id (Optional[str]): 接收者ID
+        content (Union[str, Dict[str, Any]]): 消息内容
+        message_type (int): 消息类型
+        content_type (int): 内容类型
+        target_type (int): 目标类型
+        status (List[int]): 状态列表
+        created_at (Optional[str]): 创建时间
+        updated_at (Optional[str]): 更新时间
+        read_at (Optional[str]): 读取时间
+        extra_data (Dict[str, Any]): 额外数据
+        sender_username (Optional[str]): 发送者用户名
+        sender_nickname (Optional[str]): 发送者昵称
+        recipient_username (Optional[str]): 接收者用户名
+        recipient_nickname (Optional[str]): 接收者昵称
+    """
+    id: str
+    public_id: str
+    sender_id: str
+    recipient_id: Optional[str] = None
+    content: Union[str, Dict[str, Any]] = ""
+    message_type: int = MessageType.chat.value
+    content_type: int = MessageContentType.plain_text.value
+    target_type: int = MessageTargetType.user.value
+    status: List[int] = field(default_factory=lambda: [MessageStatus.unread.value])
+    created_at: Optional[str] = None
+    updated_at: Optional[str] = None
+    read_at: Optional[str] = None
+    extra_data: Dict[str, Any] = field(default_factory=dict)
+    # 用户信息
+    sender_username: Optional[str] = None
+    sender_nickname: Optional[str] = None
+    recipient_username: Optional[str] = None
+    recipient_nickname: Optional[str] = None
+
+    def to_dict(self) -> Dict[str, Any]:
+        """转换为字典
+        
+        Returns:
+            Dict[str, Any]: 字典形式的DTO数据
+        """
+        return {
+            'id': self.id,
+            'public_id': self.public_id,
+            'sender_id': self.sender_id,
+            'recipient_id': self.recipient_id,
+            'content': self.content,
+            'message_type': self.message_type,
+            'content_type': self.content_type,
+            'target_type': self.target_type,
+            'status': self.status,
+            'created_at': self.created_at,
+            'updated_at': self.updated_at,
+            'read_at': self.read_at,
+            'extra_data': self.extra_data,
+            'sender_username': self.sender_username,
+            'sender_nickname': self.sender_nickname,
+            'recipient_username': self.recipient_username,
+            'recipient_nickname': self.recipient_nickname
+        }
 
 def generate_public_id(prefix: str) -> str:
     """生成公开ID"""
@@ -164,19 +238,30 @@ class BaseMessage(Base):
             "id": self.id,
             "public_id": self.public_id,
             "content": self.content,
-            "content_type": self.content_type_enum.name,
-            "message_type": self.message_type_enum.name,
-            "target_type": self.target_type_enum.name,
+            "content_type": self.content_type_enum.value,
+            "message_type": self.message_type_enum.value,
+            "target_type": self.target_type_enum.value,
             "sender_id": self.sender_id,
             "recipient_id": self.recipient_id,
             "group_id": self.group_id,
-            "status": [status.name for status in self.status_list],
+            "status": [status.value for status in self.status_list],
             "created_at": created_at_str,
             "updated_at": updated_at_str
         }
+        
+class GroupMessage(BaseMessage):
+    __abstract__ = True  # 作为基类，不映射到具体表
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    group_id = Column(Integer, ForeignKey('groups.id', ondelete='CASCADE'), nullable=False)
+    sender_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    
+    # 关系定义
+    sender = relationship("User", foreign_keys=[sender_id])
+    group = relationship("Group", foreign_keys=[group_id])
 
 # 创建群组消息表
-def create_group_message_table(table_name: str) -> Type[BaseMessage]:
+def create_group_message_table(table_name: str) -> Type[GroupMessage]:
     """创建群组消息分表
     
     Args:
@@ -190,25 +275,17 @@ def create_group_message_table(table_name: str) -> Type[BaseMessage]:
         for mapper in Base.registry.mappers:
             if mapper.class_.__table__.name == table_name:
                 return mapper.class_
-    
-    class GroupMessage(BaseMessage):
+    class GroupMessage_Table(GroupMessage):
         __tablename__ = table_name
         
-        id = Column(Integer, primary_key=True, autoincrement=True)
-        group_id = Column(Integer, ForeignKey('groups.id', ondelete='CASCADE'), nullable=False)
-        sender_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
-        
-        # 关系定义
-        sender = relationship("User", foreign_keys=[sender_id])
-        group = relationship("Group", foreign_keys=[group_id])
-        
         __table_args__ = (
-            Index(f'{table_name}_sender_id_idx', sender_id),
-            Index(f'{table_name}_group_id_idx', group_id),
-            Index(f'{table_name}_created_at_idx', 'created_at'),
-        )
+        Index(f'{__tablename__}_sender_id_idx', 'sender_id'),
+        Index(f'{__tablename__}_group_id_idx', 'group_id'),
+        Index(f'{__tablename__}_created_at_idx', 'created_at'),
+    )
     
-    return GroupMessage
+    return GroupMessage_Table
+
 
 class PrivateMessage(BaseMessage):
     """私聊消息模型"""
@@ -224,9 +301,174 @@ class PrivateMessage(BaseMessage):
     sender = relationship("User", foreign_keys=[sender_id], back_populates="sent_private_messages")
     recipient = relationship("User", foreign_keys=[recipient_id], back_populates="received_private_messages")
 
+    read_at = Column(DateTime(timezone=True), nullable=True)
+
+    def to_dto(self) -> PrivateMessageDTO:
+        """将消息转换为DTO
+        
+        Returns:
+            PrivateMessageDTO: 消息DTO对象
+        """
+        try:
+            # 处理时间字段
+            created_at = self.created_at.isoformat() if isinstance(self.created_at, datetime) else None
+            updated_at = self.updated_at.isoformat() if isinstance(self.updated_at, datetime) else None
+            read_at = self.read_at.isoformat() if isinstance(self.read_at, datetime) else None
+            
+            # 处理content字段
+            content = self.content
+            if isinstance(content, str):
+                try:
+                    content = json.loads(content)
+                except json.JSONDecodeError:
+                    pass
+                    
+            # 创建DTO对象
+            return PrivateMessageDTO(
+                id=str(self.id),
+                public_id=self.public_id,
+                sender_id=str(self.sender_id),
+                recipient_id=str(self.recipient_id) if self.recipient_id else None,
+                content=content,
+                message_type=self.message_type,
+                content_type=self.content_type,
+                target_type=self.target_type,
+                status=self.status if isinstance(self.status, list) else [MessageStatus.unread.value],
+                created_at=created_at,
+                updated_at=updated_at,
+                read_at=read_at,
+                extra_data=self.extra_data if self.extra_data else {}
+            )
+            
+        except Exception as e:
+            print(f"转换消息到DTO失败: {str(e)}")
+            traceback.print_exc()
+            # 返回一个带有最小必要信息的DTO
+            return PrivateMessageDTO(
+                id=str(getattr(self, 'id', 0)),
+                public_id=getattr(self, 'public_id', ''),
+                sender_id=str(getattr(self, 'sender_id', 0))
+            )
+
+    def to_socket_dict(self) -> Dict[str, Any]:
+        """转换为适合WebSocket传输的字典格式
+        
+        Returns:
+            Dict[str, Any]: 包含完整消息信息的字典
+        """
+        try:
+            # 处理时间字段
+            created_at_str = self.created_at.isoformat() if isinstance(self.created_at, datetime) else None
+            updated_at_str = self.updated_at.isoformat() if isinstance(self.updated_at, datetime) else None
+            read_at_str = self.read_at.isoformat() if isinstance(self.read_at, datetime) else None
+            
+            # 处理content字段
+            content = self.content
+            if isinstance(content, str):
+                try:
+                    content = json.loads(content)
+                except json.JSONDecodeError:
+                    pass
+                    
+            # 获取发送者和接收者信息
+            sender_info = {}
+            if self.sender:
+                sender_info = {
+                    'username': self.sender.username,
+                    'nickname': self.sender.nickname,
+                    'avatar_index': self.sender.avatar_index
+                }
+                
+            recipient_info = {}
+            if self.recipient:
+                recipient_info = {
+                    'username': self.recipient.username,
+                    'nickname': self.recipient.nickname,
+                    'avatar_index': self.recipient.avatar_index
+                }
+            
+            return {
+                'id': self.id,
+                'public_id': self.public_id,
+                'sender_id': self.sender_id,
+                'recipient_id': self.recipient_id,
+                'content': content,
+                'message_type': self.message_type,
+                'content_type': self.content_type,
+                'target_type': self.target_type,
+                'status': self.status,
+                'created_at': created_at_str,
+                'updated_at': updated_at_str,
+                'read_at': read_at_str,
+                'extra_data': self.extra_data,
+                'sender_info': sender_info,
+                'recipient_info': recipient_info
+            }
+            
+        except Exception as e:
+            print(f"转换消息到Socket字典失败: {str(e)}")
+            traceback.print_exc()
+            # 返回基本信息
+            return {
+                'id': getattr(self, 'id', 0),
+                'public_id': getattr(self, 'public_id', ''),
+                'sender_id': getattr(self, 'sender_id', 0),
+                'recipient_id': getattr(self, 'recipient_id', None),
+                'content': getattr(self, 'content', ''),
+                'message_type': getattr(self, 'message_type', 0),
+                'target_type': getattr(self, 'target_type', 0)
+            }
+
+@dataclass
+class UserDTO:
+    """用户DTO结构体
+    
+    用于规范化用户数据传输格式
+    
+    Attributes:
+        id (int): 用户ID
+        username (str): 用户名
+        email (Optional[str]): 邮箱
+        nickname (Optional[str]): 昵称
+        avatar_index (int): 头像索引
+        role (int): 角色
+        status (int): 状态
+        last_login (Optional[str]): 最后活跃时间
+        created_at (Optional[str]): 创建时间
+        updated_at (Optional[str]): 更新时间
+        extra_data (Dict[str, Any]): 额外数据
+    """
+    id: int
+    username: str
+    email: Optional[str] = None
+    nickname: Optional[str] = None
+    avatar_index: int = 0
+    role: int = UserRole.user.value
+    status: int = UserStatusEnum.normal.value
+    last_login: Optional[str] = None
+    created_at: Optional[str] = None
+    updated_at: Optional[str] = None
+    extra_data: Dict[str, Any] = field(default_factory=dict)
+
     def to_dict(self) -> Dict[str, Any]:
-        """转换为字典"""
-        return super().to_dict()
+        """转换为字典
+        
+        Returns:
+            Dict[str, Any]: 字典形式的DTO数据
+        """
+        return {
+            'id': self.id,
+            'username': self.username,
+            'email': self.email,
+            'nickname': self.nickname,
+            'avatar_index': self.avatar_index,
+            'role': self.role,
+            'status': self.status,
+            'last_login': self.last_login,
+            'created_at': self.created_at,
+            'updated_at': self.updated_at,
+            'extra_data': self.extra_data
+        }
 
 class User(Base):
     """用户模型"""
@@ -243,7 +485,7 @@ class User(Base):
     avatar_index = Column(Integer, default=0)
     role = Column(Integer, nullable=False, default=UserRole.user.value)
     status = Column(Integer, nullable=False, default=UserStatusEnum.normal.value)
-    last_active = Column(DateTime(timezone=True), default=lambda: datetime.now(ZoneInfo("UTC")))
+    last_login = Column(DateTime(timezone=True), default=lambda: datetime.now(ZoneInfo("UTC")))
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(ZoneInfo("UTC")))
     updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(ZoneInfo("UTC")), onupdate=lambda: datetime.now(ZoneInfo("UTC")))
     extra_data = Column(JSON, default=dict)
@@ -285,21 +527,45 @@ class User(Base):
         """设置状态枚举值"""
         self.status = value.value
 
+    def to_dto(self) -> UserDTO:
+        """将用户对象转换为DTO
+        
+        Returns:
+            UserDTO: 用户DTO对象
+        """
+        try:
+            # 处理时间字段
+            last_login = self.last_login.isoformat() if isinstance(self.last_login, datetime) else None
+            created_at = self.created_at.isoformat() if isinstance(self.created_at, datetime) else None
+            updated_at = self.updated_at.isoformat() if isinstance(self.updated_at, datetime) else None
+            
+            # 创建DTO对象
+            return UserDTO(
+                id=int(self.id),
+                username=str(self.username),
+                email=str(self.email) if self.email else None,
+                nickname=str(self.nickname) if self.nickname else None,
+                avatar_index=int(self.avatar_index),
+                role=int(self.role),
+                status=int(self.status),
+                last_login=last_login,
+                created_at=created_at,
+                updated_at=updated_at,
+                extra_data=self.extra_data if self.extra_data else {}
+            )
+            
+        except Exception as e:
+            print(f"转换用户到DTO失败: {str(e)}")
+            traceback.print_exc()
+            # 返回一个带有最小必要信息的DTO
+            return UserDTO(
+                id=int(getattr(self, 'id', 0)),
+                username=str(getattr(self, 'username', ''))
+            )
+
     def to_dict(self) -> Dict[str, Any]:
         """转换为字典"""
-        return {
-            "id": self.id,
-            "username": self.username,
-            "email": self.email,
-            "nickname": self.nickname,
-            "avatar_index": self.avatar_index,
-            "role": self.role_enum.name,
-            "status": self.status_enum.name,
-            "last_active": self.last_active.isoformat() if self.last_active else None,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
-            "extra_data": self.extra_data
-        }
+        return self.to_dto().to_dict()
 
 class Group(Base):
     """群组模型"""

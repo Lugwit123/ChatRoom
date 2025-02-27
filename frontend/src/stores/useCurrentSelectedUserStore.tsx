@@ -1,10 +1,10 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import { UserBaseAndStatus } from '../types/types';
+import { UserBaseAndDevices } from '../types/types';
 
 interface UserStore {
-  currentSelectedUser: UserBaseAndStatus | null;
-  selectUser: (user: UserBaseAndStatus) => void;
+  currentSelectedUser: UserBaseAndDevices | null;
+  selectUser: (user: UserBaseAndDevices) => void;
   clearSelectedUser: () => void;
   updateUserName: (id: number, name: string) => void;
 }
@@ -12,7 +12,7 @@ interface UserStore {
 const useCurrentSelectedUserStore = create<UserStore>()(
   devtools(
     (set) => {
-      const updateCurrentUser = (user: UserBaseAndStatus | null) =>
+      const updateCurrentUser = (user: UserBaseAndDevices | null) =>
         set({ currentSelectedUser: user }, false, 'updateCurrentUser');
 
       return {

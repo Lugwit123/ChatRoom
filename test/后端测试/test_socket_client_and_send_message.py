@@ -11,6 +11,8 @@ import io
 import traceback
 from enum import IntEnum
 from typing import Optional, Dict, Any
+from Lugwit_Module import lprint
+import time
 
 # 设置Python环境编码
 os.environ['PYTHONIOENCODING'] = 'utf-8'
@@ -49,7 +51,7 @@ class EnumDefinition:
         return self._value if hasattr(self, '_value') else 0
 
 class ChatClient:
-    def __init__(self, host='127.0.0.1', port=1026):
+    def __init__(self, host='192.168.112.233', port=1026):
         self.base_url = f'http://{host}:{port}'
         self.sio = socketio.AsyncClient(logger=False, engineio_logger=False)
         self.token = None
@@ -61,7 +63,7 @@ class ChatClient:
             'message_count': 0,
             'send_count': 0
         }
-        self.namespace = '/chat'  # 添加命名空间
+        self.namespace = '/chat/private'  # 添加命名空间
         self._register_handlers()
         
     def _register_handlers(self):
@@ -79,32 +81,17 @@ class ChatClient:
         async def message_error(data):
             lprint(f'消息错误: {data}')
 
-        @self.sio.on('message', namespace=self.namespace)  # 添加命名空间
+        @self.sio.on('message', namespace=self.namespace)
         async def on_message(data):
+            """处理接收到的消息"""
             try:
-                start_time = datetime.now()
-                lprint(f'收到消息响应: {data}')
-                message_type = data.get('message_type')
-                target_type = data.get('target_type')
-                msg_type = self._get_enum('MessageType')
-                target_type_enum = self._get_enum('MessageTargetType')
-                
-                if target_type == target_type_enum.user:
-                    lprint(f'收到私聊消息: {data}')
-                elif target_type == target_type_enum.group:
-                    lprint(f'收到群聊消息: {data}')
-                elif message_type == msg_type.system:
-                    lprint(f'收到系统消息: {data}')
-                else:
-                    lprint(f'收到其他类型消息: {data}')
-                    
-                self.stats['receive_time'] += (datetime.now() - start_time).total_seconds()
+                lprint(f"收到消息: {data}")
                 self.stats['message_count'] += 1
-                
+                self.stats['receive_time'] += time.time() - self.message_start_time
             except Exception as e:
-                lprint(f'处理消息时出错: {str(e)}')
-                lprint(traceback.format_exc())
-            
+                lprint(f"处理消息失败: {str(e)}")
+                traceback.print_exc()
+
         @self.sio.event(namespace=self.namespace)  # 添加命名空间
         async def connect_error(data):
             lprint(f'连接错误: {data}')
@@ -120,14 +107,24 @@ class ChatClient:
         async def on_connection_established(data):
             lprint(f'连接已建立: {data}')
         
-        @self.sio.on('message_sent', namespace=self.namespace)  # 添加命名空间
-        async def on_message_sent(data):
-            lprint(f'消息发送成功: {data}')
+        @self.sio.on('private_message_sent', namespace=self.namespace)
+        async def on_private_message_sent(data):
+            """处理私聊消息发送回执"""
+            try:
+                lprint(f"私聊消息发送成功: {data}")
+            except Exception as e:
+                lprint(f"处理私聊消息发送回执失败: {str(e)}")
+                traceback.print_exc()
 
-        @self.sio.on('message_error', namespace=self.namespace)  # 添加命名空间
-        async def on_message_error(data):
-            lprint(f'消息发送失败: {data}')
-        
+        @self.sio.on('group_message_sent', namespace=self.namespace)
+        async def on_group_message_sent(data):
+            """处理群聊消息发送回执"""
+            try:
+                lprint(f"群聊消息发送成功: {data}")
+            except Exception as e:
+                lprint(f"处理群聊消息发送回执失败: {str(e)}")
+                traceback.print_exc()
+
     async def login(self, username, password):
         """登录并获取token"""
         try:
@@ -193,7 +190,7 @@ class ChatClient:
             
         except Exception as e:
             lprint(f"连接失败: {str(e)}")
-            lprint(traceback.format_exc())
+            traceback.print_exc()
             return False
 
     async def fetch_enums(self) -> None:
@@ -277,7 +274,7 @@ class ChatClient:
             
             # 根据目标类型添加特定字段
             if target_type == 'user':
-                message_data["recipient_id"] = target_id
+                message_data["recipient"] = target_id
             elif target_type == 'group':
                 message_data["group_id"] = target_id
                 
@@ -290,7 +287,7 @@ class ChatClient:
             
         except Exception as e:
             lprint(f"发送消息失败: {str(e)}")
-            lprint(traceback.format_exc())
+            traceback.print_exc()
             
     async def send_private_message(self, content: str, recipient: str, **kwargs) -> None:
         """发送私聊消息"""
@@ -329,7 +326,7 @@ class ChatClient:
             lprint("断开连接成功")
         except Exception as e:
             lprint(f"断开连接失败: {str(e)}")
-            lprint(traceback.format_exc())
+            traceback.print_exc()
 
 async def main():
     """主函数"""

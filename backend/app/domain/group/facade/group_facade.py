@@ -93,7 +93,7 @@ class GroupFacade(BaseFacade):
             return ResponseDTO.success(data=GroupResponse.from_orm(new_group))
             
         except Exception as e:
-            self.lprint(f"创建群组失败: {str(e)}")
+            lprint(f"创建群组失败: {str(e)}")
             return ResponseDTO.error(message=str(e))
             
     async def get_groups(self, current_user: User) -> ResponseDTO:
@@ -112,7 +112,7 @@ class GroupFacade(BaseFacade):
                 total=len(groups)
             ))
         except Exception as e:
-            self.lprint(f"获取群组列表失败: {str(e)}")
+            lprint(f"获取群组列表失败: {str(e)}")
             return ResponseDTO.error(message=str(e))
             
     async def get_group(self, group_id: str) -> ResponseDTO:
@@ -130,7 +130,7 @@ class GroupFacade(BaseFacade):
                 return ResponseDTO.error(message="群组不存在")
             return ResponseDTO.success(data=GroupResponse.from_orm(group))
         except Exception as e:
-            self.lprint(f"获取群组信息失败: {str(e)}")
+            lprint(f"获取群组信息失败: {str(e)}")
             return ResponseDTO.error(message=str(e))
             
     async def add_member(self, group_id: str, member: GroupMemberCreate, current_user: User) -> ResponseDTO:
@@ -165,7 +165,7 @@ class GroupFacade(BaseFacade):
             return ResponseDTO.success(data=GroupMemberInfo.from_orm(new_member))
             
         except Exception as e:
-            self.lprint(f"添加群组成员失败: {str(e)}")
+            lprint(f"添加群组成员失败: {str(e)}")
             return ResponseDTO.error(message=str(e))
             
     async def get_members(self, group_id: str) -> ResponseDTO:
@@ -184,7 +184,7 @@ class GroupFacade(BaseFacade):
                 total=len(members)
             ))
         except Exception as e:
-            self.lprint(f"获取群组成员列表失败: {str(e)}")
+            lprint(f"获取群组成员列表失败: {str(e)}")
             return ResponseDTO.error(message=str(e))
             
     async def update_member(self, group_id: str, user_id: str, member: GroupMemberUpdate, current_user: User) -> ResponseDTO:
@@ -221,7 +221,7 @@ class GroupFacade(BaseFacade):
             return ResponseDTO.success(data=GroupMemberInfo.from_orm(updated_member))
             
         except Exception as e:
-            self.lprint(f"更新群组成员信息失败: {str(e)}")
+            lprint(f"更新群组成员信息失败: {str(e)}")
             return ResponseDTO.error(message=str(e))
             
     async def remove_member(self, group_id: str, user_id: str, current_user: User) -> ResponseDTO:
@@ -252,7 +252,7 @@ class GroupFacade(BaseFacade):
             return ResponseDTO.success()
             
         except Exception as e:
-            self.lprint(f"移除群组成员失败: {str(e)}")
+            lprint(f"移除群组成员失败: {str(e)}")
             return ResponseDTO.error(message=str(e))
             
     async def join_group(self, group_id: str, current_user: User) -> ResponseDTO:
@@ -288,7 +288,7 @@ class GroupFacade(BaseFacade):
             return ResponseDTO.success(data=GroupMemberInfo.from_orm(new_member))
             
         except Exception as e:
-            self.lprint(f"加入群组失败: {str(e)}")
+            lprint(f"加入群组失败: {str(e)}")
             return ResponseDTO.error(message=str(e))
             
     async def leave_group(self, group_id: str, current_user: User) -> ResponseDTO:
@@ -324,7 +324,7 @@ class GroupFacade(BaseFacade):
             return ResponseDTO.success()
             
         except Exception as e:
-            self.lprint(f"退出群组失败: {str(e)}")
+            lprint(f"退出群组失败: {str(e)}")
             return ResponseDTO.error(message=str(e))
             
     async def delete_group(self, group_id: str, current_user: User) -> ResponseDTO:
@@ -355,5 +355,5 @@ class GroupFacade(BaseFacade):
             return ResponseDTO.success()
             
         except Exception as e:
-            self.lprint(f"删除群组失败: {str(e)}")
+            lprint(f"删除群组失败: {str(e)}")
             return ResponseDTO.error(message=str(e))

@@ -128,7 +128,7 @@ try:
 except Exception as e:
     await session.rollback()
     lprint(f"数据库操作失败: {str(e)}")
-    lprint(traceback.format_exc())
+    traceback.print_exc()
     raise
 finally:
     await session.close()

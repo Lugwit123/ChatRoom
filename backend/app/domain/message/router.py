@@ -10,7 +10,8 @@ from app.db.facade.database_facade import DatabaseFacade
 from app.domain.message.facade import get_message_facade
 from app.domain.message.facade.message_facade import MessageFacade
 from app.domain.message.facade.dto.message_dto import (
-    MessageCreateDTO,
+    PrivateMessageCreateDTO,
+    GroupMessageCreateDTO,
     PrivateMessageDTO,
     GroupMessageDTO,
     MessageResponse,
@@ -30,14 +31,13 @@ from app.core.websocket.facade.websocket_facade import WebSocketFacade
 lprint = LM.lprint
 
 router = APIRouter(
-    prefix="/api/messages",
-    tags=["消息管理"],
-    responses={404: {"description": "Not found"}},
+    prefix="/messages",
+    tags=["messages"]
 )
 
 @router.post("/send_private", response_model=ResponseDTO)
 async def send_private_message(
-    message: MessageCreateDTO,
+    message: PrivateMessageCreateDTO,
     current_user: User = Depends(get_current_user),
     message_facade: MessageFacade = Depends(get_message_facade)
 ) -> ResponseDTO:
@@ -53,10 +53,10 @@ async def send_private_message(
     """
     try:
         # 验证接收者
-        if not message.recipient_username:
+        if not message.recipient:
             return ResponseDTO.error(message="接收者用户名不能为空")
             
-        if message.recipient_username == str(current_user.username):
+        if message.recipient == str(current_user.username):
             return ResponseDTO.error(message="不能给自己发送消息")
             
         # 发送消息
@@ -68,7 +68,7 @@ async def send_private_message(
 
 @router.post("/send_group", response_model=ResponseDTO)
 async def send_group_message(
-    message: MessageCreateDTO,
+    message: GroupMessageCreateDTO,
     current_user: User = Depends(get_current_user),
     message_facade: MessageFacade = Depends(get_message_facade)
 ) -> ResponseDTO:
@@ -403,7 +403,7 @@ async def websocket_endpoint(websocket: WebSocket):
             cors_allowed_origins='*',
             logger=False,
             engineio_logger=False,
-            namespaces=['/chat']  # 显式指定命名空间
+            namespaces=['/chat/private']  # 显式指定命名空间
         )
         
         # 初始化WebSocket门面
@@ -416,4 +416,4 @@ async def websocket_endpoint(websocket: WebSocket):
         lprint("WebSocket连接已关闭")
     except Exception as e:
         lprint(f"WebSocket连接错误: {str(e)}")
-        lprint(traceback.format_exc())
+        traceback.print_exc()

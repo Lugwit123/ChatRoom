@@ -10,33 +10,38 @@ lprint = LM.lprint
 # 标准库
 import os
 from datetime import datetime, timedelta
-from typing import Optional, cast, Any
+from typing import Optional, cast, Any, Dict
 import traceback
 import uuid
 import hashlib
 from zoneinfo import ZoneInfo
+import time
+import random
+import socket
 
 # 第三方库
-from fastapi import Depends, HTTPException, status, Request
+from fastapi import Depends, HTTPException, status, Request, Form
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt, ExpiredSignatureError
+from jose.exceptions import ExpiredSignatureError  # 确保导入此异常
 
 # 项目内部导入
 from app.domain.common.models.tables import User
-from app.domain.user.facade.dto.user_dto import UserBaseAndStatus
+from app.domain.user.facade.dto.user_dto import UserBaseAndDevices
 from app.domain.common.enums import UserRole, UserStatusEnum
-from .dto.auth_dto import Token, UserAuthDTO, UserAuthInternalDTO
+from .dto.auth_dto import Token, UserAuthDTO, UserAuthInternalDTO, LoginResponseDTO
 from ..internal.repository.auth_repository import get_auth_repository
 from app.core.base.core_facade import CoreFacade
-from app.core.services import TokenService, PasswordService
+from app.core.events.services import TokenService, PasswordService
 from app.domain.base.facade.dto.base_dto import ResponseDTO
-from app.core.services import Services
+from app.core.events.services import Services
 from app.core.events.interfaces import (
-    EventType, UserEvent, Event
+    EventType, UserEvent, Event, BaseEvent
 )
-from app.domain.common.events import DomainEventType, UserEvent
-from app.core.auth.events.auth_events import LoginEvent, LogoutEvent, LoginFailedEvent
-
+from app.core.auth.internal.repository.auth_repository import AuthRepository
+from app.core.services.service_core import get_device_facade, get_user_facade
+from app.utils.common import generate_device_id
+from app.utils.security import verify_password
 # 自定义异常
 class AuthenticationError(Exception):
     """认证错误"""
@@ -58,22 +63,19 @@ class AuthFacade(CoreFacade):
     def __init__(self):
         """初始化认证门面"""
         super().__init__()
-        self._repository = get_auth_repository()
+        self._repository = AuthRepository()
         self._token_service = Services.resolve(TokenService) or TokenService()
         self._password_service = Services.resolve(PasswordService) or PasswordService()
         self._event_bus = Services.get_event_bus()
-        self._user_facade = None  # 延迟加载
-        self._device_facade = None  # 延迟加载
+        self._user_facade = get_user_facade()  # 直接初始化，不使用延迟加载
+        self.client_ip = ""
+        self._device_facade = get_device_facade()
         
         # 注册服务
         if not Services.resolve(TokenService):
             Services.register_service(TokenService.__name__, self._token_service)
         if not Services.resolve(PasswordService):
             Services.register_service(PasswordService.__name__, self._password_service)
-            
-        # 初始化事件处理器
-        from ..internal.event_handlers import get_auth_event_handler
-        self._event_handler = get_auth_event_handler()
     
     @property
     def device_facade(self):
@@ -82,18 +84,8 @@ class AuthFacade(CoreFacade):
             from app.domain.device.facade.device_facade import DeviceFacade
             self._device_facade = DeviceFacade()
         return self._device_facade
-    
-    @property
-    def user_facade(self):
-        """延迟加载用户门面"""
-        if self._user_facade is None:
-            from app.domain.user.facade.user_facade import UserFacade
-            self._user_facade = UserFacade()
-        return self._user_facade
-    
-    def verify_password(self, plain_password: str, hashed_password: str) -> bool:
-        """验证密码"""
-        return self._password_service.verify_password(plain_password, hashed_password)
+
+
     
     def get_password_hash(self, password: str) -> str:
         """获取密码哈希"""
@@ -121,35 +113,91 @@ class AuthFacade(CoreFacade):
         auth_header = environ.get('HTTP_AUTHORIZATION', '')
         return self.extract_token_from_header(auth_header)
 
-    async def verify_token(self, token: str) -> dict:
-        """验证token"""
+    async def verify_token(self, token: str) -> Dict[str, Any]:
+        """验证令牌"""
         try:
             payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
             return payload
         except ExpiredSignatureError:
-            raise AuthenticationError("令牌已过期", "token_expired")
+            # 令牌过期时尝试刷新
+            try:
+                return await self.refresh_token(token)
+            except Exception:
+                raise AuthenticationError("令牌已过期且无法刷新", "token_expired")
         except JWTError:
             raise AuthenticationError("无效的令牌", "invalid_token")
 
-    async def get_current_user(self, token: str = Depends(oauth2_scheme)) -> UserAuthDTO:
-        """获取当前用户"""
+    async def refresh_token(self, expired_token: str) -> Dict[str, Any]:
+        """刷新过期的令牌"""
         try:
-            payload = await self.verify_token(token)
+            # 即使令牌过期也尝试解码获取用户信息
+            payload = jwt.decode(expired_token, SECRET_KEY, algorithms=[ALGORITHM], options={"verify_exp": False})
             username = payload.get("sub")
             if not username:
-                raise AuthenticationError("无效的令牌内容", "invalid_token_content")
+                raise AuthenticationError("无效的令牌", "invalid_token")
                 
-            user = await self._repository.get_user_by_username(username)
-            if not user:
-                raise AuthenticationError("用户不存在", "user_not_found")
-                
-            return UserAuthDTO.from_internal(user)
-            
-        except AuthenticationError:
-            raise
+            # 创建新的访问令牌
+            new_token = self.create_access_token(data={"sub": username})
+            return jwt.decode(new_token, SECRET_KEY, algorithms=[ALGORITHM])
         except Exception as e:
-            lprint(f"获取当前用户失败: {str(e)}")
-            raise AuthenticationError("认证失败", "auth_failed")
+            raise AuthenticationError(f"令牌刷新失败: {str(e)}", "refresh_failed")
+
+    async def get_current_user(self, token: str) -> Optional[User]:
+        """获取当前用户"""
+        try:
+            lprint(f"开始验证token: {token[:10]}...")
+            
+            # 解码token
+            payload = await self.decode_token(token)
+            if not payload:
+                lprint("Token解码失败")
+                return None
+                
+            lprint(f"Token解码成功，payload: {payload}")
+            
+            # 获取用户名
+            username = payload.get('sub')
+            if not username:
+                lprint("Token中缺少用户名(sub)")
+                return None
+                
+            lprint(f"从Token中获取到用户名: {username}")
+            
+            # 获取用户
+            user = await self._user_facade.get_user_by_username(username)
+            if not user:
+                lprint(f"未找到用户: {username}")
+                return None
+                
+            lprint(f"成功获取用户信息: id={user.id}, username={user.username}")
+            return user
+            
+        except AuthenticationError as e:
+            lprint(f"认证错误: {e.message}")
+            # 这里可以返回一个特定的响应，提示用户重新登录
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token已过期，请重新登录"
+            )
+        except Exception as e:
+            lprint(f"验证当前用户时发生错误: {str(e)}")
+            print(f"错误详情: {traceback.format_exc()}")
+            return None
+
+
+    async def decode_token(self, token: str) -> dict:
+        """解码JWT token"""
+        try:
+            lprint(f"开始解码token: {token[:10]}...")
+            payload = await self.verify_token(token)
+            return payload
+        except ExpiredSignatureError:
+            lprint("解码token时发生错误: 令牌已过期")
+            raise AuthenticationError("令牌已过期", "token_expired")
+        except Exception as e:
+            lprint(f"解码token时发生错误: {str(e)}")
+            traceback.print_exc()
+            raise
 
     async def get_user_from_environ(self, environ: dict) -> UserAuthDTO:
         """从environ获取用户信息（用于WebSocket等场景）"""
@@ -166,93 +214,98 @@ class AuthFacade(CoreFacade):
             
         return UserAuthInternalDTO.from_internal(user)
     
-    async def login(self, request: Request, form_data: OAuth2PasswordRequestForm) -> Token:
-        """用户登录"""
+    async def login(self, request: Request, form_data: OAuth2PasswordRequestForm) -> LoginResponseDTO:
+        """处理用户登录逻辑"""
         try:
-            # 验证用户
-            lprint(f"开始验证用户: {form_data.username}")
-            user = await self._repository.get_user_by_username(form_data.username)
-            if not user:
-                lprint(f"用户不存在: {form_data.username}")
-                # 发布登录失败事件
-                login_failed_event = LoginFailedEvent(
-                    username=form_data.username,
-                    ip_address=request.client.host if request.client else "unknown",
-                    reason="用户不存在"
-                )
-                await self._event_bus.publish_event(login_failed_event)
-                raise AuthenticationError("用户名或密码错误")
             
-            if not self.verify_password(form_data.password, str(user.hashed_password)):
-                lprint(f"密码验证失败,用户名: {form_data.username}")
-                # 发布登录失败事件
-                login_failed_event = LoginFailedEvent(
-                    username=form_data.username,
-                    ip_address=request.client.host if request.client else "unknown",
-                    reason="密码错误"
-                )
-                await self._event_bus.publish_event(login_failed_event)
-                raise AuthenticationError("用户名或密码错误")
+            # 从请求中提取客户端IP和环境信息
+            self.client_ip = request.client.host
+            if self.client_ip=="127.0.0.1":
+                self.client_ip="192.168.112.233"
             
-            lprint(f"密码验证成功,用户名: {form_data.username}")
+            environ = dict(request.headers)  # Convert headers to a dictionary
 
-            # 获取客户端IP
-            client_ip = request.client.host if request.client else "unknown"
-            lprint(f"客户端IP: {client_ip}")
+            # 从表单数据中提取用户名和密码
+            username = form_data.username
+            password = form_data.password
+            lprint(f"username: {username},ip:{self.client_ip}开始登录")
+            user_agent = next(
+                (value for key, value in environ.items() 
+                 if key.lower() == "user-agent"),
+                "unknown_device"
+            )
+            lprint(self.client_ip,environ)
+            lprint(user_agent)
+            # 生成设备ID
+            device_id = generate_device_id(self.client_ip, username, user_agent)
+
+            user = await self._repository.login_user(username, password)
             
-            # 生成设备ID: IP地址和用户名的组合的哈希值
-            device_id_str = f"{client_ip}_{form_data.username}"
-            device_id = hashlib.md5(device_id_str.encode()).hexdigest()
-            lprint(f"开始更新设备信息,设备ID: {device_id}")
+            # 如果用户不存在，则自动注册并登录
+            if not user:
+                lprint(f"用户 {username} 不存在，尝试自动注册")
+                try:
+                    # 从表单获取nickname，获取不到使用username
+                    nickname = form_data.nickname if hasattr(form_data, 'nickname') and form_data.nickname else username
+                    lprint(f"使用nickname: {nickname} 进行注册")
+
+                    
+                    # 创建新用户
+                    user = await self._user_facade.create_user(
+                        username=username,
+                        password=password,
+                        email=f"{username}@example.com",  # 使用默认邮箱
+                        nickname=nickname,  # 使用nickname或默认为username
+                        role=UserRole.user.value  # 使用UserRole枚举值
+                    )
+                    
+                    if user:
+                        lprint(f"用户 {username} 自动注册成功")
+                    else:
+                        lprint(f"用户 {username} 自动注册失败")
+                        raise AuthenticationError("自动注册失败，请联系管理员")
+                except Exception as e:
+                    lprint(f"自动注册失败: {str(e)}")
+                    # 如果是因为用户名已存在等原因注册失败，则提示密码错误
+                    raise AuthenticationError("用户名或密码错误")
             
-            # 更新设备信息
-            await self.device_facade.update_device_status(
+            if not user:
+                lprint(f"登录失败: 用户名或密码错误")
+                raise AuthenticationError("用户名或密码错误")
+            
+            lprint(f"用户 {username} 登录成功")
+            user_dict = user.to_dict()
+
+            # 更新设备状态
+            result = await self._device_facade.update_device_status(
                 device_id=device_id,
                 is_online=True,
-                user_id=convert_column_to_value(user.id),
-                client_ip=client_ip
+                user_id=user_dict.get('id'),
+                client_ip=self.client_ip,
+                device_name=user_agent
             )
-            
-            # 发布登录事件
-            login_event = LoginEvent(
-                user_id=convert_column_to_value(user.id),
-                username=convert_column_to_value(user.username),
-                device_id=device_id,
-                ip_address=client_ip
-            )
-            await self._event_bus.publish_event(login_event)
-            
-            # 创建访问令牌
-            access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-            access_token = self.create_access_token(
-                data={"sub": convert_column_to_value(user.username)},
-                expires_delta=access_token_expires
-            )
-            lprint(f"创建访问令牌成功,用户名: {form_data.username}")
-            
-            # 获取用户角色
-            role_value = convert_column_to_value(user.role)
-            try:
-                role = UserRole(int(role_value))
-            except ValueError:
-                lprint(f"无效的用户角色值: {role_value}, 使用默认角色: user")
-                role = UserRole.user
-            
-            return Token(
+            if not result.success:
+                lprint("更新设备状态失败")
+
+            # 生成访问令牌
+            access_token = self.create_access_token(data={"sub": username})
+            lprint("登录成功")
+            # 返回包含访问令牌和用户信息的响应
+            return LoginResponseDTO(
                 access_token=access_token,
                 token_type="bearer",
-                user_id=convert_column_to_value(user.id),
-                username=convert_column_to_value(user.username),
-                role=role,
-                device_id=device_id
+                user_id=user_dict.get('id'),
+                device_id=device_id,
+                username=user_dict.get('username'),
+                role=UserRole(user_dict.get('role'))  # 使用枚举值
             )
-            
-        except AuthenticationError as e:
-            lprint(f"认证错误: {str(e)}")
-            raise e
         except Exception as e:
+            lprint(f"登录失败: {str(e)}")
             traceback.print_exc()
-            raise AuthenticationError(f"登录失败: {str(e)}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Internal Server Error"
+            )
     
     async def register(self, username: str, password: str, email: str, 
                       role: str = "user", nickname: Optional[str] = None) -> UserAuthDTO:
@@ -275,9 +328,9 @@ class AuthFacade(CoreFacade):
                 
             # 发布用户创建事件
             created_event = UserEvent(
-                event_type=EventType.USER_CREATED,
-                user_id=user.id,
-                username=user.username,
+                event_type=EventType.user_created,
+                user_id=convert_column_to_value(user.id),
+                username=convert_column_to_value(user.username),
                 data={"email": email},
                 created_at=datetime.now(ZoneInfo("UTC"))
             )
@@ -298,6 +351,27 @@ class AuthFacade(CoreFacade):
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Registration failed"
             )
+
+    @staticmethod
+    def get_local_ip() -> str:
+        """
+        获取本机IP地址
+        
+        Returns:
+            str: 本机IP地址
+        """
+        try:
+            # 创建一个UDP套接字
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            # 连接一个外部地址（不需要真实连接）
+            s.connect(("8.8.8.8", 80))
+            # 获取本地IP
+            ip = s.getsockname()[0]
+            s.close()
+            return ip
+        except Exception as e:
+            lprint(f"获取本机IP失败: {str(e)}")
+            return "127.0.0.1"
 
 # 创建全局的 AuthFacade 实例
 _auth_facade = None
@@ -328,8 +402,8 @@ def convert_column_to_value(value: Any) -> Any:
         return str(value)
     return value
 
-def convert_to_user(user_base: UserBaseAndStatus) -> User:
-    """将UserBaseAndStatus转换为User"""
+def convert_to_user(user_base: UserBaseAndDevices) -> User:
+    """将UserBaseAndDevices转换为User"""
     user_dict = user_base.__dict__
     return User(
         id=convert_column_to_value(user_dict.get('id')),
@@ -346,14 +420,17 @@ def convert_to_user(user_base: UserBaseAndStatus) -> User:
 
 def convert_to_auth_dto(user: User) -> UserAuthDTO:
     """将User转换为UserAuthDTO"""
+    nickname_value = convert_column_to_value(user.nickname)
+    is_temp_value = convert_column_to_value(user.is_temporary) if hasattr(user, 'is_temporary') else False
+    
     return UserAuthDTO(
         id=int(convert_column_to_value(user.id)),
         username=str(convert_column_to_value(user.username)),
         email=str(convert_column_to_value(user.email)),
         role=UserRole(int(convert_column_to_value(user.role))),
         status=UserStatusEnum(int(convert_column_to_value(user.status))),
-        nickname=str(convert_column_to_value(user.nickname)) if user.nickname else None,
-        is_temporary=bool(convert_column_to_value(user.is_temporary)) if hasattr(user, 'is_temporary') else False
+        nickname=str(nickname_value) if nickname_value is not None else None,
+        is_temporary=bool(is_temp_value)
     )
 
 def convert_to_auth_internal_dto(user: User) -> UserAuthInternalDTO:
@@ -374,3 +451,18 @@ def convert_to_token(user: User, access_token: str, device_id: str) -> Token:
         role=UserRole(int(convert_column_to_value(user.role))),
         device_id=device_id
     )
+
+async def login_user(self, username: str, password: str) -> Optional[User]:
+    """处理用户登录逻辑"""
+    try:
+        async with self._repository.session.begin():
+            result = await self._user_facade.get_user_by_username(username)
+            if result.success and result.data:
+                user = result.data
+                if verify_password(password, str(user.hashed_password)):
+                    return user
+        return None
+    except Exception as e:
+        lprint(f"用户登录失败: {str(e)}")
+        traceback.print_exc()
+        return None

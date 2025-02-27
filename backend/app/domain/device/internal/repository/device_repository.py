@@ -4,6 +4,7 @@ import traceback
 from datetime import datetime
 from typing import List, Optional, Dict, Any, Sequence
 from zoneinfo import ZoneInfo
+from datetime import timedelta
 
 # 第三方库
 from sqlalchemy import select, and_, or_, update, func, cast, Integer, true
@@ -45,11 +46,12 @@ class DeviceRepository(BaseRepository[Device]):
             Optional[Device]: 设备信息，如果不存在则返回None
         """
         try:
-            query = select(self.model).where(self.model.device_id == device_id)
-            result = await self.session.execute(query)
-            return result.scalar_one_or_none()
+            async with self.get_session() as session:
+                query = select(self.model).where(self.model.device_id == device_id)
+                result = await session.execute(query)
+                return result.scalar_one_or_none()
         except Exception as e:
-            self.lprint(f"[数据库查询] 查询设备ID {device_id} 失败: {traceback.format_exc()}")
+            lprint(f"[数据库查询] 查询设备ID {device_id} 失败: {traceback.format_exc()}")
             return None
 
     async def get_by_user_id(self, user_id: int) -> Sequence[Device]:
@@ -62,9 +64,10 @@ class DeviceRepository(BaseRepository[Device]):
             设备列表
         """
         try:
-            query = select(self.model).where(self.model.user_id == user_id)
-            result = await self.session.execute(query)
-            return result.scalars().all()
+            async with self.get_session() as session:
+                query = select(self.model).where(self.model.user_id == user_id)
+                result = await session.execute(query)
+                return result.scalars().all()
         except Exception as e:
             lprint(f"根据用户ID获取设备失败: {traceback.format_exc()}")
             return []
@@ -84,12 +87,13 @@ class DeviceRepository(BaseRepository[Device]):
             设备列表
         """
         try:
-            query = select(Device).where(Device.user_id == user_id)
-            if not include_offline:
-                lprint(Device.login_status)
-                query = query.where(Device.login_status == true())
-            result = await self.session.execute(query)
-            return result.scalars().all()
+            async with self.get_session() as session:
+                query = select(Device).where(Device.user_id == user_id)
+                if not include_offline:
+                    lprint(Device.login_status)
+                    query = query.where(Device.login_status == true())
+                result = await session.execute(query)
+                return result.scalars().all()
         except Exception as e:
             lprint(f"获取用户设备列表失败: {traceback.format_exc()}")
             return []
@@ -99,40 +103,48 @@ class DeviceRepository(BaseRepository[Device]):
         device_id: str,
         login_status: bool,
         websocket_online: bool,
-        system_info: Optional[Dict[str, Any]] = None
+        status: Optional[str] = None
     ) -> bool:
         """更新设备状态
         
         Args:
             device_id: 设备ID
             login_status: 登录状态
-            websocket_online: WebSocket连接状态
-            system_info: 系统信息（可选）
+            websocket_online: WebSocket在线状态
+            status: 设备状态
             
         Returns:
-            是否成功
+            bool: 是否更新成功
         """
         try:
-            # 构建更新数据
-            update_data = {
-                "login_status": login_status,
-                "websocket_online": websocket_online,
-                "last_login": datetime.now(ZoneInfo("Asia/Shanghai"))
-            }
-            
-            if system_info:
-                update_data["system_info"] = system_info
-            
-            # 执行更新
-            stmt = (
-                update(self.model)
-                .where(self.model.device_id == device_id)
-                .values(**update_data)
-            )
-            await self.session.execute(stmt)
-            await self.session.commit()
-            return True
-            
+            async with self.transaction() as session:
+                # 获取设备
+                query = select(self.model).where(self.model.device_id == device_id)
+                result = await session.execute(query)
+                device = result.scalar_one_or_none()
+                
+                if not device:
+                    lprint(f"设备不存在: {device_id}")
+                    return False
+                
+                # 更新状态
+                update_data = {
+                    'login_status': login_status,
+                    'websocket_online': websocket_online,
+                    'updated_at': datetime.now(ZoneInfo("Asia/Shanghai"))
+                }
+                
+                if status:
+                    update_data['status'] = status
+                
+                update_stmt = (
+                    update(self.model)
+                    .where(self.model.device_id == device_id)
+                    .values(**update_data)
+                )
+                await session.execute(update_stmt)
+                return True
+                
         except Exception as e:
             lprint(f"更新设备状态失败: {traceback.format_exc()}")
             return False
@@ -150,32 +162,33 @@ class DeviceRepository(BaseRepository[Device]):
             统计信息
         """
         try:
-            query = select(
-                func.count(Device.device_id).label("total_count"),
-                func.sum(cast(Device.login_status, Integer)).label("online_count")
-            )
-            
-            if user_id:
-                query = query.where(Device.user_id == user_id)
+            async with self.get_session() as session:
+                query = select(
+                    func.count(Device.device_id).label("total_count"),
+                    func.sum(cast(Device.login_status, Integer)).label("online_count")
+                )
                 
-            result = await self.session.execute(query)
-            row = result.first()
-            
-            if row is None:
+                if user_id:
+                    query = query.where(Device.user_id == user_id)
+                    
+                result = await session.execute(query)
+                row = result.first()
+                
+                if row is None:
+                    return {
+                        "total_count": 0,
+                        "online_count": 0,
+                        "offline_count": 0
+                    }
+                
+                total_count = row.total_count or 0
+                online_count = row.online_count or 0
+                
                 return {
-                    "total_count": 0,
-                    "online_count": 0,
-                    "offline_count": 0
+                    "total_count": total_count,
+                    "online_count": online_count,
+                    "offline_count": total_count - online_count
                 }
-            
-            total_count = row.total_count or 0
-            online_count = row.online_count or 0
-            
-            return {
-                "total_count": total_count,
-                "online_count": online_count,
-                "offline_count": total_count - online_count
-            }
         except Exception as e:
             lprint(f"获取设备统计信息失败: {traceback.format_exc()}")
             return {
@@ -198,35 +211,103 @@ class DeviceRepository(BaseRepository[Device]):
         """
         try:
             cutoff_time = datetime.now(ZoneInfo("Asia/Shanghai")) - timedelta(hours=inactive_hours)
-            query = select(Device).where(
-                and_(
-                    Device.login_status == true(),
-                    Device.last_login < cutoff_time
+            async with self.transaction() as session:
+                query = select(Device).where(
+                    and_(
+                        Device.login_status == true(),
+                        Device.last_login < cutoff_time
+                    )
                 )
-            )
-            result = await self.session.execute(query)
-            devices = result.scalars().all()
-            
-            for device in devices:
-                device.set_offline()
-            
-            await self.session.commit()
-            return len(devices)
+                result = await session.execute(query)
+                devices = result.scalars().all()
+                
+                for device in devices:
+                    device.set_offline()
+                
+                return len(devices)
         except Exception as e:
             lprint(f"清理不活跃设备失败: {traceback.format_exc()}")
             return 0
 
-    async def init_all_devices_status(self) -> None:
+    async def init_all_devices_status(self) -> bool:
         """初始化所有设备状态为离线"""
         try:
-            devices = await self.session.execute(select(Device))
-            devices = devices.scalars().all()
-            
-            for device in devices:
-                device.set_offline()
-            
-            await self.session.commit()
+            async with self.transaction() as session:
+                update_stmt = (
+                    update(self.model)
+                    .values({
+                        'status': DeviceStatus.offline,
+                        'login_status': False,
+                        'websocket_online': False,
+                        'last_login': datetime.now(ZoneInfo("Asia/Shanghai"))
+                    })
+                )
+                await session.execute(update_stmt)
+                return True
         except Exception as e:
-            self.lprint(f"初始化设备状态失败: {str(e)}")
-            await self.session.rollback()
+            lprint(f"初始化设备状态失败: {traceback.format_exc()}")
+            return False
+
+    async def create(self, **kwargs) -> Device:
+        """创建新设备
+        
+        Args:
+            **kwargs: 设备属性
+            
+        Returns:
+            Device: 创建的设备
+        """
+        try:
+            # 移除 id 字段，让数据库自动生成
+            if 'id' in kwargs:
+                del kwargs['id']
+                
+            # 创建新设备实例
+            device = Device(**kwargs)
+            async with self.transaction() as session:
+                session.add(device)
+                await session.flush()  # 刷新会话以获取生成的ID
+            return device
+            
+        except Exception as e:
+            lprint(f"创建设备失败: {str(e)}")
             raise
+
+    async def get_online_devices(self) -> Sequence[Device]:
+        """获取所有在线设备"""
+        try:
+            async with self.get_session() as session:
+                query = select(self.model).where(self.model.login_status == true())
+                result = await session.execute(query)
+                return result.scalars().all()
+        except Exception as e:
+            lprint(f"获取在线设备失败: {traceback.format_exc()}")
+            return []
+
+    async def get_device_count(self) -> Dict[str, int]:
+        """获取设备统计信息
+        
+        Returns:
+            Dict[str, int]: 设备统计，包含总数和在线数
+        """
+        try:
+            async with self.get_session() as session:
+                # 获取总数
+                total_query = select(func.count()).select_from(self.model)
+                total_result = await session.execute(total_query)
+                total = total_result.scalar()
+
+                # 获取在线数
+                online_query = select(func.count()).select_from(self.model).where(
+                    self.model.login_status == true()
+                )
+                online_result = await session.execute(online_query)
+                online = online_result.scalar()
+
+                return {
+                    'total': total,
+                    'online': online
+                }
+        except Exception as e:
+            lprint(f"获取设备统计失败: {traceback.format_exc()}")
+            return {'total': 0, 'online': 0}

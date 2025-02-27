@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- 控制面板背景 -->
+    <rect x="2" y="2" width="12" height="12" rx="2" fill="#1e5e7c"/>
+    <!-- 控制旋钮 -->
+    <circle cx="8" cy="8" r="3" fill="#4d9de0"/>
+    <!-- 指示点 -->
+    <circle cx="8" cy="5" r="1" fill="#ffffff"/>
+</svg> 

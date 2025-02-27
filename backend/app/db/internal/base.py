@@ -1,6 +1,7 @@
 """
 SQLAlchemy 基类定义
 """
+from typing import Any
 from sqlalchemy.orm import declarative_base, declared_attr
 
 class BaseModel:
@@ -25,6 +26,10 @@ class BaseModel:
             for column in self.__table__.columns
         )
         return f"{self.__class__.__name__}({values})"
+    
+    def get(self, key: str, default: Any = None) -> Any:
+        """类似于字典的get方法，获取对象属性"""
+        return getattr(self, key, default)
 
 # 创建基类
 Base = declarative_base(cls=BaseModel)

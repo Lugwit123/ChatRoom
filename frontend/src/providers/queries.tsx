@@ -1,5 +1,5 @@
 import { useQuery,QueryClient } from '@tanstack/react-query';
-import {  Group, CurrentLoginUser, UserBaseAndStatus, UsersInfoDictResponse } from '../types/types';
+import {  Group, CurrentLoginUser, UserBaseAndDevices, UsersInfoDictResponse } from '../types/types';
 import { getGroups, getUserInfoDict } from '../services/api';
 import { QUERY_KEYS } from './QUERY_KEYS';
 import useGlobalState from "../stores/useGlobalState";

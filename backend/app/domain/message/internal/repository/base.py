@@ -50,9 +50,9 @@ class BaseMessageRepository(BaseRepository[BaseMessage]):
     def __init__(self):
         """初始化消息仓储"""
         super().__init__(BaseMessage)
-        self.lprint = LM.lprint
+        lprint = LM.lprint
     
-    async def save_message(self, message_data: dict) -> BaseMessage:
+    async def save_message(self, message_data: Dict[str, Any]) -> BaseMessage:
         """保存消息
         
         Args:
@@ -62,18 +62,20 @@ class BaseMessageRepository(BaseRepository[BaseMessage]):
             BaseMessage: 保存后的消息
         """
         try:
-            # 创建消息实体
-            if isinstance(message_data, dict):
+            async with self.get_session() as session:
+                # 创建消息实体
+                # 删除id字段，让数据库自动生成
+                message_data.pop('id', None)  # 使用pop并提供默认值None，这样即使id不存在也不会报错
                 message = self.model(**message_data)
-            else:
-                message = message_data
                 
-            self.session.add(message)
-            await self.session.commit()
-            await self.session.refresh(message)
-            return message
+                # 保存到数据库
+                session.add(message)
+                await session.commit()
+                await session.refresh(message)
+                return message
+            
         except Exception as e:
-            self.lprint(f"保存消息失败: {str(e)}")
+            lprint(f"保存消息失败: {str(e)}")
             raise
     
     async def get_messages(self, user_id: int, limit: int = 20) -> Sequence[BaseMessage]:
@@ -126,7 +128,7 @@ class BaseMessageRepository(BaseRepository[BaseMessage]):
             )
             return True
         except Exception as e:
-            self.lprint(f"标记消息已读失败: {str(e)}")
+            lprint(f"标记消息已读失败: {str(e)}")
             return False
         
     async def mark_as_delivered(self, message_id: int) -> bool:
@@ -145,7 +147,7 @@ class BaseMessageRepository(BaseRepository[BaseMessage]):
             )
             return True
         except Exception as e:
-            self.lprint(f"标记消息已送达失败: {str(e)}")
+            lprint(f"标记消息已送达失败: {str(e)}")
             return False
 
     async def mark_as_deleted(self, message_id: int) -> bool:
@@ -165,7 +167,7 @@ class BaseMessageRepository(BaseRepository[BaseMessage]):
             )
             return True
         except Exception as e:
-            self.lprint(f"标记消息删除失败: {str(e)}")
+            lprint(f"标记消息删除失败: {str(e)}")
             return False
 
     async def get_unread_messages(self, user_id: int) -> List[BaseMessage]:

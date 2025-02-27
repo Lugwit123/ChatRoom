@@ -199,7 +199,7 @@ Content-Type: application/octet-stream
 
 ### 6.1 连接
 ```websocket
-WS /ws/chat
+WS /ws/chat/private
 Authorization: Bearer {token}
 ```
 

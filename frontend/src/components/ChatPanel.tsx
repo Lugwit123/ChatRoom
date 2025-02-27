@@ -5,7 +5,7 @@ import useCurrentSelectedUserStore from '../stores/useCurrentSelectedUserStore';
 import BaseMessage from './Message';
 import { 
     MessageBase, 
-    UserBaseAndStatus, 
+    UserBaseAndDevices, 
     MessageType, 
     MessageContentType,
     popup_message

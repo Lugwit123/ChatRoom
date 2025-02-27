@@ -10,13 +10,19 @@ lprint = LM.lprint
 from datetime import datetime
 from typing import Optional, List
 import traceback
+import asyncio
+from asyncpg.exceptions import ConnectionDoesNotExistError
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql import Select
 
 from app.domain.common.models.tables import User
 from app.domain.common.enums import UserRole, UserStatusEnum
 from app.core.base.internal.repository.core_repository import CoreRepository
+from app.db.facade.database_facade import DatabaseFacade
+from app.utils.security import verify_password
+from app.core.services.service_core import get_user_facade
 
 class AuthRepository(CoreRepository[User]):
     """认证仓库类"""
@@ -24,106 +30,27 @@ class AuthRepository(CoreRepository[User]):
     def __init__(self):
         """初始化认证仓库"""
         super().__init__(User)
+        self._user_facade = get_user_facade()
     
-    async def get_user_by_username(self, username: str) -> Optional[User]:
-        """根据用户名获取用户
-        
-        Args:
-            username: 用户名
-            
-        Returns:
-            Optional[User]: 用户对象,不存在返回None
-        """
+    async def login_user(self, username: str, password: str) -> Optional[User]:
+        """处理用户登录逻辑"""
         try:
-            # 使用独立的会话
-            async with self.get_session() as session:
-                # 构建查询
-                stmt = select(self.model).where(self.model.username == username)
-                # 执行查询
-                result = await session.execute(stmt)
-                # 获取第一个结果
-                user = result.scalar_one_or_none()
-                
-                if user:
-                    self.lprint(f"找到用户: {user.username}")
-                else:
-                    self.lprint(f"用户不存在: {username}")
-                    
+            user = await self._user_facade.get_user_by_username(username)
+            if user and verify_password(password, str(user.hashed_password)):
                 return user
-                
-        except Exception as e:
-            self.lprint(f"获取用户失败: {str(e)}")
-            self.lprint(traceback.format_exc())
             return None
-    
-    async def get_user_by_id(self, user_id: int) -> Optional[User]:
-        """根据用户ID获取用户
-        
-        Args:
-            user_id: 用户ID
-            
-        Returns:
-            Optional[User]: 用户对象,不存在返回None
-        """
-        try:
-            # 使用独立的会话
-            async with self.get_session() as session:
-                # 构建查询
-                stmt = select(self.model).where(self.model.id == user_id)
-                # 执行查询
-                result = await session.execute(stmt)
-                # 获取第一个结果
-                user = result.scalar_one_or_none()
-                
-                if user:
-                    self.lprint(f"找到用户: {user.username}")
-                else:
-                    self.lprint(f"用户不存在: id={user_id}")
-                    
-                return user
-                
         except Exception as e:
-            self.lprint(f"获取用户失败: {str(e)}")
-            self.lprint(traceback.format_exc())
-            return None
-    
-    async def create_user(self, username: str, hashed_password: str, email: str,
-                         role: str = "user", nickname: Optional[str] = None) -> Optional[User]:
-        """创建新用户"""
-        try:
-            # 检查用户名是否已存在
-            existing_user = await self.get_user_by_username(username)
-            if existing_user:
-                raise ValueError("用户名已存在")
-            
-            # 创建新用户
-            user = await self.create(
-                username=username,
-                hashed_password=hashed_password,
-                email=email,
-                role=UserRole[role.upper()],
-                status=1,  # 1 表示激活状态
-                nickname=nickname,
-                created_at=datetime.now(),
-                updated_at=datetime.now()
-            )
-            
-            return user
-            
-        except ValueError as e:
-            raise
-        except Exception as e:
-            self.lprint(f"创建用户失败: {str(e)}")
+            lprint(f"用户登录失败: {str(e)}")
             traceback.print_exc()
             return None
-    
-    async def update_user_status(self, user_id: int, status: UserStatusEnum) -> bool:
+
+    async def update_login_status(self, user_id: int, status: UserStatusEnum) -> bool:
         """更新用户状态"""
         try:
             await self.update(user_id, status=status, updated_at=datetime.now())
             return True
         except Exception as e:
-            self.lprint(f"更新用户状态失败: {str(e)}")
+            lprint(f"更新用户状态失败: {str(e)}")
             traceback.print_exc()
             return False
     
@@ -133,7 +60,7 @@ class AuthRepository(CoreRepository[User]):
             await self.update(user_id, role=role, updated_at=datetime.now())
             return True
         except Exception as e:
-            self.lprint(f"更新用户角色失败: {str(e)}")
+            lprint(f"更新用户角色失败: {str(e)}")
             traceback.print_exc()
             return False
 

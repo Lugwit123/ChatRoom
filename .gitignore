@@ -20,30 +20,50 @@ wheels/
 .installed.cfg
 *.egg
 
-# Virtual Environment
-venv/
-ENV/
-env/
-.env
-
 # IDE
 .idea/
 .vscode/
 *.swp
 *.swo
-.cursor/
 
-# Logs
+# 环境文件
+.env
+.venv
+env/
+venv/
+ENV/
+
+# 日志文件
 *.log
 logs/
 log/
 
-# OS
+# 临时文件
+*.tmp
 .DS_Store
 Thumbs.db
 
-# Project specific
-*.qss
+# 项目特定
+*.db
+*.sqlite3
+*.sqlite
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+
+# 配置文件（根据需要添加或删除）
+config.ini
+*.conf
+
+# 其他
+*.bak
+*.backup
+*.old
+
+# 项目特定
 *.pyc
 *.pyo
 *.pyd
@@ -59,7 +79,6 @@ Thumbs.db
 *.pyc
 *.pyo
 *.pyd
-*.conf
 *.zip
 *.tar.gz
 *.rar
@@ -87,5 +106,3 @@ cover/
 *.db
 *.sqlite3
 *.sqlite .vscode/ 
-
-

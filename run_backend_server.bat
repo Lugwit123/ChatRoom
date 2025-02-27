@@ -1,7 +1,7 @@
 @echo off
 cmd /c chcp 65001
 cd /d D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom
-@REM call get_ip.bat
+call get_ip.bat
 
 cd backend
 @REM title backend service

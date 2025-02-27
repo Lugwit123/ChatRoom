@@ -3,14 +3,14 @@
 import { useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getUserList, sendMessage, getChatHistory } from '../services/api';
-import { UserBaseAndStatus, AccountsMap, UserRole, UserListResponse } from '../types/types';
+import { UserBaseAndDevices, AccountsMap, UserRole, UserListResponse } from '../types/types';
 
 interface UseUserListProps {
     apiUrl: string;
     token: string | null;
     currentUser: string | null;
     setAccounts: React.Dispatch<React.SetStateAction<AccountsMap>>;
-    setUsers: React.Dispatch<React.SetStateAction<UserBaseAndStatus[]>>;
+    setUsers: React.Dispatch<React.SetStateAction<UserBaseAndDevices[]>>;
     setGroups: React.Dispatch<React.SetStateAction<string[]>>;
     setError: React.Dispatch<React.SetStateAction<string | null>>;
 }

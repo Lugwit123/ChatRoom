@@ -4,7 +4,7 @@ import './ChatPanel.css';
 import BaseMessage from './Message';
 import { 
     MessageBase, 
-    UserBaseAndStatus, 
+    UserBaseAndDevices, 
     MessageType, 
     MessageContentType,
     AccountsMap
@@ -13,7 +13,7 @@ import MyWangEditor from './MyWangEditor';
 import { useWebSocketConnectionHandler } from '../hooks';
 
 interface ChatPanelProps {
-    account: UserBaseAndStatus | null;
+    account: UserBaseAndDevices | null;
     current_user: string | null;
     wsConnected: boolean;
     handleSendMessage: (message: MessageBase) => void;

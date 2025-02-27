@@ -7,7 +7,7 @@ def test_db_connection():
     try:
         # 创建同步引擎
         engine = create_engine(
-            "postgresql://postgres:OC.123456@192.168.110.27:5432/chatroom",
+            "postgresql://postgres:OC.123456@192.168.110.27:5432/chat/privateroom",
             echo=True,
             future=True,
             pool_size=5,

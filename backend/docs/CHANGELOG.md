@@ -15,14 +15,14 @@
 
 ### Fixed
 - 修复了`UserRepository`的导入路径，以适应新的目录结构
-  - 在`user_service.py`中更新了导入语句从`app.domain.user.internal.repository`到`app.domain.user.internal.repository.user_repository`
+  - 在`service_core.py`中更新了导入语句从`app.domain.user.internal.repository`到`app.domain.user.internal.repository.user_repository`
   - 在`user_repository.py`中更新了导入语句从`app.db.database`到`app.db.internal.session`，使用`SessionManager`替代`AsyncSessionLocal`
   - 在`user_repository.py`中更新了导入语句从`app.db.base_repository`到`app.db.repository.base_repository`
   - 在`user_repository.py`中更新了导入语句从`app.domain.common.models.tables`到`app.domain.common.models.tables`
   - 在`models.py`中更新了导入语句从`app.db.base`到`app.db.internal.base`
   - 在`user_repository.py`中更新了导入语句从`app.domain.user.enums`到`app.domain.user.internal.enums`
-  - 在`user_service.py`中更新了导入语句从`app.domain.common.models.tables`到`app.domain.common.models.tables`
-  - 在`user_service.py`中更新了导入语句从`app.domain.user.enums`到`app.domain.user.internal.enums`
+  - 在`service_core.py`中更新了导入语句从`app.domain.common.models.tables`到`app.domain.common.models.tables`
+  - 在`service_core.py`中更新了导入语句从`app.domain.user.enums`到`app.domain.user.internal.enums`
   - 在`user_dto.py`中更新了导入语句从`app.domain.user.facade.dto.enums`到`app.domain.user.internal.enums`
   - 在`message/internal/models.py`中更新了导入语句从`app.db.base`到`app.db.internal.base`
   - 在`message/internal/models.py`中更新了导入语句从`app.domain.message.enums`到`app.domain.message.internal.enums`
@@ -422,7 +422,7 @@
   1. 该文件提供的依赖注入功能在迁移到门面模式后不再需要
   2. 文件中的功能已被 `UserFacade` 替代
   3. 没有活跃代码依赖这个文件
-- 删除了 `app/domain/user/internal/services/user_service.py` 文件,因为:
+- 删除了 `app/domain/user/internal/services/service_core.py` 文件,因为:
   1. 合并用户服务层到门面层,简化代码结构
   2. 所有服务层功能已迁移到 `UserFacade` 中
   3. 遵循门面模式,减少代码层级
@@ -525,7 +525,7 @@
 ## [2025-02-07]
 
 ### Fixed
-- 修复了 UserBaseAndStatus.from_internal 方法中设备列表的类型不匹配问题，现在正确获取设备 ID
+- 修复了 UserBaseAndDevices.from_internal 方法中设备列表的类型不匹配问题，现在正确获取设备 ID
 
 ## [Unreleased]
 

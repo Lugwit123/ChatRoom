@@ -32,7 +32,7 @@ class PrivateMessageManager(BaseMessageRepository):
             session: 数据库会话
         """
         super().__init__(session)
-        self.lprint = LM.lprint
+        lprint = LM.lprint
         
     async def export_messages(self, user_id: int, other_id: int, export_dir: str) -> str:
         """导出指定用户与另一用户之间的私聊消息
@@ -78,11 +78,11 @@ class PrivateMessageManager(BaseMessageRepository):
             with open(filepath, "w", encoding="utf-8") as f:
                 json.dump(message_list, f, ensure_ascii=False, indent=2)
                 
-            self.lprint(f"成功导出私聊消息到文件: {filepath}")
+            lprint(f"成功导出私聊消息到文件: {filepath}")
             return filepath
             
         except Exception as e:
-            self.lprint(f"导出私聊消息失败: {str(e)}")
+            lprint(f"导出私聊消息失败: {str(e)}")
             raise
             
     async def backup_messages(self, user_id: int, backup_dir: str) -> str:
@@ -127,11 +127,11 @@ class PrivateMessageManager(BaseMessageRepository):
             with open(filepath, "w", encoding="utf-8") as f:
                 json.dump(message_list, f, ensure_ascii=False, indent=2)
                 
-            self.lprint(f"成功备份私聊消息到文件: {filepath}")
+            lprint(f"成功备份私聊消息到文件: {filepath}")
             return filepath
             
         except Exception as e:
-            self.lprint(f"备份私聊消息失败: {str(e)}")
+            lprint(f"备份私聊消息失败: {str(e)}")
             raise
             
     async def restore_from_backup(self, backup_file: str) -> int:
@@ -162,11 +162,11 @@ class PrivateMessageManager(BaseMessageRepository):
                 count += 1
             
             await self._session.commit()
-            self.lprint(f"成功恢复 {count} 条私聊消息")
+            lprint(f"成功恢复 {count} 条私聊消息")
             return count
             
         except Exception as e:
-            self.lprint(f"恢复私聊消息失败: {str(e)}")
+            lprint(f"恢复私聊消息失败: {str(e)}")
             raise
             
     async def recall_message(self, message_id: int, user_id: int) -> bool:
@@ -190,23 +190,23 @@ class PrivateMessageManager(BaseMessageRepository):
             message = result.scalar_one_or_none()
             
             if not message:
-                self.lprint(f"消息不存在或无权撤回")
+                lprint(f"消息不存在或无权撤回")
                 return False
                 
             # 检查撤回时间限制(2分钟内)
             if datetime.now() - message.created_at > timedelta(minutes=2):
-                self.lprint(f"消息发送超过2分钟,无法撤回")
+                lprint(f"消息发送超过2分钟,无法撤回")
                 return False
                 
             # 删除消息
             await self._session.delete(message)
             await self._session.commit()
             
-            self.lprint(f"成功撤回消息: {message_id}")
+            lprint(f"成功撤回消息: {message_id}")
             return True
             
         except Exception as e:
-            self.lprint(f"撤回消息失败: {str(e)}")
+            lprint(f"撤回消息失败: {str(e)}")
             raise
             
     async def clean_messages(self, user_id: int, days: int) -> int:
@@ -239,9 +239,9 @@ class PrivateMessageManager(BaseMessageRepository):
                 count += 1
             
             await self._session.commit()
-            self.lprint(f"成功清理 {count} 条私聊消息")
+            lprint(f"成功清理 {count} 条私聊消息")
             return count
             
         except Exception as e:
-            self.lprint(f"清理私聊消息失败: {str(e)}")
+            lprint(f"清理私聊消息失败: {str(e)}")
             raise

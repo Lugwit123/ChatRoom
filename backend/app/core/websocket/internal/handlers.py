@@ -78,7 +78,7 @@ class WebSocketHandlers(IWebSocketEventHandler):
             
         except Exception as e:
             lprint(f"处理连接事件失败: {str(e)}")
-            lprint(traceback.format_exc())
+            traceback.print_exc()
             await self.on_error(sid, e)
             
     async def on_disconnect(self, sid: str) -> None:
@@ -102,7 +102,7 @@ class WebSocketHandlers(IWebSocketEventHandler):
             
         except Exception as e:
             lprint(f"处理断开连接事件失败: {str(e)}")
-            lprint(traceback.format_exc())
+            traceback.print_exc()
             await self.on_error(sid, e)
             
     async def on_message(self, sid: str, data: dict) -> None:
@@ -119,7 +119,7 @@ class WebSocketHandlers(IWebSocketEventHandler):
         """
         try:
             # 获取发送者ID
-            user_id = self._connection_manager.get_user_id(sid)
+            user_id = self._connection_manager.get_user_sid(sid)
             if not user_id:
                 lprint(f"无法获取发送者ID: sid={sid}")
                 return
@@ -136,7 +136,7 @@ class WebSocketHandlers(IWebSocketEventHandler):
             
         except Exception as e:
             lprint(f"处理消息事件失败: {str(e)}")
-            lprint(traceback.format_exc())
+            traceback.print_exc()
             await self.on_error(sid, e)
             
     async def on_error(self, sid: str, error: Exception) -> None:
@@ -152,7 +152,7 @@ class WebSocketHandlers(IWebSocketEventHandler):
         """
         try:
             lprint(f"发生错误: sid={sid}, error={str(error)}")
-            lprint(traceback.format_exc())
+            traceback.print_exc()
             
             # 尝试清理资源
             await self._room_manager.remove_sid(sid)
@@ -160,4 +160,4 @@ class WebSocketHandlers(IWebSocketEventHandler):
             
         except Exception as e:
             lprint(f"处理错误事件失败: {str(e)}")
-            lprint(traceback.format_exc())
+            traceback.print_exc()

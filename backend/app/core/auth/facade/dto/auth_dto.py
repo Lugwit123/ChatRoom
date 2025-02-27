@@ -89,3 +89,11 @@ class UserAuthInternalDTO(UserAuthDTO):
             **base.model_dump(),
             hashed_password=str(convert_column_to_value(user.hashed_password))
         )
+
+class LoginResponseDTO(BaseModel):
+    access_token: str
+    token_type: str
+    user_id: int
+    device_id: str
+    username: str
+    role: UserRole

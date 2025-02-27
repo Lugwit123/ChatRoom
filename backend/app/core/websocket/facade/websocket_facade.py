@@ -415,7 +415,7 @@ class WebSocketFacade:
     def _get_real_ip(self, environ: dict) -> str:
         ip_adress=environ.get('asgi.scope',{}).get("client",[])[0]
         if ip_adress=='127.0.0.1':
-            ip_adress="192.168.112.233"
+            ip_adress=os.environ["SERVER_LOCALNET_IP"]
         return ip_adress
 
     async def connect(self, sid: str, environ: dict, auth: Optional[dict] = None) -> None:
@@ -540,7 +540,7 @@ class WebSocketFacade:
         """获取Socket.IO服务器实例"""
         return self._sio
 
-    async def get_user_id(self, sid: str) -> Optional[str]:
+    async def get_user_id_by_sid(self, sid: str) -> Optional[str]:
         """获取会话关联的用户ID
         
         Args:
@@ -550,7 +550,7 @@ class WebSocketFacade:
             Optional[str]: 用户ID，如果会话未关联用户则返回None
         """
         try:
-            user_id = self._connection_manager.get_user_id(sid)
+            user_id = self._connection_manager.get_user_id_by_sid(sid)
             if not user_id:
                 lprint(f"无法获取用户ID, sid={sid}")
                 return None
@@ -588,7 +588,7 @@ class WebSocketFacade:
         """处理断开连接"""
         try:
             # 获取用户信息
-            user_id = self._connection_manager.get_user_id(sid)
+            user_id = self._connection_manager.get_user_id_by_sid(sid)
             if not user_id:
                 return
                 

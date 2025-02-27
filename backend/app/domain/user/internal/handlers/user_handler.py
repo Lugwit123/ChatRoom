@@ -55,7 +55,7 @@ class UserStatusHandler:
             return True
         except Exception as e:
             lprint(f"更新用户状态失败: {str(e)}")
-            lprint(traceback.format_exc())
+            traceback.print_exc()
             return False
 
     async def handle_connect(self, sid: str, environ: Dict):
@@ -85,7 +85,7 @@ class UserStatusHandler:
 
         except Exception as e:
             lprint(f"处理连接事件失败: {str(e)}")
-            lprint(traceback.format_exc())
+            traceback.print_exc()
             return False
 
     async def handle_disconnect(self, sid: str):
@@ -105,7 +105,7 @@ class UserStatusHandler:
 
         except Exception as e:
             lprint(f"处理断开连接事件失败: {str(e)}")
-            lprint(traceback.format_exc())
+            traceback.print_exc()
 
     async def is_online(self, user_id: str) -> bool:
         """检查用户是否在线"""

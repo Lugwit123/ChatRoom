@@ -68,7 +68,7 @@ class ChatHistoryClient:
                         return False
         except Exception as e:
             lprint(f"登录过程中发生错误: {str(e)}")
-            lprint(traceback.format_exc())
+            traceback.print_exc()
             return False
             
     async def get_private_messages(
@@ -108,7 +108,7 @@ class ChatHistoryClient:
                         
         except Exception as e:
             lprint(f"获取私聊消息时发生错误: {str(e)}")
-            lprint(traceback.format_exc())
+            traceback.print_exc()
             return []
             
     async def get_group_messages(
@@ -179,7 +179,7 @@ class ChatHistoryClient:
             lprint(f"- 错误类型: {type(e).__name__}")
             lprint(f"- 错误信息: {str(e)}")
             lprint("- 错误堆栈:")
-            lprint(traceback.format_exc())
+            traceback.print_exc()
             return []
 
 def format_message(message: dict) -> str:
@@ -230,7 +230,7 @@ async def main():
             
     except Exception as e:
         lprint(f"测试执行失败: {str(e)}")
-        lprint(traceback.format_exc())
+        traceback.print_exc()
 
 if __name__ == "__main__":
     asyncio.run(main())

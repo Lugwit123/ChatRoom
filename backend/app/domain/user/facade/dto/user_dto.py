@@ -51,11 +51,41 @@ class UserBase(BaseModel):
     status: UserStatusEnum = UserStatusEnum.normal
     extra_data: Dict[str, Any] = Field(default_factory=dict)
     
+    @classmethod
+    def from_internal(cls, user: User) -> "UserBase":
+        """从内部模型转换为DTO"""
+        return cls(
+            id=int(str(getattr(user, 'id', 0))),
+            username=str(getattr(user, 'username', '')),
+            nickname=str(getattr(user, 'nickname', '')) or None,
+            email=str(getattr(user, 'email', '')) or None,
+            role=UserRole(int(str(getattr(user, 'role', UserRole.user)))),
+            avatar_index=int(str(getattr(user, 'avatar_index', 0))),
+            status=UserStatusEnum(int(str(getattr(user, 'status', UserStatusEnum.normal)))),
+            extra_data=dict(getattr(user, 'extra_data', {})) or {}
+        )
+
     class Config:
         from_attributes = True
         json_encoders = {
             datetime: format_datetime
         }
+        
+    def get(self, key: str, default: Any = None) -> Any:
+        """获取属性值，类似字典的 get 方法
+        
+        Args:
+            key: 属性名
+            default: 默认值
+            
+        Returns:
+            Any: 属性值或默认值
+        """
+        return getattr(self, key, default)
+
+    def to_dict(self) -> Dict[str, Any]:
+        """转换为字典"""
+        return self.model_dump()
 
 class UserResponse(UserBase):
     """用户响应数据传输对象
@@ -83,7 +113,7 @@ class UserResponse(UserBase):
             登录状态
             用户的当前登录状态
     """
-    last_active: Optional[datetime] = None
+    last_login: Optional[datetime] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     login_status: bool = False
@@ -97,11 +127,11 @@ class UserResponse(UserBase):
         is_logged_in = any(getattr(device, 'is_online', lambda: False)() for device in devices)
         
         # 安全地获取时间字段
-        last_active = getattr(user, 'last_active', None)
-        if isinstance(last_active, datetime):
-            last_active = last_active
+        last_login = getattr(user, 'last_login', None)
+        if isinstance(last_login, datetime):
+            last_login = last_login
         else:
-            last_active = None
+            last_login = None
             
         created_at = getattr(user, 'created_at', None)
         if isinstance(created_at, datetime):
@@ -128,7 +158,7 @@ class UserResponse(UserBase):
             role=UserRole(int(str(getattr(user, 'role', UserRole.user)))),
             avatar_index=int(str(getattr(user, 'avatar_index', 0))),
             status=UserStatusEnum(int(str(getattr(user, 'status', UserStatusEnum.normal)))),
-            last_active=last_active,
+            last_login=last_login,
             created_at=created_at,
             updated_at=updated_at,
             login_status=is_logged_in,
@@ -136,7 +166,7 @@ class UserResponse(UserBase):
             extra_data=extra_data
         )
 
-class UserBaseAndStatus(BaseModel):
+class UserBaseAndDevices(BaseModel):
     """用户基础信息和状态数据传输对象
     
     包含用户的基本信息和状态。
@@ -175,7 +205,7 @@ class UserBaseAndStatus(BaseModel):
     devices: List[Dict[str, Any]] = Field(default_factory=list)
     
     @classmethod
-    def from_internal(cls, user: Optional[User]) -> Optional['UserBaseAndStatus']:
+    def from_internal(cls, user: Optional[User]) -> Optional['UserBaseAndDevices']:
         """从内部用户模型创建用户基本信息和状态"""
         if not user:
             return None
@@ -339,7 +369,7 @@ class UserMapInfo(BaseModel):
                     device_list.append(converted_dict)
                 except Exception as e:
                     lprint(f"[admin01 DTO转换] 设备转换失败: {str(e)}")
-                    lprint(traceback.format_exc())
+                    traceback.print_exc()
             
             lprint(f"[admin01 DTO转换] 最终设备列表: {device_list}")
         else:
@@ -359,7 +389,7 @@ class UserMapInfo(BaseModel):
         else:
             updated_at = None
             
-        last_login = getattr(user, 'last_active', None)  # 使用 last_active 作为 last_login
+        last_login = getattr(user, 'last_login', None)  # 使用 last_login 作为 last_login
         if isinstance(last_login, datetime):
             last_login = last_login
         else:

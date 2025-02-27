@@ -4,8 +4,9 @@
 包含以下枚举类：
 - UserRole: 用户角色枚举
 - UserStatusEnum: 用户状态枚举
+- UserOnlineStatus: 用户在线状态枚举
 """
-from enum import IntEnum
+from enum import IntEnum, Enum, auto
 from typing import Dict, Any
 from app.domain.common.enums.message import enum_to_dict
 
@@ -47,6 +48,14 @@ class UserStatusEnum(IntEnum):
     disabled = 1  # 禁用状态
     deleted = 2   # 删除状态
 
+class UserOnlineStatus(str, Enum):
+    """用户在线状态枚举"""
+    ONLINE = "online"     # 在线
+    OFFLINE = "offline"   # 离线
+    AWAY = "away"        # 离开
+    BUSY = "busy"        # 忙碌
+    INVISIBLE = "invisible"  # 隐身
+
 def get_all_enums() -> Dict[str, Dict[str, Any]]:
     """获取所有用户相关枚举的定义
     
@@ -62,10 +71,12 @@ def get_all_enums() -> Dict[str, Dict[str, Any]]:
                     2: "系统用户，用于发送系统消息和执行系统操作"
                 }
             },
-            "UserStatus": {...}
+            "UserStatus": {...},
+            "UserOnlineStatus": {...}
         }
     """
     return {
         "UserRole": enum_to_dict(UserRole),
-        "UserStatus": enum_to_dict(UserStatusEnum)
+        "UserStatus": enum_to_dict(UserStatusEnum),
+        "UserOnlineStatus": enum_to_dict(UserOnlineStatus)
     }

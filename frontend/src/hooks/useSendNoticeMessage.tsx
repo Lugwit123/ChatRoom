@@ -3,7 +3,7 @@ import { useSendMessage } from '../hooks/useSendMessage';
 import { MessageBase, 
     MessageType, 
     MessageContentType, 
-    UserBaseAndStatus,
+    UserBaseAndDevices,
     MessageStatus } from '../types/types';
 import { logger } from '../utils/logger';
 import { useWebSocketQuery } from '../providers/websocketQuery';

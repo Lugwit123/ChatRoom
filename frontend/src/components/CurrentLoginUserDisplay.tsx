@@ -1,6 +1,6 @@
 // frontend/src/components/CurrentLoginUserDisplay.tsx
 import React, { useState, useEffect, useCallback } from 'react';
-import { UserBaseAndStatus, UserRole, MessageType, MessageContentType, MessageBase } from '../types/types';
+import { UserBaseAndDevices, UserRole, MessageType, MessageContentType, MessageBase } from '../types/types';
 import UserAvatar from './UserAvatar';
 import Announcement from './Announcement';
 import './CurrentLoginUserDisplay.css';
@@ -24,7 +24,7 @@ interface OnlineStatus {
 }
 
 interface CurrentLoginUserDisplayProps {
-    currentLoginUser: UserBaseAndStatus | null;
+    currentLoginUser: UserBaseAndDevices | null;
     handleLogout: () => void;
     isWsConnected: boolean;
     websocket: any;

@@ -33,6 +33,7 @@ class GroupRepository(BaseRepository[Group]):
     def __init__(self):
         """初始化群组仓储"""
         super().__init__(Group)
+        self._member_repository = GroupMemberRepository()
 
     async def create_group(
         self,
@@ -239,6 +240,18 @@ class GroupRepository(BaseRepository[Group]):
                 "today_message_count": 0,
                 "created_at": None
             }
+
+    async def is_member(self, group_id: int, user_id: int) -> bool:
+        """检查用户是否是群组成员
+        
+        Args:
+            group_id: 群组ID
+            user_id: 用户ID
+            
+        Returns:
+            bool: 是否是成员
+        """
+        return await self._member_repository.is_member(group_id, user_id)
 
 class GroupMemberRepository(BaseRepository[GroupMember]):
     """群组成员仓储"""

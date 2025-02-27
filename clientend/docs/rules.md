@@ -92,7 +92,7 @@ try:
     result = await async_operation()
 except Exception as e:
     lprint(f"操作失败: {str(e)}")
-    lprint(traceback.format_exc())
+    traceback.print_exc()
 ```
 
 ### 日志规范

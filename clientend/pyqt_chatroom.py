@@ -8,7 +8,7 @@ import atexit
 import datetime
 from typing import Optional, Dict, Any, TextIO
 
-os.environ['QT_API'] = 'pyqt6'
+os.environ['QT_API'] = 'pyside6'
 
 import time
 import psutil
@@ -23,15 +23,24 @@ from dotenv import load_dotenv
 from qasync import QEventLoop, QApplication, asyncSlot, asyncClose
 import Lugwit_Module as LM
 lprint = LM.lprint
+import platform
+import json
 
 # 全局变量用于存储退出原因
 exit_reason = "程序正常退出"
 
+current_dir = os.path.dirname(os.path.abspath(__file__))
+os.chdir(current_dir)
+sys.path.append(current_dir)
+
+                
+                
+                
 def init_exit_logging():
     """初始化退出日志记录"""
     global exit_log_file
     try:
-        log_dir = os.getenv('LOG_DIR', 'A:/temp/chatRoomLog')
+        log_dir = os.getenv('LOG_DIR', 'A:/temp/chat/privateRoomLog')
         os.makedirs(log_dir, exist_ok=True)
         log_path = os.path.join(log_dir, 'exit_log.txt')
         exit_log_file = open(log_path, 'a', encoding='utf-8')
@@ -39,51 +48,7 @@ def init_exit_logging():
     except Exception as e:
         lprint(f"初始化退出日志失败: {str(e)}")
 
-def log_exit(reason: str = "程序正常退出"):
-    """记录程序退出信息"""
-    global exit_reason
-    try:
-        # 如果没有提供reason，使用全局的exit_reason
-        if reason:
-            exit_reason = reason
-            
-        log_dir = os.getenv('LOG_DIR', 'A:/temp/chatRoomLog')
-        os.makedirs(log_dir, exist_ok=True)
-        log_path = os.path.join(log_dir, 'exit_log.txt')
-        
-        current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        log_message = f"[{current_time}] 程序退出 - 原因: {exit_reason}\n"
-        
-        # 直接使用 with 语句确保文件正确关闭
-        with open(log_path, 'a', encoding='utf-8') as f:
-            f.write(log_message)
-            f.flush()
-        
-        # 同时打印到控制台
-        lprint(f"程序退出日志: {log_message.strip()}")
-        
-    except Exception as e:
-        lprint(f"记录退出信息失败: {str(e)}")
-        lprint(traceback.format_exc())
 
-def handle_exception(exc_type, exc_value, exc_traceback):
-    """处理未捕获的异常"""
-    global exit_reason
-    if issubclass(exc_type, KeyboardInterrupt):
-        sys.__excepthook__(exc_type, exc_value, exc_traceback)
-        return
-    
-    error_msg = "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
-    lprint(f"未捕获的异常:\n{error_msg}")
-    
-    # 设置退出原因
-    exit_reason = f"未捕获的异常: {str(exc_value)}\n{error_msg}"
-
-# 设置异常钩子
-sys.excepthook = handle_exception
-
-# 注册退出处理函数
-atexit.register(log_exit)
 
 # 加载环境变量
 os.chdir(os.path.dirname(__file__))
@@ -98,24 +63,13 @@ hostname = socket.gethostname()
 
 
 # 从环境变量获取配置
-SERVER_IP = os.getenv('SERVER_IP', '127.0.0.1')
+SERVER_IP = os.getenv('SERVER_IP')
 lprint(f"服务器IP: {SERVER_IP}")  # 打印服务器IP以便调试
 SERVER_PORT = int(os.getenv('SERVER_PORT', '1026'))
 WS_PORT = int(os.getenv('WS_PORT', '1026'))
-APP_MIN_WIDTH = int(os.getenv('APP_MIN_WIDTH', '1300'))
-APP_MIN_HEIGHT = int(os.getenv('APP_MIN_HEIGHT', '900'))
-APP_DEFAULT_WIDTH = int(os.getenv('APP_DEFAULT_WIDTH', '1300'))
-APP_DEFAULT_HEIGHT = int(os.getenv('APP_DEFAULT_HEIGHT', '800'))
-TEMP_DIR = os.getenv('TEMP_DIR', 'D:/TD_Depot/Temp')
-LOG_DIR = os.getenv('LOG_DIR', 'A:/temp/chatRoomLog')
-ICON_DIR = os.getenv('ICON_DIR', 'D:/TD_Depot/Software/Lugwit_syncPlug/lugwit_insapp/trayapp/Lib/icons')
-VNC_VIEWER_PATH = os.getenv('VNC_VIEWER_PATH', 'D:/TD_Depot/Software/ProgramFilesLocal/RealVNC/VNC Viewer/vncviewer.exe')
-VNC_SERVER_PATH = os.getenv('VNC_SERVER_PATH', 'D:/TD_Depot/Temp/VNC-Server/Installer.exe')
-VNC_DEFAULT_PORT = int(os.getenv('VNC_DEFAULT_PORT', '5900'))
-VNC_DEFAULT_PASSWORD = os.getenv('VNC_DEFAULT_PASSWORD', 'OC.123456')
+LOG_DIR = os.getenv('LOG_DIR', 'A:/temp/chat/privateRoomLog')
 
 # 确保必要的目录存在
-os.makedirs(TEMP_DIR, exist_ok=True)
 os.makedirs(LOG_DIR, exist_ok=True)
 
 # 从文件读取服务器IP地址（如果环境变量中没有设置）
@@ -150,8 +104,8 @@ sys.path.append(r'D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib
 
 from modules.ui.browser import Browser
 from modules.ui.menu import HoverMenu
-from modules.message import MessageBase
-from modules.handlers.chat_handler import ChatRoom
+from modules.handlers.chat_handler import ChatHandler
+from modules.auth.auth_manager import auth_manager  # 导入认证管理器
 
 # 设置远程调试环境变量
 os.environ["QTWEBENGINE_REMOTE_DEBUGGING"] = "9222"
@@ -162,6 +116,7 @@ print("project_info", project_info)
 
 if isinstance(project_info, dict):
     userName = project_info.get('User')
+    nickname = project_info.get('FullName',userName)
     departmentList = project_info.get('userGroups', [])
 else:
     userName = None
@@ -172,9 +127,14 @@ for department in departmentList:
     if department.get("name") == 'ChatRoom':
         joinChatRoom = True
         break
+degbug_users=['fengqingqing','OC1']
+
 
 class MainWindow(QMainWindow):
+    """主窗口类"""
+    
     def __init__(self):
+        """初始化主窗口"""
         super().__init__()
         self.setWindowTitle("聊天室")
         
@@ -186,33 +146,294 @@ class MainWindow(QMainWindow):
         self.central_layout.setSpacing(0)
         
         # 初始化变量
-        self.userName = userName
-        self.project_info = project_info
-        self.tray_icon: QSystemTrayIcon
-        self.tray_menu: HoverMenu
-        self.blink_timer: Optional[QTimer] = None
+        self.userName: str = userName if userName else ""
+        self.nickname : str = nickname
+        self.project_info: Dict[str, Any] = project_info if isinstance(project_info, dict) else {}
+        
+        # 初始化UI相关属性
+        self.blink_timer = QTimer(self)
+        self.countdown_timer = QTimer(self)
+        self.reconnect_timer = QTimer(self)
+        self.connection_check_timer = QTimer(self)
+        
+        # 初始化状态变量
         self.is_blinking = False
-        self.original_icon = None
-        self.chat_handler: Optional[ChatRoom] = None
-        self.browser: Optional[Browser] = None
+        self.overlay_visible = False
+        self.is_reconnecting = False
+        self.reconnect_attempt = 0
+        self.countdown_seconds = 0
+        self.last_connection_time = time.time()
+        self.chat_handler = None  # 显式初始化为 None
+        
+        # 初始化图标相关
+        self.original_icon = QIcon()
+        self.tray_icon_path = os.path.join(os.path.dirname(__file__), 'icons', 'logo.png')
+        
+        # 重连相关变量
+        self.reconnect_attempt: int = 0
+        self.max_reconnect_attempts: int = 5
+        self.base_reconnect_delay: int = 3
+        self.is_reconnecting: bool = False
+        self.last_connection_time: float = time.time()
+        
+        # 连接认证管理器信号
+        auth_manager.login_success.connect(self.on_login_success)
+        auth_manager.login_failed.connect(self.on_login_failed)
+        auth_manager.logout_success.connect(self.on_logout)
         
         # 设置窗口
         self.setup_window()
-        self.setup_tray()
         
-        # 初始化聊天处理器
-        self.init_chat_handler()
+        # 初始化托盘和聊天处理器
+        QTimer.singleShot(0, self._delayed_init)
         
         # 创建浏览器实例
         self.browser = Browser(parent_widget=self)
         self.central_layout.addWidget(self.browser)
-        
+
+        # 连接定时器信号
+        self.reconnect_timer.timeout.connect(self.try_reconnect)
+        self.countdown_timer.timeout.connect(self.update_countdown)
+        self.connection_check_timer.timeout.connect(self.check_connection_status)
+
+    def _delayed_init(self):
+        """延迟初始化，避免启动卡顿"""
+        try:
+            # 设置托盘
+            self.setup_tray()
+            
+            # 初始化聊天处理器
+            self.init_chat_handler()
+            
+            # 初始化重连定时器
+            self.setup_reconnect_timer()
+            
+            # 初始化连接检查定时器
+            self.setup_connection_check_timer()
+            
+        except Exception as e:
+            lprint(f"延迟初始化失败: {str(e)}")
+            traceback.print_exc()
+
+    def setup_reconnect_timer(self):
+        """设置重连定时器"""
+        try:
+            if not self.reconnect_timer.isActive():
+                # 设置定时器间隔
+                self.reconnect_timer.setInterval(self.base_reconnect_delay *1000)
+                self.reconnect_timer.start()
+                self.is_reconnecting = False
+                lprint(f"重连定时器已启动,间隔{self.base_reconnect_delay}秒")
+            
+        except Exception as e:
+            lprint(f"设置重连定时器失败: {str(e)}")
+            traceback.print_exc()
+
+    def update_countdown(self):
+        """更新倒计时显示"""
+        try:
+            if self.countdown_seconds > 0:
+                self.countdown_seconds -= 1
+                if hasattr(self, 'tray_icon'):
+                    self.tray_icon.setToolTip(
+                        f"ChatRoom - 正在重连 (第 {self.reconnect_attempt} 次)\n"
+                        f"下次重连倒计时: {self.countdown_seconds} 秒"
+                    )
+            else:
+                self.countdown_timer.stop()
+            
+        except Exception as e:
+            lprint(f"更新倒计时显示失败: {str(e)}")
+            traceback.print_exc()
+
+    def setup_connection_check_timer(self):
+        """初始化连接检查定时器"""
+        try:
+            if not self.connection_check_timer.isActive():
+                self.connection_check_timer.start(10000)  # 每10秒检查一次连接状态
+                lprint("连接状态检查定时器已启动")
+            
+        except Exception as e:
+            lprint(f"初始化连接检查定时器失败: {str(e)}")
+            traceback.print_exc()
+
+    def check_connection_status(self):
+        """检查连接状态"""
+        try:
+            if not self.chat_handler:
+                return
+                
+            if not self.is_reconnecting:
+                is_connected = self.chat_handler.is_connected and self.chat_handler.sio.connected
+                
+                # 只有当状态真正改变时才更新
+                if is_connected != self.chat_handler.is_connected:
+                    self.update_connection_status(is_connected)
+                    
+                # 如果未连接且重连定时器未启动，则启动重连
+                if not is_connected and (not self.reconnect_timer or not self.reconnect_timer.isActive()):
+                    self.handle_connection_lost()
+                    
+        except Exception as e:
+            lprint(f"检查连接状态失败: {str(e)}")
+            traceback.print_exc()
+
+    @asyncSlot()
+    async def try_reconnect(self):
+        """尝试重新连接"""
+        if self.is_reconnecting:
+            lprint("正在重连，跳过")
+            return
+            
+        if self.chat_handler and self.chat_handler.is_connected and self.chat_handler.sio.connected:
+            lprint("已经连接到服务器，停止重连")
+            self.reconnect_timer.stop()
+            self.countdown_timer.stop()  # 停止倒计时
+            return
+            
+        try:
+            self.is_reconnecting = True
+            self.reconnect_attempt += 1
+            
+            # 计算延迟时间（指数退避）
+            delay = min(30, self.base_reconnect_delay * (2 ** (self.reconnect_attempt - 1)))
+            
+            lprint(f"尝试第 {self.reconnect_attempt} 次重连，延迟 {delay} 秒")
+            
+            # 设置并启动倒计时
+            self.countdown_seconds = delay
+            self.countdown_timer.start(1000)  # 每秒更新一次
+            
+            # 更新托盘图标提示
+            if hasattr(self, 'tray_icon'):
+                self.tray_icon.setToolTip(
+                    f"ChatRoom - 正在重连 (第 {self.reconnect_attempt} 次)\n"
+                    f"下次重连倒计时: {self.countdown_seconds} 秒"
+                )
+            
+            # 尝试重新连接
+            connected = await self.chat_handler.connect_to_server()
+            
+            if connected:
+                lprint("重连成功")
+                self.reconnect_timer.stop()
+                self.countdown_timer.stop()  # 停止倒计时
+                self.reconnect_attempt = 0
+                self.is_reconnecting = False
+                self.last_connection_time = time.time()
+                self.update_connection_status(True)
+                
+                # 更新托盘图标提示
+                if hasattr(self, 'tray_icon'):
+                    self.tray_icon.setToolTip("ChatRoom - 已连接")
+                    self.tray_icon.showMessage(
+                        "ChatRoom",
+                        "已重新连接到服务器",
+                        QSystemTrayIcon.MessageIcon.Information,
+                        2000
+                    )
+            else:
+                lprint(f"重连失败，{delay}秒后重试")
+                self.is_reconnecting = False
+                if self.reconnect_attempt < self.max_reconnect_attempts:
+                    self.reconnect_timer.setInterval(delay * 1000)
+                    self.reconnect_timer.start()
+                else:
+                    lprint("达到最大重连次数，停止重连")
+                    self.reconnect_timer.stop()
+                    self.countdown_timer.stop()  # 停止倒计时
+                    self.is_reconnecting = False
+                    self.update_connection_status(False)
+                    if hasattr(self, 'tray_icon'):
+                        self.tray_icon.setToolTip("ChatRoom - 连接失败")
+                        self.tray_icon.showMessage(
+                            "ChatRoom",
+                            "无法连接到服务器，请检查网络连接",
+                            QSystemTrayIcon.MessageIcon.Critical,
+                            2000
+                        )
+                    
+        except Exception as e:
+            lprint(f"重连过程中出错: {str(e)}")
+            traceback.print_exc()
+            self.is_reconnecting = False
+
+    def handle_connection_lost(self):
+        """处理连接丢失"""
+        try:
+            if self.is_reconnecting:
+                return
+                
+            lprint("连接已断开")
+            self.is_reconnecting = True
+            self.reconnect_attempt = 0
+            self.setup_reconnect_timer()
+            self.update_connection_status(False)
+            
+            if hasattr(self, 'tray_icon'):
+                self.tray_icon.setToolTip("聊天室 - 已断开连接")
+        except Exception as e:
+            lprint(f"处理连接丢失失败: {str(e)}")
+            traceback.print_exc()
+
+    def init_chat_handler(self):
+        """初始化聊天处理器"""
+        try:
+            if not self.chat_handler:  # 只在未初始化时创建
+                self.chat_handler = ChatHandler(self)
+                # 添加连接状态监听
+                self.chat_handler.on_disconnect = self.handle_connection_lost
+                self.chat_handler.on_connect = self.handle_connection_restored
+                
+                # 初始化连接状态
+                if hasattr(self, 'tray_menu'):
+                    self.tray_menu.update_login_status(False)
+                    
+        except Exception as e:
+            lprint(f"初始化聊天处理器失败: {str(e)}")
+            traceback.print_exc()
+
+    def update_connection_status(self, is_connected: bool):
+        """更新连接状态显示"""
+        try:
+            if hasattr(self, 'tray_menu'):
+                self.tray_menu.update_login_status(is_connected)
+                
+            # 更新托盘图标提示
+            if hasattr(self, 'tray_icon'):
+                status_text = "已连接" if is_connected else "未连接"
+                self.tray_icon.setToolTip(f"ChatRoom - {status_text}")
+        except Exception as e:
+            lprint(f"更新连接状态显示失败: {str(e)}")
+            traceback.print_exc()
+
+    def handle_connection_restored(self):
+        """处理连接恢复"""
+        try:
+            lprint("连接已恢复")
+            if self.reconnect_timer.isActive():
+                self.reconnect_timer.stop()
+            self.reconnect_attempt = 0
+            self.is_reconnecting = False
+            self.last_connection_time = time.time()
+            self.update_connection_status(True)
+            
+            if hasattr(self, 'tray_icon'):
+                self.tray_icon.setToolTip("ChatRoom - 已连接")
+        except Exception as e:
+            lprint(f"处理连接恢复失败: {str(e)}")
+            traceback.print_exc()
+
     @asyncClose
     async def async_close_event(self, event):
         """处理窗口关闭事件的异步版本，用于清理资源"""
         try:
             # 停止闪烁
             self.stop_blinking()
+            
+            # 停止重连定时器
+            if self.reconnect_timer.isActive():
+                self.reconnect_timer.stop()
             
             # 关闭聊天处理器
             if self.chat_handler:
@@ -225,7 +446,7 @@ class MainWindow(QMainWindow):
             event.accept()
         except Exception as e:
             lprint(f"关闭窗口时出错: {str(e)}")
-            lprint(traceback.format_exc())
+            traceback.print_exc()
             event.accept()
 
     def closeEvent(self, event):
@@ -249,7 +470,7 @@ class MainWindow(QMainWindow):
                 )
         except Exception as e:
             lprint(f"处理隐藏事件失败: {str(e)}")
-            lprint(traceback.format_exc())
+            traceback.print_exc()
 
     def showEvent(self, event):
         """处理窗口显示事件"""
@@ -258,32 +479,119 @@ class MainWindow(QMainWindow):
             self.activateWindow()  # 确保窗口获得焦点
         except Exception as e:
             lprint(f"处理显示事件失败: {str(e)}")
-            lprint(traceback.format_exc())
+            traceback.print_exc()
+
+    @asyncSlot()
+    async def handle_login(self):
+        """处理登录/登出操作"""
+        try:
+            if self.userName:
+                lprint(f"开始登录: {self.userName}")
+                success, result = await auth_manager.login(self.userName, "666")
+                if success:
+                    lprint("登录成功")
+                    # 更新托盘菜单状态
+                    if self.tray_menu:
+                        self.tray_menu.update_login_status(True)
+                else:
+                    lprint(f"登录失败: {result}")
+                    if self.tray_menu:
+                        self.tray_menu.update_login_status(False)
+                    # 显示错误消息
+                    QMessageBox.warning(
+                        self,
+                        "登录失败",
+                        f"登录失败: {result}",
+                        QMessageBox.StandardButton.Ok,
+                        QMessageBox.StandardButton.NoButton
+                    )
+
+        except Exception as e:
+            lprint(f"处理登录/登出操作失败: {str(e)}")
+            traceback.print_exc()
+            if self.tray_menu:
+                self.tray_menu.update_login_status(False)
+
+    @asyncSlot()
+    async def auto_login(self):
+        """自动登录"""
+        try:
+            if self.userName:
+                # 复用handle_login的逻辑
+                await self.handle_login()
+        except Exception as e:
+            lprint(f"自动登录失败: {str(e)}")
+            traceback.print_exc()
+            # 自动登录失败不显示错误消息框
+            if self.tray_menu:
+                self.tray_menu.update_login_status(False)
 
     @asyncSlot()
     async def on_login_success(self, token: str):
-        """登录成功的处理"""
+        """登录成功处理"""
         try:
-            if self.chat_handler:
-                self.chat_handler.token = token  # 设置token
-                await self.chat_handler.connect_to_server()
-        except Exception as e:
-            lprint(f"登录成功处理出错: {str(e)}")
-            lprint(traceback.format_exc())
+            lprint("登录成功，开始连接到聊天服务器")
+            # 获取设备ID并更新project_info
+            device_id = auth_manager.device_id
+            if device_id:
+                self.project_info['device_id'] = device_id
+                lprint(f"更新project_info，添加设备ID: {device_id}")
             
+            if self.chat_handler:
+                self.chat_handler.token = token
+                connected = await self.chat_handler.connect_to_server()
+                if not connected:
+                    lprint("连接聊天服务器失败")
+                    if self.tray_menu:
+                        self.tray_menu.update_login_status(False)
+                    return
+            # 更新托盘菜单状态
+            if self.tray_menu:
+                self.tray_menu.update_login_status(True)
+            # 保存登录状态
+            self.save_login_state(token)
+        except Exception as e:
+            lprint(f"处理登录成功失败: {str(e)}")
+            traceback.print_exc()
+            if self.tray_menu:
+                self.tray_menu.update_login_status(False)
+
+    def save_login_state(self, token: str):
+        """保存登录状态"""
+        try:
+            state = {
+                "username": self.userName,
+                "token": token,
+                "timestamp": datetime.datetime.now().isoformat()
+            }
+            state_file = os.path.join(LOG_DIR, "login_state.json")
+            with open(state_file, "w") as f:
+                json.dump(state, f)
+        except Exception as e:
+            lprint(f"保存登录状态失败: {str(e)}")
+            traceback.print_exc()
+
+    def on_login_failed(self, error_msg: str):
+        """登录失败处理"""
+        lprint(f"登录失败: {error_msg}")
+        self.update_connection_status(False)
+        # 更新托盘菜单状态
+        if self.tray_menu:
+            self.tray_menu.update_login_status(False)
+
     @asyncSlot()
     async def on_logout(self):
-        """登出的处理"""
+        """登出处理"""
         try:
             if self.chat_handler:
                 await self.chat_handler.close()
+            self.update_connection_status(False)
+            # 更新托盘菜单状态
+            if self.tray_menu:
+                self.tray_menu.update_login_status(False)
         except Exception as e:
-            lprint(f"登出处理出错: {str(e)}")
-            lprint(traceback.format_exc())
-
-    def init_chat_handler(self):
-        """初始化聊天处理器"""
-        self.chat_handler = ChatRoom(parent_com=self)
+            lprint(f"处理登出失败: {str(e)}")
+            traceback.print_exc()
 
     def setup_window(self):
         """设置窗口属性"""
@@ -323,6 +631,13 @@ class MainWindow(QMainWindow):
         """设置系统托盘图标"""
         try:
             lprint("开始设置系统托盘图标...")
+            
+            # 检查是否已存在托盘图标
+            if hasattr(self, 'tray_icon') and self.tray_icon is not None:
+                lprint("托盘图标已存在，先移除")
+                self.tray_icon.hide()
+                self.tray_icon.deleteLater()
+            
             self.tray_icon = QSystemTrayIcon(self)
             self.tray_icon_path = os.path.join(os.path.dirname(__file__), 'icons', 'logo.png')
             lprint(f"托盘图标路径: {self.tray_icon_path}")
@@ -340,7 +655,7 @@ class MainWindow(QMainWindow):
                 lprint("托盘菜单创建完成")
             except Exception as e:
                 lprint(f"创建托盘菜单失败: {str(e)}")
-                lprint(traceback.format_exc())
+                traceback.print_exc()
                 raise
 
             # 初始化聊天处理器（如果还没有初始化）
@@ -360,7 +675,7 @@ class MainWindow(QMainWindow):
                     lprint("警告: chat_handler 未初始化")
             except Exception as e:
                 lprint(f"初始化聊天处理器或连接消息信号失败: {str(e)}")
-                lprint(traceback.format_exc())
+                traceback.print_exc()
 
             # 设置托盘图标菜单
             try:
@@ -377,7 +692,7 @@ class MainWindow(QMainWindow):
                 lprint("闪烁定时器设置完成")
             except Exception as e:
                 lprint(f"设置托盘图标菜单或闪烁定时器失败: {str(e)}")
-                lprint(traceback.format_exc())
+                traceback.print_exc()
 
             # 显示托盘图标
             try:
@@ -391,21 +706,11 @@ class MainWindow(QMainWindow):
                     QTimer.singleShot(100, self.auto_login)
             except Exception as e:
                 lprint(f"显示托盘图标或设置自动登录失败: {str(e)}")
-                lprint(traceback.format_exc())
+                traceback.print_exc()
 
         except Exception as e:
             lprint(f"设置托盘图标整体失败: {str(e)}")
-            lprint(traceback.format_exc())
-
-    @asyncSlot()
-    async def auto_login(self):
-        """自动登录"""
-        try:
-            if self.userName and hasattr(self, 'tray_menu'):
-                await self.tray_menu.login(self.userName, "666")
-        except Exception as e:
-            lprint(f"自动登录失败: {str(e)}")
-            lprint(traceback.format_exc())
+            traceback.print_exc()
 
     def on_tray_icon_activated(self, reason):
         """处理托盘图标激活事件"""
@@ -456,82 +761,6 @@ class MainWindow(QMainWindow):
             self.tray_icon.setIcon(QIcon(self.tray_icon_path))
             self.overlay_visible = False
 
-    def check_vnc_version(self) -> tuple[bool, str]:
-        """检查VNC版本
-        Returns:
-            tuple[bool, str]: (是否是7.x版本, 版本号)
-        """
-        try:
-            import winreg
-            # 检查64位程序
-            key_path = r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"
-            key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, key_path, 0, winreg.KEY_READ | winreg.KEY_WOW64_64KEY)
-            
-            # 遍历所有子键查找VNC Server
-            index = 0
-            while True:
-                try:
-                    subkey_name = winreg.EnumKey(key, index)
-                    subkey = winreg.OpenKey(key, subkey_name, 0, winreg.KEY_READ | winreg.KEY_WOW64_64KEY)
-                    
-                    try:
-                        display_name = winreg.QueryValueEx(subkey, "DisplayName")[0]
-                        if "VNC Server" in display_name:
-                            version = winreg.QueryValueEx(subkey, "DisplayVersion")[0]
-                            winreg.CloseKey(subkey)
-                            winreg.CloseKey(key)
-                            return version.startswith("7."), version
-                    except WindowsError:
-                        pass
-                    finally:
-                        winreg.CloseKey(subkey)
-                    
-                    index += 1
-                except WindowsError:
-                    break
-            
-            # 如果64位没找到，检查32位程序
-            key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, key_path, 0, winreg.KEY_READ | winreg.KEY_WOW64_32KEY)
-            index = 0
-            while True:
-                try:
-                    subkey_name = winreg.EnumKey(key, index)
-                    subkey = winreg.OpenKey(key, subkey_name, 0, winreg.KEY_READ | winreg.KEY_WOW64_32KEY)
-                    
-                    try:
-                        display_name = winreg.QueryValueEx(subkey, "DisplayName")[0]
-                        if "VNC Server" in display_name:
-                            version = winreg.QueryValueEx(subkey, "DisplayVersion")[0]
-                            winreg.CloseKey(subkey)
-                            winreg.CloseKey(key)
-                            return version.startswith("7."), version
-                    except WindowsError:
-                        pass
-                    finally:
-                        winreg.CloseKey(subkey)
-                    
-                    index += 1
-                except WindowsError:
-                    break
-            
-            winreg.CloseKey(key)
-            return False, ""
-            
-        except Exception as e:
-            lprint(f"检查VNC版本出错: {str(e)}")
-            return False, ""
-
-    def is_vnc_running(self) -> bool:
-        """检查VNC服务是否正在运行"""
-        try:
-            import psutil
-            for proc in psutil.process_iter(['name']):
-                if proc.info['name'] == 'vncserver.exe':
-                    return True
-            return False
-        except Exception:
-            return False
-
     def show_window(self) -> None:
         """显示主窗口"""
         if not self.isVisible():
@@ -564,53 +793,43 @@ class MainWindow(QMainWindow):
                 self.tray_menu.message_received.emit(message_data)
         except Exception as e:
             lprint(f"处理新消息失败: {str(e)}")
-            lprint(traceback.format_exc())
+            traceback.print_exc()
 
-def main(*args,**kwargs):
-    lprint(is_process_running("lugwit_chatroom.exe") ,joinChatRoom)
-    if joinChatRoom:
+    def restart_application(self):
+        """重启应用程序"""
         try:
-            # 初始化退出日志
-            init_exit_logging()
+            # 保存当前窗口状态
+            geometry = self.geometry()
             
-            # 创建QApplication实例
-            app = QApplication(sys.argv)
+            # 获取当前进程的可执行文件路径
+            executable = sys.executable
+            args = sys.argv[:]
             
-            # 创建qasync事件循环
-            loop = QEventLoop(app)
-            asyncio.set_event_loop(loop)
+            # 添加几何信息参数
+            args.extend([
+                f"--geometry={geometry.x()},{geometry.y()},{geometry.width()},{geometry.height()}"
+            ])
             
-            # 应用暗色主题
-            apply_stylesheet(app)
+            # 关闭当前实例
+            self.close()
             
-            # 创建主窗口
-            geometry = kwargs.get("geometry")
-            window = MainWindow()
-            window.show()
+            # 启动新实例
+            subprocess.Popen([executable] + args)
             
-            if geometry:
-                window.setGeometry(QRect(*geometry))
+            # 退出当前实例
+            self.exit_application()
             
-            # 使用qasync运行事件循环
-            with loop:
-                loop.run_forever()
-                
         except Exception as e:
-            error_msg = f"程序运行出错: {str(e)}\n{traceback.format_exc()}"
-            lprint(error_msg)
-            log_exit(f"程序崩溃: {str(e)}")
-            
-            # 尝试优雅地关闭程序
-            try:
-                if 'window' in locals():
-                    window.close()
-                if 'app' in locals():
-                    app.quit()
-            except Exception as close_error:
-                lprint(f"关闭程序时出错: {str(close_error)}")
-                lprint(traceback.format_exc())
-            
-            sys.exit(1)
+            lprint(f"重启应用程序失败: {str(e)}")
+            traceback.print_exc()
+            # 如果重启失败，显示错误消息
+            QMessageBox.critical(
+                self,
+                "重启失败",
+                f"重启应用程序时出错: {str(e)}",
+                QMessageBox.StandardButton.Ok,
+                QMessageBox.StandardButton.Ok
+            )
 
 def apply_stylesheet(app):
     """应用暗色主题样式"""
@@ -622,6 +841,100 @@ def apply_stylesheet(app):
     else:
         lprint(f"样式表文件不存在: {style_file}")
 
+# MainWindow 类保持不变...
+
+# 全局变量
+window: Optional[MainWindow] = None
+
+async def init_qt_app():
+    """初始化Qt应用"""
+    global window
+    try:
+        # 检查是否有权限加入聊天室
+        if not joinChatRoom:
+            lprint("没有权限加入聊天室")
+            return False
+            
+        # 创建QApplication实例
+        app = QApplication(sys.argv)
+        
+        # 创建qasync事件循环
+        loop = QEventLoop(app)
+        asyncio.set_event_loop(loop)
+        
+        # 应用暗色主题
+        apply_stylesheet(app)
+        
+        # 创建主窗口
+        window = MainWindow()
+        
+        # 等待托盘图标初始化完成
+        await asyncio.sleep(0.5)  # 给一点时间让托盘图标初始化
+        
+        # 启动事件循环
+        asyncio.create_task(run_event_loop(loop, app))
+        
+        return True
+        
+    except Exception as e:
+        lprint(f"初始化Qt应用失败: {str(e)}")
+        traceback.print_exc()
+        return False
+
+async def run_event_loop(loop: QEventLoop, app: QApplication):
+    """运行Qt事件循环"""
+    try:
+        while True:
+            app.processEvents()  # 处理Qt事件
+            await asyncio.sleep(0.01)  # 避免CPU占用过高
+    except Exception as e:
+        lprint(f"事件循环运行失败: {str(e)}")
+        traceback.print_exc()
+
+async def cleanup_qt_app():
+    """清理Qt应用"""
+    global window
+    try:
+        if window:
+            window.close()
+            window.tray_icon.hide()
+        return True
+    except Exception as e:
+        lprint(f"清理Qt应用失败: {str(e)}")
+        traceback.print_exc()
+        return False
+
+async def app(scope, receive, send):
+    """ASGI 应用入口点"""
+    if scope["type"] == "lifespan":
+        while True:
+            message = await receive()
+            if message["type"] == "lifespan.startup":
+                success = await init_qt_app()
+                if success:
+                    await send({"type": "lifespan.startup.complete"})
+                else:
+                    await send({"type": "lifespan.startup.failed"})
+            elif message["type"] == "lifespan.shutdown":
+                success = await cleanup_qt_app()
+                if success:
+                    await send({"type": "lifespan.shutdown.complete"})
+                else:
+                    await send({"type": "lifespan.shutdown.failed"})
+                    raise Exception("清理Qt应用失败")
+                return
+                
+    elif scope["type"] == "http":
+        await send({
+            "type": "http.response.start",
+            "status": 200,
+            "headers": [[b"content-type", b"text/plain"]],
+        })
+        await send({
+            "type": "http.response.body",
+            "body": b"Qt application is running",
+        })
+
 def is_process_running(process_name: str) -> bool:
     """检查进程是否正在运行"""
     for process in psutil.process_iter(['name']):
@@ -631,4 +944,29 @@ def is_process_running(process_name: str) -> bool:
     return False
 
 if __name__ == "__main__":
-    fire.Fire(main)
+    # 检查是否有权限运行
+    if not joinChatRoom:
+        lprint("没有权限加入聊天室")
+        sys.exit(1)
+    
+    # 根据用户名判断启动方式
+    if userName in degbug_users:
+        # 使用uvicorn启动
+        import uvicorn
+        uvicorn.run(
+            "pyqt_chatroom:app",
+            host="127.0.0.1",
+            port=8000,
+            reload=True
+        )
+    else:
+        # 如果没有运行，则以异步方式启动
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(init_qt_app())
+            loop.run_forever()
+        except Exception as e:
+            lprint(f"启动应用失败: {str(e)}")
+            sys.exit(1)
+

@@ -10,9 +10,10 @@ from Lugwit_Module import lprint
 from pydantic import BaseModel
 import os
 import sys
+import traceback
 # 从文件读取服务器IP地址
 try:
-    with open("A:/temp/chatRoomLog/server_ip_address.txt", "r") as f:
+    with open("A:/temp/chat/privateRoomLog/server_ip_address.txt", "r") as f:
         server_ip = f.read().strip()
         os.environ['SERVER_IP'] = server_ip
 except Exception as e:
@@ -76,48 +77,50 @@ class ChatClient:
             print("登录请求异常:", e)
             return False
 
-    def on_message_sent(self, response=None):
-        """
-        消息发送后的回调函数。
-
-        :param response: 服务器的响应。
-        """
-        print(f"服务器响应: {response}")
-
-    def send_message(self, message: schemas.MessageBase) -> None:
-        """
-        发送消息到Socket.IO服务器。
-
-        :param message: 要发送的消息对象。
-        """
-        if not self.token:
-            print("没有有效的令牌，无法发送消息。")
-            return
-
-        auth_info = {
-            'token': self.token,
-            'transports': ['websocket'],
-        }
+    def on_private_message_sent(self, response=None):
+        """处理私聊消息发送回执"""
         try:
-            self.sio.connect(self.server_url, auth=auth_info)
-            self.sio.emit('message', message.model_dump_json(), callback=self.on_message_sent)
-            # 等待消息发送和回调执行
+            lprint(f"私聊消息发送成功: {response}")
+        except Exception as e:
+            lprint(f"处理私聊消息发送回执失败: {str(e)}")
+            traceback.print_exc()
+
+    def on_group_message_sent(self, response=None):
+        """处理群聊消息发送回执"""
+        try:
+            lprint(f"群聊消息发送成功: {response}")
+        except Exception as e:
+            lprint(f"处理群聊消息发送回执失败: {str(e)}")
+            traceback.print_exc()
+
+    def run(self, message: schemas.MessageBase):
+        """运行客户端"""
+        try:
+            # 连接服务器
+            self.sio.connect(
+                self.server_url,
+                auth={'token': self.token},
+                namespaces=['/chat/private', '/chat/group']
+            )
+            
+            # 发送消息
+            if message.message_type == schemas.MessageType.remote_control:
+                self.sio.emit('message', message.model_dump_json(), callback=self.on_private_message_sent)
+            elif message.message_type == schemas.MessageType.chat:
+                if hasattr(message, 'group_id') and message.group_id:
+                    self.sio.emit('message', message.model_dump_json(), callback=self.on_group_message_sent)
+                else:
+                    self.sio.emit('message', message.model_dump_json(), callback=self.on_private_message_sent)
+            
+            # 等待消息发送完成
             time.sleep(1)
-        except socketio.exceptions.ConnectionError as e:
-            print("Socket.IO连接异常:", e)
-        finally:
+            
+            # 断开连接
             self.sio.disconnect()
-
-    def run(self, message: schemas.MessageBase) -> None:
-        """
-        执行完整的登录和发送消息流程。
-
-        :param message: 要发送的消息对象。
-        """
-        if self.login():
-            self.send_message(message)
-        else:
-            print("无法获取令牌，消息未发送")
+            
+        except Exception as e:
+            lprint(f"运行客户端失败: {str(e)}")
+            traceback.print_exc()
 
 def build_message(sender: str, 
                   recipient: str, 

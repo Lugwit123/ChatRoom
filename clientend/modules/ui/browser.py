@@ -20,7 +20,7 @@ import traceback
 import Lugwit_Module as LM
 lprint = LM.lprint
 
-from ..handlers.chat_handler import ChatRoom
+from ..handlers.chat_handler import ChatHandler
 
 if TYPE_CHECKING:
     from ...pyqt_chatroom import MainWindow
@@ -35,7 +35,7 @@ class Browser(QMainWindow):
 
     def __init__(self, parent_widget: Optional['MainWindow'] = None):
         super().__init__()
-        self.setWindowTitle("ChatRoom")
+        self.setWindowTitle("ChatHandler")
         self.parent_widget = parent_widget
         self.username = getattr(parent_widget, 'userName', None) if parent_widget else None
         
@@ -61,7 +61,7 @@ class Browser(QMainWindow):
         self.tab_widget.addTab(self.inspector, "调试")
         
         # 设置处理器
-        self.handler = ChatRoom(parent_com=cast('MainWindow', parent_widget))
+        self.handler = ChatHandler(parent_com=cast('MainWindow', parent_widget))
         
         # 设置WebChannel
         self.channel = QWebChannel()
@@ -105,7 +105,7 @@ class Browser(QMainWindow):
             
         except Exception as e:
             lprint(f"设置浏览器失败: {str(e)}")
-            lprint(traceback.format_exc())
+            traceback.print_exc()
             
     def on_load_finished(self, ok: bool):
         """页面加载完成的处理"""
@@ -149,7 +149,7 @@ class Browser(QMainWindow):
             
         except Exception as e:
             lprint(f"自动登录失败: {str(e)}")
-            lprint(traceback.format_exc())
+            traceback.print_exc()
 
     def scrool(self, chat_username="", message_id=0):
         """滚动到指定消息"""
@@ -161,7 +161,7 @@ class Browser(QMainWindow):
             self.web_view.page().runJavaScript(js_code)
         except Exception as e:
             lprint(f"滚动到消息失败: {str(e)}")
-            lprint(traceback.format_exc())
+            traceback.print_exc()
 
     def close_all(self):
         """关闭所有窗口"""
@@ -176,7 +176,7 @@ class Browser(QMainWindow):
                 self.web_view.deleteLater()
         except Exception as e:
             lprint(f"关闭窗口失败: {str(e)}")
-            lprint(traceback.format_exc())
+            traceback.print_exc()
 
     def start_blinking(self, date='', interval=500, *args, **kwargs):
         """开始闪烁提醒"""

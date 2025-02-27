@@ -1,16 +1,16 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
-import { UserBaseAndStatus, UserRole } from '../types/types';
+import { UserBaseAndDevices, UserRole } from '../types/types';
 import { loginUser } from '../services/api';
 
 export interface UserContextType {
     token: string | null;
     current_user: string | null;
-    users: UserBaseAndStatus[];
+    users: UserBaseAndDevices[];
     loading: boolean;
     error: string | null;
     login: (username: string, password: string) => Promise<void>;
     logout: () => void;
-    updateUsers: (newUsers: UserBaseAndStatus[]) => void;
+    updateUsers: (newUsers: UserBaseAndDevices[]) => void;
 }
 
 export const UserContext = createContext<UserContextType | null>(null);
@@ -26,7 +26,7 @@ export const useUsers = () => {
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [token, setToken] = useState<string | null>(null);
     const [current_user, setCurrentUser] = useState<string | null>(null);
-    const [users, setUsers] = useState<UserBaseAndStatus[]>([]);
+    const [users, setUsers] = useState<UserBaseAndDevices[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -55,7 +55,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             setCurrentUser(username);
             
             // 创建初始用户对象
-            const newUserAccount: UserBaseAndStatus = {
+            const newUserAccount: UserBaseAndDevices = {
                 username,
                 nickname: username,
                 online: true,
@@ -81,7 +81,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setUsers([]);
     }, []);
 
-    const updateUsers = useCallback((newUsers: UserBaseAndStatus[]) => {
+    const updateUsers = useCallback((newUsers: UserBaseAndDevices[]) => {
         setUsers(newUsers);
     }, []);
 

@@ -7,7 +7,7 @@ import ChatPanel from './ChatPanel';
 import AccountForm from './AccountForm';
 import CurrentLoginUserDisplay from './CurrentLoginUserDisplay';
 import StarryBackground from './StarryBackground';
-import { UserBaseAndStatus, MessageResponse, AccountsMap, Group, UserRole } from '../types/types';
+import { UserBaseAndDevices, MessageResponse, AccountsMap, Group, UserRole } from '../types/types';
 import { useAuth } from '../hooks/useAuth';
 import { useUserList } from '../hooks/useUserList';
 import { useChatHistory } from '../hooks/useChatHistory';
@@ -33,7 +33,7 @@ function ChatApp() {
         handleLogout,
     } = useAuth(apiUrl);
 
-    const [users, setUsers] = useState<UserBaseAndStatus[]>([]);
+    const [users, setUsers] = useState<UserBaseAndDevices[]>([]);
     const [selectedRecipient, setSelectedRecipient] = useState<string>('system01');
     const [selectedRecipientType, setSelectedRecipientType] = useState<'user' | 'group'>('user');
     const [isAccountsReady, setIsAccountsReady] = useState(false);

@@ -3,74 +3,127 @@
 定义所有与消息相关的数据传输对象
 """
 from datetime import datetime
-from typing import Optional, Dict, Any, List, Union
+from typing import Optional, Dict, Any, List, Union, Literal
 from pydantic import BaseModel, Field
 import zoneinfo
 from sqlalchemy import inspect
 from sqlalchemy.orm.attributes import InstrumentedAttribute
+import json
 
 import sys
 sys.path.append(r'D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib')
 import Lugwit_Module as LM
 lprint = LM.lprint
 
-from app.domain.common.models.tables import BaseMessage, PrivateMessage
-from app.domain.common.enums.message import MessageStatus, MessageContentType, MessageType, MessageTargetType
+from app.domain.common.models.tables import (
+    BaseMessage, 
+    PrivateMessage,
+    generate_public_id
+)
+from app.domain.common.enums.message import MessageDirection, MessageStatus, MessageContentType, MessageType, MessageTargetType
 from app.utils.time_utils import to_timestamp
 
-class MessageCreateDTO(BaseModel):
-    """消息创建DTO
+class PrivateMessageCreateDTO(BaseModel):
+    """私聊消息创建DTO
     
-    用于创建新消息的数据传输对象。
+    用于创建私聊消息的数据传输对象。
     
     Attributes:
+        id: 消息ID，可选
+        public_id: 消息公开ID，可选
+        sender_id: 发送者ID
+        recipient_id: 接收者ID
         content: 消息内容
-        recipient_username: 接收者用户名，默认为"fengqingqing"
-        content_type: 消息内容类型，默认为纯文本(7)
-        message_type: 消息类型，默认为聊天消息(1)
-        reply_to_id: 回复的消息ID，可选
-        
-    Note:
-        target_type 固定为 user(1)，私聊消息只能发送给用户
+        message_type: 消息类型，默认为聊天消息
+        content_type: 消息内容类型，默认为纯文本
+        status: 消息状态列表，默认为[未读]
+        extra_data: 额外数据
+        created_at: 创建时间，可选
+        updated_at: 更新时间，可选
+        read_at: 读取时间，可选
     """
-    content: str = Field(..., description="消息内容", example="你好!")
-    recipient_username: str = Field(default="fengqingqing", description="接收者用户名", example="fengqingqing")
-    content_type: int = Field(default=MessageContentType.plain_text, description="消息内容类型: 1=rich_text, 2=url, 3=audio, 4=image, 5=video, 6=file, 7=plain_text", example=7)
-    message_type: int = Field(default=MessageType.chat, description="消息类型: 1=chat, 2=system, 3=broadcast, 4=chat_history", example=1)
-    reply_to_id: str = Field(default="", description="回复的消息ID", example=None)
-
-    def to_internal(self, sender_username: str) -> Dict[str, Any]:
-        """转换为内部格式
-        
-        Args:
-            sender_username: 发送者用户名
-            
-        Returns:
-            Dict[str, Any]: 内部格式的消息数据
-        """
-        return {
-            "content": self.content,
-            "sender_username": sender_username,
-            "recipient_username": self.recipient_username,
-            "content_type": self.content_type,
-            "message_type": self.message_type,
-            "target_type": MessageTargetType.user,  # 固定为用户类型
-            "reply_to_id": self.reply_to_id
-        }
+    id: Optional[int] = Field(None, description="消息ID")
+    public_id: Optional[str] = Field(None, description="消息公开ID")
+    sender_id: int = Field(..., description="发送者ID")
+    sender_username: Optional[str] = Field(None, description="发送者用户名")
+    recipient_id: int = Field(..., description="接收者ID")
+    recipient_username: Optional[str] = Field(None, description="接收者用户名")
+    content: Union[str, Dict[str, Any]] = Field(..., description="消息内容")
+    message_type: int = Field(default=MessageType.chat.value, description="消息类型")
+    content_type: int = Field(default=MessageContentType.plain_text.value, description="消息内容类型")
+    target_type: Literal[1] = Field(default=MessageTargetType.user.value, description="目标类型固定为user(1)")
+    status: List[int] = Field(default_factory=lambda: [MessageStatus.unread.value], description="消息状态列表")
+    extra_data: Dict[str, Any] = Field(default_factory=dict, description="额外数据")
+    direction: int = Field(MessageDirection.request.value, description="消息内容")
+    created_at: Optional[datetime] = Field(None, description="创建时间")
+    updated_at: Optional[datetime] = Field(None, description="更新时间")
+    read_at: Optional[datetime] = Field(None, description="读取时间")
 
     class Config:
+        """配置类"""
+        # 允许从数据库模型创建时忽略额外字段
         from_attributes = True
+        # 允许额外属性
+        extra = "ignore"
+        # 允许任意类型
+        arbitrary_types_allowed = True
+        # JSON序列化配置
         json_encoders = {
-            datetime: to_timestamp
+            datetime: lambda v: v.isoformat() if v else None
         }
-        schema_extra = {
-            "example": {
-                "content": "你好!",
-                "recipient_username": "fengqingqing",
-                "content_type": 7,
-                "message_type": 1,
-                "reply_to_id": None
-            }
+
+    def to_db_dict(self) -> Dict[str, Any]:
+        """转换为数据库字典格式
+        
+        将DTO对象转换为适合数据库存储的字典格式，包括：
+        1. 将content字段转换为JSON字符串（如果是字典类型）
+        2. 如果没有public_id，生成带pm前缀的public_id
+        3. 添加created_at和updated_at时间戳
+        
+        Returns:
+            Dict[str, Any]: 适合数据库存储的字典格式
+        """
+        base_dict = self.model_dump()
+        if isinstance(base_dict['content'], dict):
+            base_dict['content'] = json.dumps(base_dict['content'], ensure_ascii=False)
+        # 如果没有public_id，添加私聊消息ID前缀
+        if not base_dict.get('public_id'):
+            base_dict['public_id'] = generate_public_id("pm")
+        # 添加时间戳
+        now = datetime.now(zoneinfo.ZoneInfo("Asia/Shanghai"))
+        base_dict.update({
+            "created_at": now,
+            "updated_at": now
+        })
+        return base_dict
+        
+    def to_dict(self) -> Dict[str, Any]:
+        """转换为通用字典格式
+        
+        将DTO对象转换为适合API传输的字典格式。
+        与to_db_dict不同，这个方法不会对数据进行特殊处理（如JSON序列化）。
+        datetime类型会被转换为ISO格式字符串。
+        
+        Returns:
+            Dict[str, Any]: 消息的字典表示
+        """
+        return {
+            "id": self.id,
+            "public_id": self.public_id,
+            "sender_id": self.sender_id,
+            "sender_username": self.sender_username,
+            "recipient_id": self.recipient_id,
+            "recipient_username": self.recipient_username,
+            "content": self.content,
+            "message_type": self.message_type,
+            "content_type": self.content_type,
+            "target_type": self.target_type,
+            "status": self.status,
+            "extra_data": self.extra_data,
+            "direction": self.direction,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            "read_at": self.read_at.isoformat() if self.read_at else None
         }
 
 class GroupMessageCreateDTO(BaseModel):
@@ -79,47 +132,41 @@ class GroupMessageCreateDTO(BaseModel):
     用于创建群聊消息的数据传输对象。
     
     Attributes:
+        sender_id: 发送者ID
+        group_id: 群组ID
         content: 消息内容
-        group_name: 群组名称
-        content_type: 消息内容类型，默认为纯文本(7)
-        message_type: 消息类型，默认为聊天消息(1)
-        target_type: 目标类型，固定为群组(2)
-        reply_to_id: 回复的消息ID，可选
-        mentioned_users: @提到的用户名列表
+        message_type: 消息类型，默认为聊天消息
+        content_type: 消息内容类型，默认为纯文本
+        status: 消息状态列表，默认为[未读]
+        mentioned_users: @提到的用户ID列表
+        extra_data: 额外数据
     """
-    content: str = Field(..., description="消息内容")
-    group_name: str = Field(..., description="群组名称")
-    content_type: int = Field(default=MessageContentType.plain_text, description="消息内容类型: 1=rich_text, 2=url, 3=audio, 4=image, 5=video, 6=file, 7=plain_text")
-    message_type: int = Field(default=MessageType.chat, description="消息类型: 1=chat, 2=system, 3=notification, 4=status")
-    target_type: int = Field(default=MessageTargetType.group, description="目标类型: 1=user, 2=group, 3=broadcast")
-    reply_to_id: Optional[str] = Field(default=None, description="回复的消息ID")
-    mentioned_users: List[str] = Field(default_factory=list, description="@提到的用户名列表")
+    sender_id: int = Field(..., description="发送者ID")
+    group_id: int = Field(..., description="群组ID")
+    content: Union[str, Dict[str, Any]] = Field(..., description="消息内容")
+    message_type: int = Field(default=MessageType.chat.value, description="消息类型")
+    content_type: int = Field(default=MessageContentType.plain_text.value, description="消息内容类型")
+    target_type: Literal[2] = Field(default=MessageTargetType.group.value, description="目标类型固定为group(2)")
+    status: List[int] = Field(default_factory=lambda: [MessageStatus.unread.value], description="消息状态列表")
+    mentioned_users: List[int] = Field(default_factory=list, description="@提到的用户ID列表")
+    extra_data: Dict[str, Any] = Field(default_factory=dict, description="额外数据")
 
-    def to_internal(self, sender_username: str) -> Dict[str, Any]:
-        """转换为内部格式
-        
-        Args:
-            sender_username: 发送者用户名
-            
-        Returns:
-            Dict[str, Any]: 内部格式的消息数据
-        """
-        return {
-            "content": self.content,
-            "sender_username": sender_username,
-            "group_name": self.group_name,
-            "content_type": self.content_type,
-            "message_type": self.message_type,
-            "target_type": self.target_type,
-            "reply_to_id": self.reply_to_id,
-            "mentioned_users": self.mentioned_users
-        }
-
-    class Config:
-        from_attributes = True
-        json_encoders = {
-            datetime: to_timestamp
-        }
+    def to_db_dict(self) -> Dict[str, Any]:
+        """转换为数据库字典格式"""
+        base_dict = self.model_dump()
+        if isinstance(base_dict['content'], dict):
+            base_dict['content'] = json.dumps(base_dict['content'], ensure_ascii=False)
+        if self.mentioned_users:
+            base_dict['extra_data']['mentioned_users'] = self.mentioned_users
+        # 添加群聊消息ID前缀
+        base_dict['public_id'] = generate_public_id("gm")
+        # 添加时间戳
+        now = datetime.now(zoneinfo.ZoneInfo("Asia/Shanghai"))
+        base_dict.update({
+            "created_at": now,
+            "updated_at": now
+        })
+        return base_dict
 
 class BaseMessageDTO(BaseModel):
     """消息基类DTO"""
@@ -222,6 +269,22 @@ class PrivateMessageDTO(BaseModel):
             read_at=message.read_at,
             reply_to_id=message.reply_to_id
         )
+        
+    def to_dict(self) -> Dict[str, Any]:
+        """将对象转换为字典格式
+        
+        Returns:
+            Dict[str, Any]: 字典格式的消息数据
+        """
+        return {
+            "id": self.id,
+            "sender_id": self.sender_id,
+            "recipient_id": self.recipient_id,
+            "content": self.content,
+            "created_at": self.created_at.isoformat(),
+            "read_at": self.read_at.isoformat() if self.read_at else None,
+            "reply_to_id": self.reply_to_id
+        }
 
 class GroupMessageDTO(BaseModel):
     """群组消息DTO"""

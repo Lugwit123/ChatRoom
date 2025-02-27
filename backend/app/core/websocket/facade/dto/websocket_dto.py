@@ -10,7 +10,7 @@ class ConnectionInfo(BaseModel):
     """连接信息"""
     sid: str
     connected_at: datetime = datetime.utcnow()
-    last_active: datetime = datetime.utcnow()
+    last_login: datetime = datetime.utcnow()
 
 class UserSession(BaseModel):
     """用户会话信息"""
@@ -37,4 +37,4 @@ class DeviceSession(BaseModel):
     device_id: str
     ip_address: str
     connected_at: datetime = datetime.utcnow()
-    last_active: datetime = datetime.utcnow() 
+    last_login: datetime = datetime.utcnow() 

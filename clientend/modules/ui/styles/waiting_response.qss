@@ -1,0 +1,73 @@
+QWidget#container {
+    background-color: #2B2B2B;
+    border: 2px solid #3C3C3C;
+    border-radius: 15px;
+}
+
+QLabel {
+    color: #FFFFFF;
+    font-size: 14px;
+    font-family: "Microsoft YaHei";
+    padding: 5px;
+}
+
+QProgressBar {
+    border: none;
+    background-color: #404040;
+    border-radius: 7px;
+    height: 14px;
+    margin: 10px 15px;
+    text-align: center;
+}
+
+QProgressBar::chunk {
+    background-color: #0078D4;
+    border-radius: 7px;
+}
+
+/* 重新发起按钮 */
+QPushButton#retry_button {
+    background-color: #4CAF50;  /* 绿色 */
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 20px;
+    font-size: 13px;
+    font-family: "Microsoft YaHei";
+    min-width: 90px;
+    margin: 5px;
+}
+
+QPushButton#retry_button:hover {
+    background-color: #45a049;
+}
+
+QPushButton#retry_button:pressed {
+    background-color: #3d8b40;
+}
+
+QPushButton#retry_button:disabled {
+    background-color: #4D4D4D;
+    color: #A0A0A0;
+}
+
+/* 关闭按钮 */
+QPushButton#close_button {
+    background-color: #f44336;  /* 红色 */
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 20px;
+    font-size: 13px;
+    font-family: "Microsoft YaHei";
+    min-width: 90px;
+    margin: 5px;
+}
+
+QPushButton#close_button:hover {
+    background-color: #da190b;
+}
+
+QPushButton#close_button:pressed {
+    background-color: #d32f2f;
+} 

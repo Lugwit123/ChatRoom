@@ -6,6 +6,7 @@ from enum import Enum
 from datetime import datetime
 from typing import Optional, List, Dict, Any, Type, Union, cast
 from zoneinfo import ZoneInfo
+import traceback
 
 from sqlalchemy import select, and_, update, delete, text, or_, desc, Column, true, false
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -111,27 +112,29 @@ class GroupMessageRepository(BaseMessageRepository):
         
         return message_table
         
-    async def save_message(self, message_data: dict) -> BaseMessage:
+    async def save_message(self, message_data: Dict[str, Any]) -> BaseMessage:
         """保存群组消息
         
         Args:
-            message_data: 消息数据
+            message_data: 消息数据字典
             
         Returns:
             BaseMessage: 保存的消息
         """
         try:
-            group_id = message_data.get("group_id")
+            # 获取消息表
+            created_at = message_data.get('created_at')
+            group_id = message_data.get('group_id')
             if not group_id:
-                raise ValueError("群组消息必须指定群组ID")
+                raise ValueError("群组消息必须指定group_id")
                 
-            created_at = message_data.get("created_at")
             self.model = await self._get_message_table(group_id, created_at)
             
+            # 保存消息
             return await super().save_message(message_data)
             
         except Exception as e:
-            self.lprint(f"保存群组消息失败: {str(e)}")
+            lprint(f"保存群组消息失败: {str(e)}")
             raise
             
     async def get_messages(
@@ -186,7 +189,7 @@ class GroupMessageRepository(BaseMessageRepository):
             return [message.to_dict() for message in messages]
             
         except Exception as e:
-            self.lprint(f"获取群组消息失败: {str(e)}")
+            lprint(f"获取群组消息失败: {str(e)}")
             return []
 
     async def get_message_by_public_id(self, group_id: int, public_id: str) -> Optional[BaseMessage]:
@@ -202,7 +205,7 @@ class GroupMessageRepository(BaseMessageRepository):
             result = await self.session.execute(query)
             return result.scalar_one_or_none()
         except Exception as e:
-            self.lprint(f"获取消息失败: {str(e)}")
+            lprint(f"获取消息失败: {str(e)}")
             return None
     
     async def search_messages(
@@ -231,7 +234,7 @@ class GroupMessageRepository(BaseMessageRepository):
             result = await self.session.execute(query)
             return list(result.scalars().all())
         except Exception as e:
-            self.lprint(f"搜索消息失败: {str(e)}")
+            lprint(f"搜索消息失败: {str(e)}")
             return []
     
     async def get_unread_count(self, group_id: int, user_id: int) -> int:
@@ -266,7 +269,7 @@ class GroupMessageRepository(BaseMessageRepository):
             result = await self.session.execute(query)
             return len(result.scalars().all())
         except Exception as e:
-            self.lprint(f"获取未读消息数失败: {str(e)}")
+            lprint(f"获取未读消息数失败: {str(e)}")
             return 0
         
     async def _get_user_join_time(self, user_id: int) -> Optional[GroupMember]:
@@ -284,7 +287,7 @@ class GroupMessageRepository(BaseMessageRepository):
             result = await self.session.execute(member_query)
             return result.scalar_one_or_none()
         except Exception as e:
-            self.lprint(f"获取用户加入时间失败: {str(e)}")
+            lprint(f"获取用户加入时间失败: {str(e)}")
             return None
         
     async def get_message_by_id(self, message_id: int) -> Optional[Dict[str, Any]]:
@@ -312,3 +315,26 @@ class GroupMessageRepository(BaseMessageRepository):
             {"table_name": f"group_messages_{self.group_id}"}
         )
         return result.scalar_one()
+
+    async def mark_as_unread(self, message_id: int) -> bool:
+        """标记消息为未读
+        
+        Args:
+            message_id: 消息ID
+            
+        Returns:
+            bool: 是否成功
+        """
+        try:
+            # 更新消息状态为未读
+            result = await self.session.execute(
+                update(BaseMessage)
+                .where(BaseMessage.id == message_id)
+                .values(status=MessageStatus.unread.value)
+            )
+            await self.session.commit()
+            return bool(result.rowcount > 0)
+        except Exception as e:
+            lprint(f"标记群聊消息未读失败: {str(e)}")
+            traceback.print_exc()
+            return False

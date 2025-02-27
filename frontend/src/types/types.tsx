@@ -65,7 +65,7 @@ export enum MessageContentType {
 export interface Group {
     id: number;
     name: string;
-    members?: UserBaseAndStatus[];
+    members?: UserBaseAndDevices[];
 }
 
 // 群组映射接口
@@ -88,7 +88,7 @@ export interface UserBase {
 }
 
 // 扩展用户基础信息，添加消息相关字段
-export interface UserBaseAndStatus extends UserBase {
+export interface UserBaseAndDevices extends UserBase {
     messages?: MessageBase[];
     unread_message_count: number;
     status: 'online' | 'offline';
@@ -138,7 +138,7 @@ export interface TextMessage extends MessageBase {
 export interface UserListMessage extends MessageBase {
     message_content_type: MessageContentType.USER_LIST;
     content: {
-        user_list: UserBaseAndStatus[];
+        user_list: UserBaseAndDevices[];
         groups: Group[];
     };
 }
@@ -146,19 +146,19 @@ export interface UserListMessage extends MessageBase {
 
 // 账户映射接口
 export interface AccountsMap {
-    [username: string]: UserBaseAndStatus ;
+    [username: string]: UserBaseAndDevices ;
 }
 
 // 户列表响应接口
 // 定义 UsersInfoDictResponse 接口
 export interface UsersInfoDictResponse {
-    current_user: UserBaseAndStatus; // 当前用户的信息
-    user_map: Record<string, UserBaseAndStatus>; // 其他用户的详细信息列表，键是用户的 ID（字符串）
+    current_user: UserBaseAndDevices; // 当前用户的信息
+    user_map: Record<string, UserBaseAndDevices>; // 其他用户的详细信息列表，键是用户的 ID（字符串）
 }
 
 // 户列表响应接口
 export interface UserListResponse {
-    users: UserBaseAndStatus[];
+    users: UserBaseAndDevices[];
 }
 
 // WebSocket 消息类型
@@ -172,7 +172,7 @@ export interface WebSocketMessage extends MessageBase {
 
 export interface UserListUpdateMessage extends WebSocketMessage {
     message_type: MessageType.USER_LIST_UPDATE;
-    user_list: UserBaseAndStatus[];
+    user_list: UserBaseAndDevices[];
     groups: string[];
 }
 
@@ -250,7 +250,7 @@ export type UserStatus = 'online' | 'offline';
 
 export interface UseUserListProps {
     token: string;
-    current_user: UserBaseAndStatus | null;
+    current_user: UserBaseAndDevices | null;
     updateUsers: (users: AccountsMap) => void;
     onError: (error: string) => void;
     setError: (error: string) => void;
@@ -258,10 +258,10 @@ export interface UseUserListProps {
 
 // 可能需要修改这个接口
 export interface ChatPanelProps {
-    account: UserBaseAndStatus | null;
+    account: UserBaseAndDevices | null;
     current_user: string;
     wsConnected: boolean;
     handleSendMessage: (message: MessageBase) => void;
-    setAccounts?: (users: UserBaseAndStatus[]) => void; // 可以设置为可选
+    setAccounts?: (users: UserBaseAndDevices[]) => void; // 可以设置为可选
     setLoadingDetails?: () => void;
 }

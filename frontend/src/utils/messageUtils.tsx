@@ -1,5 +1,5 @@
 import React from 'react';
-import { MessageBase, AccountsMap, MessageType, MessageContentType, UserBaseAndStatus } from '../types/types';
+import { MessageBase, AccountsMap, MessageType, MessageContentType, UserBaseAndDevices } from '../types/types';
 
 // 使用 React Query 的变更后刷新数据
 import axios from 'axios';
@@ -10,7 +10,7 @@ import { logger } from './logger'; // 确保你有一个 logger 工具
 export interface SendMessageParams {
     message: string;
     recipient: string;
-    sender: string | UserBaseAndStatus;
+    sender: string | UserBaseAndDevices;
     sendMessageFn: (event: string, payload: MessageBase) => void;
     recipientType: 'group' | 'private' | 'all';
     groupNames?: string[];

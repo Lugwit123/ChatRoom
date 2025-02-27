@@ -5,15 +5,22 @@ import sys
 import uuid
 import traceback
 from datetime import datetime
-from typing import List, Dict, Optional, Any
+from typing import List, Dict, Optional, Any, AsyncGenerator
 import asyncio
 import contextlib
+from contextlib import asynccontextmanager
 
 sys.path.append(r'D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\ChatRoom\backend')
 from app.utils import encoding_utils
 
 from dotenv import load_dotenv
 load_dotenv()
+
+SERVER_LOCALNET_IP=os.getenv("local_ip")
+API_URL=f"http://{SERVER_LOCALNET_IP}:1026"
+os.environ["SERVER_LOCALNET_IP"]=SERVER_LOCALNET_IP
+os.environ["API_URL"]=API_URL
+
 # 第三方库导入
 import socketio
 from fastapi import FastAPI, Request, Depends, HTTPException
@@ -36,9 +43,10 @@ from app.core.websocket.internal.server import SocketServer
 from app.db.facade.database_facade import DatabaseFacade
 from app.domain.device.facade.device_facade import DeviceFacade
 from app.domain.message.facade.message_facade import MessageFacade
-from app.core.services import Services
+from app.core.events.services import Services
 
-lprint("启动后端")
+# 初始化模板引擎
+templates = Jinja2Templates(directory="app/templates")
 
 def init_container() -> Container:
     """初始化依赖注入容器"""
@@ -51,12 +59,17 @@ def init_container() -> Container:
     # 初始化数据库
     database_facade = DatabaseFacade()
     database_url = os.getenv("DATABASE_URL")
+    lprint(f"数据库URL: {database_url}")
     if not database_url:
         raise ValueError("DATABASE_URL environment variable is not set")
-    database_facade.init_sync(database_url)
-    
+    database_facade.init_async(database_url)  # 直接调用，不再使用await
+
     # 注册事件总线
     Services.register_event_bus()
+    
+    # 初始化核心事件处理器
+    from app.core.events.handlers import get_core_event_handler
+    core_event_handler = get_core_event_handler()
     
     # 注册核心服务
     core_facade.register_core_services()
@@ -119,6 +132,12 @@ def init_app() -> FastAPI:
     app.add_exception_handler(HTTPException, chatroom_exception_handler)
     app.add_exception_handler(Exception, business_error_handler)
     
+    # 添加自定义Swagger UI路由
+    @app.get("/doc", include_in_schema=False)
+    async def custom_swagger_ui_html(request: Request):
+        lprint("custom_swagger_ui_html")    
+        return templates.TemplateResponse("swagger_custom.html", {"request": request})
+    
     return app
 
 def init_websocket(app: FastAPI):
@@ -126,19 +145,25 @@ def init_websocket(app: FastAPI):
     sio = SocketServer.get_server()
     app.mount("/ws", socketio.ASGIApp(sio))
 
-@contextlib.asynccontextmanager
-async def lifespan(app: FastAPI):
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """应用生命周期管理"""
     try:
         lprint("后端服务启动...")
         
-        # 初始化设备状态
+        # 1. 初始化设备状态（不依赖WebSocket）
         device_facade = get_container().resolve(DeviceFacade)
-        await device_facade.init_all_devices_status()
+        try:
+            await device_facade.init_all_devices_status()
+            lprint("设备状态初始化完成")
+        except Exception as e:
+            lprint(f"设备状态初始化失败: {str(e)}")
+            traceback.print_exc()
         
-        # 注册消息处理器事件
+        # 2. 初始化WebSocket相关服务
         message_facade = get_container().resolve(MessageFacade)
         await message_facade.register_handlers()
+        lprint("WebSocket服务初始化完成")
         
         lprint("后端服务启动完成")
         yield

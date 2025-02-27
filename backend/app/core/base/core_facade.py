@@ -25,8 +25,8 @@ class CoreFacade:
             container: 容器实例，如果为None则使用全局容器
         """
         self._container = container or get_container()
-        self.lprint = LM.lprint
-        self.lprint("核心门面初始化完成")
+        lprint = LM.lprint
+        lprint("核心门面初始化完成")
             
     @property
     def container(self) -> Container:
@@ -53,7 +53,7 @@ class CoreFacade:
         3. WebSocket服务等
         """
         try:
-            self.lprint("开始注册核心服务...")
+            lprint("开始注册核心服务...")
             
             from app.db.facade.database_facade import DatabaseFacade
             from app.core.auth.facade.auth_facade import AuthFacade
@@ -67,8 +67,8 @@ class CoreFacade:
             self.container.register_singleton(DatabaseFacade, database_facade)
             self.container.register_singleton(AuthFacade, auth_facade)
             
-            self.lprint("核心服务注册完成")
+            lprint("核心服务注册完成")
             
         except Exception as e:
-            self.lprint(f"注册核心服务失败: {str(e)}")
+            lprint(f"注册核心服务失败: {str(e)}")
             raise 

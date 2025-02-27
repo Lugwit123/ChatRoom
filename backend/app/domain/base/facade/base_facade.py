@@ -55,8 +55,8 @@ class BaseFacade(CoreFacade, Generic[T]):
             ResponseDTO: 包含错误信息的响应对象
         """
         error_message = message or str(error)
-        self.lprint(f"错误: {error_message}")
-        self.lprint(traceback.format_exc())
+        lprint(f"错误: {error_message}")
+        traceback.print_exc()
         return ResponseDTO.error(message=error_message)
         
     def _success_response(self, data: Optional[Any] = None, message: str = "操作成功") -> ResponseDTO:
