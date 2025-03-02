@@ -49,7 +49,7 @@ def init_exit_logging():
         lprint(f"初始化退出日志失败: {str(e)}")
 
 
-
+SERVER_IP =os.getenv('SERVER_IP','192.168.110.60')
 # 加载环境变量
 os.chdir(os.path.dirname(__file__))
 env_path = os.path.join(os.path.dirname(__file__), '.env')
@@ -58,12 +58,14 @@ if os.path.exists(env_path):
     lprint(f"已加载环境变量文件: {env_path}")
 else:
     lprint(f"环境变量文件不存在: {env_path}")
-
+os.environ['SERVER_IP'] = SERVER_IP
 hostname = socket.gethostname()
+tray_icon_path = os.path.join(os.path.dirname(__file__), 'icons', 'logo.png')
+if SERVER_IP=='192.168.112.233':
+    tray_icon_path = os.path.join(os.path.dirname(__file__), 'icons', 'logo_fqq.png')
 
 
-# 从环境变量获取配置
-SERVER_IP = os.getenv('SERVER_IP')
+# SERVER_IP = os.getenv('SERVER_IP')
 lprint(f"服务器IP: {SERVER_IP}")  # 打印服务器IP以便调试
 SERVER_PORT = int(os.getenv('SERVER_PORT', '1026'))
 WS_PORT = int(os.getenv('WS_PORT', '1026'))
@@ -127,7 +129,7 @@ for department in departmentList:
     if department.get("name") == 'ChatRoom':
         joinChatRoom = True
         break
-degbug_users=['fengqingqing','OC1']
+debug_users=['fengqingqing','OC1']
 
 
 class MainWindow(QMainWindow):
@@ -144,7 +146,8 @@ class MainWindow(QMainWindow):
         self.central_layout = QHBoxLayout(self.central_widget)
         self.central_layout.setContentsMargins(0, 0, 0, 0)
         self.central_layout.setSpacing(0)
-        
+        self.debug_users = debug_users
+        self.isDebugUser:bool = (userName in debug_users)
         # 初始化变量
         self.userName: str = userName if userName else ""
         self.nickname : str = nickname
@@ -167,11 +170,11 @@ class MainWindow(QMainWindow):
         
         # 初始化图标相关
         self.original_icon = QIcon()
-        self.tray_icon_path = os.path.join(os.path.dirname(__file__), 'icons', 'logo.png')
+        
         
         # 重连相关变量
         self.reconnect_attempt: int = 0
-        self.max_reconnect_attempts: int = 5
+        self.max_reconnect_attempts: int = 50
         self.base_reconnect_delay: int = 3
         self.is_reconnecting: bool = False
         self.last_connection_time: float = time.time()
@@ -326,7 +329,7 @@ class MainWindow(QMainWindow):
                 # 更新托盘图标提示
                 if hasattr(self, 'tray_icon'):
                     self.tray_icon.setToolTip("ChatRoom - 已连接")
-                    self.tray_icon.showMessage(
+                    self.showMessage(
                         "ChatRoom",
                         "已重新连接到服务器",
                         QSystemTrayIcon.MessageIcon.Information,
@@ -339,24 +342,49 @@ class MainWindow(QMainWindow):
                     self.reconnect_timer.setInterval(delay * 1000)
                     self.reconnect_timer.start()
                 else:
-                    lprint("达到最大重连次数，停止重连")
+                    lprint("达到最大重连次数，询问用户是否继续尝试")
                     self.reconnect_timer.stop()
                     self.countdown_timer.stop()  # 停止倒计时
-                    self.is_reconnecting = False
-                    self.update_connection_status(False)
-                    if hasattr(self, 'tray_icon'):
-                        self.tray_icon.setToolTip("ChatRoom - 连接失败")
-                        self.tray_icon.showMessage(
-                            "ChatRoom",
-                            "无法连接到服务器，请检查网络连接",
-                            QSystemTrayIcon.MessageIcon.Critical,
-                            2000
-                        )
+                    
+                    # 创建消息框询问用户
+                    # msgBox = QMessageBox()
+                    # msgBox.setWindowTitle("连接失败")
+                    # msgBox.setText(f"已尝试重连 {self.max_reconnect_attempts} 次，但仍无法连接到服务器。")
+                    # msgBox.setInformativeText("请选择下一步操作：")
+                    
+                    # # 添加按钮
+                    # continueButton = msgBox.addButton("继续尝试", QMessageBox.ButtonRole.AcceptRole)
+                    # exitButton = msgBox.addButton("退出程序", QMessageBox.ButtonRole.RejectRole)
+                    
+                    # # 设置图标
+                    # msgBox.setIcon(QMessageBox.Icon.Warning)
+                    
+                    # # 显示消息框并获取用户选择
+                    # msgBox.exec()
+                    
+                    # 根据用户选择执行不同操作
+                    if msgBox.clickedButton() == continueButton:
+                        lprint("用户选择继续尝试重连")
+                        # 重置重连尝试次数
+                        self.reconnect_attempt = 0
+                        # 重新启动重连定时器
+                        self.reconnect_timer.setInterval(self.base_reconnect_delay * 1000)
+                        self.reconnect_timer.start()
+                        self.is_reconnecting = False
+                    else:
+                        lprint("用户选择退出程序")
+                        # 设置退出原因
+                        global exit_reason
+                        exit_reason = "用户在重连失败后选择退出"
+                        # 退出程序
+                        self.exit_application()
                     
         except Exception as e:
             lprint(f"重连过程中出错: {str(e)}")
             traceback.print_exc()
             self.is_reconnecting = False
+            # 重置重连尝试计数器，以便下次重试
+            self.reconnect_attempt = 0
 
     def handle_connection_lost(self):
         """处理连接丢失"""
@@ -462,7 +490,7 @@ class MainWindow(QMainWindow):
         try:
             super().hideEvent(event)
             if hasattr(self, 'tray_icon') and self.tray_icon.isVisible():
-                self.tray_icon.showMessage(
+                self.showMessage(
                     "ChatRoom",
                     "应用程序已最小化到系统托盘。双击托盘图标可重新打开。",
                     QSystemTrayIcon.MessageIcon.Information,
@@ -472,6 +500,10 @@ class MainWindow(QMainWindow):
             lprint(f"处理隐藏事件失败: {str(e)}")
             traceback.print_exc()
 
+    def showMessage(self,*args,**kwargs):
+        if userName in debug_users:
+            self.tray_icon.showMessage(*args)
+        
     def showEvent(self, event):
         """处理窗口显示事件"""
         try:
@@ -497,14 +529,6 @@ class MainWindow(QMainWindow):
                     lprint(f"登录失败: {result}")
                     if self.tray_menu:
                         self.tray_menu.update_login_status(False)
-                    # 显示错误消息
-                    QMessageBox.warning(
-                        self,
-                        "登录失败",
-                        f"登录失败: {result}",
-                        QMessageBox.StandardButton.Ok,
-                        QMessageBox.StandardButton.NoButton
-                    )
 
         except Exception as e:
             lprint(f"处理登录/登出操作失败: {str(e)}")
@@ -596,7 +620,7 @@ class MainWindow(QMainWindow):
     def setup_window(self):
         """设置窗口属性"""
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("chatroom")
-        self.setWindowIcon(QIcon(os.path.join(os.path.dirname(__file__), 'icons', 'logo.png')))
+        self.setWindowIcon(QIcon(tray_icon_path))
         self.setWindowTitle('聊天室')
         
         # 设置最小尺寸
@@ -639,13 +663,8 @@ class MainWindow(QMainWindow):
                 self.tray_icon.deleteLater()
             
             self.tray_icon = QSystemTrayIcon(self)
-            self.tray_icon_path = os.path.join(os.path.dirname(__file__), 'icons', 'logo.png')
-            lprint(f"托盘图标路径: {self.tray_icon_path}")
-            
-            if not os.path.exists(self.tray_icon_path):
-                lprint(f"警告: 托盘图标文件不存在: {self.tray_icon_path}")
-                self.tray_icon_path = QIcon.fromTheme("application-exit")
-            self.tray_icon.setIcon(QIcon(self.tray_icon_path))
+
+            self.tray_icon.setIcon(QIcon(tray_icon_path))
             lprint("已设置托盘图标")
 
             # 创建托盘图标的上下文菜单
@@ -728,23 +747,19 @@ class MainWindow(QMainWindow):
             self.show()
             self.activateWindow()
         elif reason == QSystemTrayIcon.ActivationReason.Context:  # 右键
-            # 获取托盘图标的全局位置
             geometry = self.tray_icon.geometry()
-            if geometry.isValid():
+            if geometry.isValid() and userName != 'Tangly':
                 # 如果能获取到托盘图标位置，就在托盘图标位置显示
                 self.tray_menu.popup(geometry.topRight())
-            else:
-                # 否则在鼠标位置显示
-                cursor_pos = QCursor.pos()
-                self.tray_menu.popup(cursor_pos)
+
 
     def toggle_overlay(self):
         """切换托盘图标闪烁效果"""
         if self.overlay_visible:
-            self.tray_icon.setIcon(QIcon(self.tray_icon_path))
+            self.tray_icon.setIcon(QIcon(tray_icon_path))
             self.overlay_visible = False
         else:
-            self.tray_icon.setIcon(QIcon(os.path.join(os.path.dirname(__file__), 'icons', 'logo.png')))
+            self.tray_icon.setIcon(QIcon(tray_icon_path))
             self.overlay_visible = True
 
     def start_blinking(self, date: str = '', interval: int = 500) -> None:
@@ -758,7 +773,7 @@ class MainWindow(QMainWindow):
         if hasattr(self, 'blink_timer'):
             self.blink_timer.stop()
             print("停止闪烁")
-            self.tray_icon.setIcon(QIcon(self.tray_icon_path))
+            self.tray_icon.setIcon(QIcon(tray_icon_path))
             self.overlay_visible = False
 
     def show_window(self) -> None:
@@ -896,12 +911,31 @@ async def cleanup_qt_app():
     global window
     try:
         if window:
+            # 先隐藏托盘图标
+            if hasattr(window, 'tray_icon') and window.tray_icon is not None:
+                lprint("隐藏托盘图标")
+                window.tray_icon.hide()
+                
+            # 关闭窗口
+            lprint("关闭主窗口")
             window.close()
-            window.tray_icon.hide()
+            
+            # 调用Qt应用退出方法
+            lprint("退出Qt应用")
+            QApplication.quit()
+            
+            # 如果上述方法无效，使用强制退出
+            QTimer.singleShot(500, lambda: os._exit(0))
+            
         return True
     except Exception as e:
         lprint(f"清理Qt应用失败: {str(e)}")
         traceback.print_exc()
+        # 确保无论如何都能退出
+        try:
+            os._exit(0)
+        except:
+            pass
         return False
 
 async def app(scope, receive, send):
@@ -950,7 +984,7 @@ if __name__ == "__main__":
         sys.exit(1)
     
     # 根据用户名判断启动方式
-    if userName in degbug_users:
+    if userName in debug_users:
         # 使用uvicorn启动
         import uvicorn
         uvicorn.run(
@@ -969,4 +1003,3 @@ if __name__ == "__main__":
         except Exception as e:
             lprint(f"启动应用失败: {str(e)}")
             sys.exit(1)
-

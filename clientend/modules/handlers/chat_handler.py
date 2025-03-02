@@ -9,16 +9,21 @@ import socket
 from typing import Any, Dict, Optional, Callable, Union, Coroutine, cast, TYPE_CHECKING, Protocol, TypeVar, runtime_checkable
 import aiohttp
 from PySide6.QtCore import QObject, Signal, QTimer
-from PySide6.QtWidgets import QWidget, QMessageBox
+from PySide6.QtWidgets import QWidget, QMessageBox, QApplication
 import socketio
 import sys
+from datetime import datetime
+from zoneinfo import ZoneInfo
 from dotenv import load_dotenv
 import time
 from ..events.signals import chat_signals  # 添加导入
-from datetime import datetime
-from zoneinfo import ZoneInfo
 
 from ..ui.waiting_response_window import WaitingResponseWindow
+from ..ui.notice_win import  create_notification_window, NotificationWindow
+from ..ui.reject_reason_dialog import RejectReasonDialog
+from ..auth.auth_manager import AuthManager
+from ..vnc.vnc_connector import VNCConnector
+
 
 # 加载环境变量
 env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), '.env')
@@ -30,12 +35,9 @@ lprint = LM.lprint
 
 from ..types.types import (MessageType, MessageTargetType, MessageContentType,
                         MessageDirection, MessageBase, ButtonConfig, ButtonId, NotificationConfig,
-                        DEFAULT_BUTTON_CONFIG, RemoteControlResponseStatus, RemoteControlResponse)
+                        DEFAULT_BUTTON_CONFIG, RemoteControlResponseStatus, RemoteControlResponse, ConnectionState)
 
-from ..ui.notice_win import create_notification_window
-from ..ui.reject_reason_dialog import RejectReasonDialog
-from ..auth.auth_manager import AuthManager
-from ..vnc.vnc_connector import VNCConnector
+
 if TYPE_CHECKING:
     from clientend.pyqt_chatroom import MainWindow
     
@@ -68,14 +70,13 @@ class ChatHandler(QObject):
         
     def __init__(self, parent_com: Union['MainWindow', None] = None, app=None):
         if not hasattr(self, '_initialized'):  # 防止重复初始化
-            super().__init__()
             self._initialized = True
-            self._parent_window = parent_com
+            super().__init__()
+            self._parent_window : 'MainWindow' = parent_com
             self.app = app
             self.sid = ""  # 初始化 sid
-            self.parent_widget: Optional[QWidget] = None
-            if self._parent_window:
-                self.parent_widget = getattr(self._parent_window, 'parent_widget', None)
+            self.device_id = ""  # 初始化设备ID
+            self.token = ""  # 初始化token
             
             # 从环境变量获取配置
             self.server_ip = os.getenv('SERVER_IP', '127.0.0.1')  # 从环境变量获取服务器IP
@@ -84,8 +85,11 @@ class ChatHandler(QObject):
             self.ws_ping_interval = int(os.getenv('WS_PING_INTERVAL', '20'))
             self.ws_ping_timeout = int(os.getenv('WS_PING_TIMEOUT', '10'))
             self.ws_close_timeout = int(os.getenv('WS_CLOSE_TIMEOUT', '5'))
+            
+            # 重连相关配置
             self.max_reconnect_attempts = int(os.getenv('WS_MAX_RECONNECT_ATTEMPTS', '5'))
             self.reconnect_delay = int(os.getenv('WS_INITIAL_RECONNECT_DELAY', '1'))
+            self.reconnect_attempts = 0  # 初始化重连尝试次数
             
             # 设置URL和命名空间
             self.base_url = f'http://{self.server_ip}:{self.server_port}'
@@ -106,18 +110,43 @@ class ChatHandler(QObject):
                 **engineio_opts
             )
             
-            self.token: Optional[str] = None
             self.is_connected = False
             self.is_connecting = False
             self.connection_lost_time = None
-            self.reconnect_attempts = 0  # 添加重连尝试计数器
             
             # 添加事件处理器属性
             self.on_connect: Optional[Callable[[], None]] = None
             self.on_disconnect: Optional[Callable[[], None]] = None
             
+            # 心跳相关
+            interval_times = 1 if self._parent_window.isDebugUser else 60
+            self.heartbeat_interval = int(os.getenv('WS_PING_INTERVAL', '20'))*interval_times  # 默认20秒
+            self.heartbeat_timeout = int(os.getenv('WS_PING_TIMEOUT', '10'))  # 默认10秒
+            self.heartbeat_timer = None
+            self.last_heartbeat_response_time = None
+            self.heartbeat_failures = 0
+            self.max_heartbeat_failures = int(os.getenv('WS_MAX_HEARTBEAT_FAILURES', '5'))  # 默认5次
             
-            # 注册Socket.IO事件处理器
+            # 连接日志
+            self.connection_logs = []
+            self.max_log_entries = 50
+            
+            # 连接状态结构体
+            self.connection_state: ConnectionState = {
+                "connected": False,                # 是否已连接
+                "connecting": False,               # 是否正在连接
+                "connection_time": None,           # 连接成功的时间戳
+                "last_heartbeat_time": None,       # 最后一次心跳响应时间
+                "heartbeat_failures": 0,           # 心跳失败次数
+                "reconnect_attempts": self.reconnect_attempts,  # 重连尝试次数
+                "sid": "",                         # 会话ID
+                "device_id": ""                    # 设备ID
+            }
+            
+            # 远程控制相关
+            self.waiting_windows = {}
+            
+            # 注册事件处理器
             self._register_handlers()
             
             # 连接信号到槽
@@ -126,7 +155,16 @@ class ChatHandler(QObject):
             self.vnc_connector = VNCConnector()
             self.auth_manager = AuthManager.get_instance()
             
-            self.waiting_windows : Dict[str,WaitingResponseWindow] = {} # 存储等待响应的窗口
+            # 心跳机制相关
+            self.heartbeat_timer = QTimer()
+            self.heartbeat_timer.timeout.connect(self._send_heartbeat)
+            
+            # 添加连接日志记录
+            self.connection_logs = []
+            self.max_log_entries = 50
+            
+            # 记录上次发送心跳包的时间
+            self.last_heartbeat_send_time = None
             
             lprint(f"ChatRoom初始化完成: server={self.server_ip}, port={self.server_port}, namespace={self.namespace}")
 
@@ -135,42 +173,6 @@ class ChatHandler(QObject):
         if not cls._instance:
             cls._instance = ChatHandler()
         return cls._instance
-
-    def _register_handlers(self):
-        """注册Socket.IO事件处理器"""
-        try:
-            @self.sio.event(namespace=self.namespace)
-            async def connect():
-                await self._on_connect()
-                
-            @self.sio.event(namespace=self.namespace)
-            async def disconnect():
-                await self._on_disconnect()
-                
-            @self.sio.event(namespace=self.namespace)
-            async def connect_error(data):
-                lprint(f"连接错误: {data}")
-                self.is_connected = False
-                self.is_connecting = False
-                self.connection_status.emit(False)
-                
-            @self.sio.on('message', namespace=self.namespace)
-            async def on_message(data):
-                lprint(f"收到消息: {data}")
-                await self._on_message(data)
-                
-            @self.sio.on('authentication_response', namespace=self.namespace)
-            async def on_auth_response(data):
-                if data.get('success'):
-                    lprint('认证成功')
-                else:
-                    lprint(f'认证失败: {data.get("error")}')
-                    
-            lprint("Socket.IO事件处理器注册完成")
-            
-        except Exception as e:
-            lprint(f"注册Socket.IO事件处理器失败: {str(e)}")
-            traceback.print_exc()
 
     def get_parent_window(self) -> Optional[MainWindowProtocol]:
         """获取父窗口实例"""
@@ -208,6 +210,14 @@ class ChatHandler(QObject):
         """处理接收到的消息"""
         try:
             lprint(f"处理消息: {message_data}")
+            
+            # 检查是否是重试远程控制消息
+            if message_data.get('status') == 'retry' and message_data.get('message_type') == MessageType.retry_remote_control.value:
+                lprint("收到重试远程控制请求")
+                # 创建异步任务处理重试请求
+                asyncio.create_task(self.handle_retry_remote_control(message_data))
+                return
+                
             # 在这里添加消息处理逻辑
             asyncio.create_task(self._handle_new_message_async(json.dumps(message_data)))
         except Exception as e:
@@ -242,10 +252,26 @@ class ChatHandler(QObject):
             status = content.get("status")
             # 如果是请求消息
             if recipient == self.auth_manager.get_current_user():
-                lprint(f"当前用户 {main_window.userName} 是接收者")
+                lprint(f"当前用户 {main_window.userName} 是接收者 状态- {status}")
                 if status in ["accepted","rejected"]:
                     lprint("接受者不处理完成的消息")
                     return
+                    
+                # 处理请求取消的情况
+                if status == "initiator_closed":
+                    lprint(f"发起者 {sender} 取消了远程控制请求")
+                    # 查找并更新通知窗口
+                    notification_windows = [w for w in QApplication.topLevelWidgets() 
+                                         if isinstance(w, NotificationWindow)]
+                    
+                    for window in notification_windows:
+                        if window.handle_request_canceled(sender):
+                            lprint(f"已更新通知窗口，标记 {sender} 的请求为已取消")
+                            return
+                    
+                    lprint(f"未找到包含 {sender} 请求的通知窗口")
+                    return
+                
                 # 获取远程控制类型和IP
                 remote_ip = content.get('ip')
                 sender_nickname = content.get('nickname', sender)
@@ -339,7 +365,7 @@ class ChatHandler(QObject):
                     waiting_window = self.waiting_windows.get(recipient)
                     if waiting_window:
                         waiting_window.handle_response(content)
-                        waiting_window.reponseLableFromServer.set_text(f"对方拒绝:{reason}")
+                        waiting_window.reponseLableFromServer.setText(f"对方拒绝:{reason}")
                 elif status == 'accepted':
                     # 关闭等待窗口
                     waiting_window = self.waiting_windows.get(recipient)
@@ -351,9 +377,50 @@ class ChatHandler(QObject):
                             self.vnc_connector.connect_to_vnc(remote_ip)
                         # 移除窗口引用
                         del self.waiting_windows[recipient]
+                elif status == 'retry':
+                    # 处理重试请求
+                    lprint(f"处理来自 {sender} 的重试请求")
+                    # 获取重试数据
+                    target_user = content.get('target_user', recipient)
+                    # 构造远程控制选项
+                    option = {
+                        'username': target_user
+                    }
+                    # 重新发送远程控制消息
+                    await self._send_remote_control_message(option)
+                    lprint(f"已重新发送远程控制请求给 {target_user}")
                         
         except Exception as e:
             lprint(f"处理远程控制消息失败: {str(e)}")
+            traceback.print_exc()
+
+    async def handle_retry_remote_control(self, retry_data: Dict[str, Any]) -> None:
+        """处理重试远程控制请求
+        
+        Args:
+            retry_data: 重试数据，包含目标用户和窗口ID
+        """
+        try:
+            target_user = retry_data.get('target_user')
+            window_id = retry_data.get('window_id')
+            
+            if not target_user:
+                lprint("重试数据中缺少目标用户信息")
+                return
+                
+            lprint(f"处理重试远程控制请求，目标用户: {target_user}, 窗口ID: {window_id}")
+            
+            # 构造远程控制选项
+            option = {
+                'username': target_user
+            }
+            
+            # 重新发送远程控制消息
+            await self._send_remote_control_message(option)
+            lprint(f"已重新发送远程控制请求给 {target_user}")
+            
+        except Exception as e:
+            lprint(f"处理重试远程控制请求失败: {str(e)}")
             traceback.print_exc()
 
     async def check_connection(self) -> bool:
@@ -533,6 +600,46 @@ class ChatHandler(QObject):
             lprint(f"更新远程控制消息失败: {str(e)}")
             traceback.print_exc()
 
+    async def cancel_remote_control_request(self, recipient: str):
+        """取消远程控制请求
+        
+        Args:
+            recipient (str): 接收者用户名
+        """
+        try:
+            lprint(f"开始执行取消远程控制请求，接收者: {recipient}")
+            waiting_window = self.waiting_windows.get(recipient)
+            if waiting_window:
+                lprint(f"找到等待窗口，准备创建取消响应")
+                # 创建取消响应
+                response = RemoteControlResponse(
+                    status=RemoteControlResponseStatus.initiator_closed,
+                    reason='发起者取消了请求',
+                    nickname=self.auth_manager.get_current_user(),
+                    ip=''
+                )
+                
+                lprint(f"准备发送取消消息到服务器，接收者: {recipient}, 状态: initiator_closed")
+                # 发送取消消息到服务器
+                await self.send_message(
+                    message_type=MessageType.remote_control.value,
+                    content=response.to_dict(),
+                    recipient_username=recipient,
+                    direction='response'
+                )
+                lprint(f"取消消息已发送到服务器")
+                
+                # 移除窗口引用
+                if recipient in self.waiting_windows:
+                    del self.waiting_windows[recipient]
+                    lprint(f"已从waiting_windows中移除 {recipient}")
+                    
+                lprint(f"已取消对 {recipient} 的远程控制请求")
+            else:
+                lprint(f"未找到 {recipient} 的等待窗口，无法取消请求")
+        except Exception as e:
+            lprint(f"取消远程控制请求失败: {str(e)}")
+            traceback.print_exc()
 
     def exit_app(self) -> None:
         """退出应用"""
@@ -578,7 +685,8 @@ class ChatHandler(QObject):
                 handlers = {
                     MessageType.chat.value: self.handle_private_message,  # chat
                     MessageType.remote_control.value: self.handle_remote_control_message,  # remote_control
-                    MessageType.open_path.value: self.handle_open_path  # open_path
+                    MessageType.open_path.value: self.handle_open_path,  # open_path
+                    MessageType.retry_remote_control.value: self.handle_retry_remote_control  # retry_remote_control
                 }
                 
                 if handler := handlers.get(message_type):
@@ -638,7 +746,7 @@ class ChatHandler(QObject):
             lprint("正在连接中，跳过重复连接")
             return False
             
-        if self.is_connected and self.sio.connected:
+        if self.is_connected and self.sio and self.sio.connected:
             lprint("已经连接到服务器")
             return True
             
@@ -678,6 +786,7 @@ class ChatHandler(QObject):
                         self.is_connected = True
                         self.is_connecting = False
                         self.reconnect_attempts = 0  # 重置重连计数
+                        self.connection_state["reconnect_attempts"] = 0  # 同时更新连接状态中的重连计数
                         return True
                         
                     await asyncio.sleep(0.5)  # 更频繁地检查连接状态
@@ -708,11 +817,41 @@ class ChatHandler(QObject):
         try:
             self.is_connected = True
             self.is_connecting = False
-            self.reconnect_attempts = 0  # 重置重连计数
+            self.reconnect_attempts = 0  # 重置重连尝试次数
+            self.heartbeat_failures = 0  # 重置心跳失败计数
             lprint("WebSocket连接成功")
+            
+            # 更新会话ID
+            if self.sio and self.sio.sid:
+                self.sid = self.sio.sid
+                lprint(f"更新会话ID: {self.sid}")
+                
+                # 不再将会话ID作为设备ID更新
+                self.device_id = self.auth_manager.device_id
+                # lprint(f"更新设备ID: {self.device_id}")
+                
+                # 同时更新连接状态结构体中的设备ID
+                # self.connection_state["device_id"] = self.device_id
+                
+            # 更新连接状态结构体
+            self.connection_state.update({
+                "connected": True,
+                "connecting": False,
+                "connection_time": time.time(),
+                "reconnect_attempts": 0,
+                "heartbeat_failures": 0,  # 同时更新心跳失败次数
+                "sid": self.sid if hasattr(self, 'sid') else "",
+                "device_id": self.device_id if hasattr(self, 'device_id') else ""
+            })
+            
+            # 启动心跳定时器
+            self._start_heartbeat_timer()
             
             # 发送连接状态信号
             self.connection_status.emit(True)
+            
+            # 添加连接日志记录
+            self._add_connection_log("连接成功")
             
             # 调用连接成功回调
             if self.on_connect:
@@ -731,12 +870,27 @@ class ChatHandler(QObject):
             self.is_connected = False
             lprint("WebSocket连接断开")
             
+            # 更新连接状态结构体
+            self.connection_state.update({
+                "connected": False,
+                "connecting": False
+            })
+            
+            # 停止心跳定时器
+            self._stop_heartbeat_timer()
+            
             # 发送连接状态信号
             self.connection_status.emit(False)
+            
+            # 添加断开连接日志记录
+            self._add_connection_log("断开连接")
             
             # 调用断开连接回调
             if self.on_disconnect:
                 self.on_disconnect()
+            
+            # 注意：这里不自动触发重连
+            # 重连将由心跳检测或显式调用触发，避免重复重连
                 
         except Exception as e:
             lprint(f"处理断开连接事件失败: {str(e)}")
@@ -759,6 +913,9 @@ class ChatHandler(QObject):
         try:
             if self.reconnect_attempts < self.max_reconnect_attempts:
                 self.reconnect_attempts += 1
+                # 同步更新连接状态中的重连尝试次数
+                self.connection_state["reconnect_attempts"] = self.reconnect_attempts
+                
                 delay = min(30, self.reconnect_delay * (2 ** (self.reconnect_attempts - 1)))  # 指数退避，最大30秒
                 lprint(f"准备第{self.reconnect_attempts}次重连，延迟{delay}秒")
                 
@@ -768,17 +925,131 @@ class ChatHandler(QObject):
                     await asyncio.sleep(1)  # 等待断开完成
                     
                 await asyncio.sleep(delay)
-                await self.connect_to_server()  # 使用已保存的token重连
+                connected = await self.connect_to_server()  # 使用已保存的token重连
+                
+                # 如果重连成功，重置心跳失败计数和重连尝试次数
+                if connected:
+                    lprint("重连成功，重置心跳失败计数和重连尝试次数")
+                    self.heartbeat_failures = 0
+                    self.connection_state["heartbeat_failures"] = 0
+                    self.reconnect_attempts = 0
+                    self.connection_state["reconnect_attempts"] = 0
+                else:
+                    lprint(f"第{self.reconnect_attempts}次重连失败")
             else:
                 lprint("达到最大重连次数，停止重连")
                 self.is_connected = False
+                # 更新连接状态
+                self.connection_state.update({
+                    "connected": False,
+                    "connecting": False
+                })
                 self.connection_status.emit(False)
         except Exception as e:
             lprint(f"重连过程中出错: {str(e)}")
             traceback.print_exc()
             self.is_connected = False
+            # 更新连接状态
+            self.connection_state.update({
+                "connected": False,
+                "connecting": False
+            })
             self.connection_status.emit(False)
             
+    def _start_heartbeat_timer(self):
+        """启动心跳定时器"""
+        # QTimer需要毫秒作为参数，而heartbeat_interval是秒
+        self.heartbeat_timer.start(self.heartbeat_interval * 1000)
+
+    def _stop_heartbeat_timer(self):
+        """停止心跳定时器"""
+        self.heartbeat_timer.stop()
+
+    def _send_heartbeat(self):
+        """发送心跳包（由定时器触发的同步方法）"""
+        # 创建异步任务来发送心跳
+        asyncio.create_task(self._send_heartbeat_async())
+        
+    async def _send_heartbeat_async(self):
+        """异步发送心跳包"""
+        try:
+            # 检查连接状态
+            if not self.is_connected or not self.sio or not self.sio.connected:
+                lprint("未连接到服务器，无法发送心跳包")
+                self.heartbeat_failures += 1
+                self.connection_state["heartbeat_failures"] = self.heartbeat_failures  # 更新连接状态
+                lprint(f"连接检查失败，失败计数: {self.heartbeat_failures}")
+                if self.heartbeat_failures >= self.max_heartbeat_failures:
+                    lprint(f"心跳检测失败次数达到{self.max_heartbeat_failures}次，尝试重新连接")
+                    self.connection_status.emit(False)
+                    # 重置心跳失败计数，避免重复触发重连
+                    self.heartbeat_failures = 0
+                    self.connection_state["heartbeat_failures"] = 0
+                    # 启动重连机制
+                    await self._handle_connection_error()
+                return
+                
+            # 确保连接已经完全建立
+            if not hasattr(self, 'sid') or not self.sid:
+                lprint("会话ID尚未获取，等待连接完全建立")
+                return
+                
+            current_time = time.time()
+            
+            # 计算与上次发送心跳包的时间间隔
+            time_since_last_heartbeat = "首次发送"
+            if self.last_heartbeat_send_time is not None:
+                time_since_last_heartbeat = f"{current_time - self.last_heartbeat_send_time:.2f}秒"
+            
+            # 发送心跳
+            lprint(f"发送心跳包... 当前时间: {current_time:.2f}, 距上次发送: {time_since_last_heartbeat}")
+            
+            # 更新上次发送时间
+            self.last_heartbeat_send_time = current_time
+            
+            await self.sio.emit('heartbeat', {'timestamp': current_time}, namespace=self.namespace)
+            
+            # 等待1秒，给服务器足够的时间来响应
+            await asyncio.sleep(1)
+            
+            # 检查心跳响应
+            new_current_time = time.time()
+            # 如果最后一次心跳响应时间为空或者已经超过超时时间，则增加失败计数
+            if self.last_heartbeat_response_time is None:
+                self.heartbeat_failures += 1
+                lprint(f"从未收到心跳响应，失败计数: {self.heartbeat_failures}")
+            elif (new_current_time - self.last_heartbeat_response_time > self.heartbeat_timeout):
+                self.heartbeat_failures += 1
+                time_diff = new_current_time - self.last_heartbeat_response_time
+                lprint(f"心跳响应超时，最后响应时间: {self.last_heartbeat_response_time:.2f}, 当前时间: {new_current_time:.2f}, 时差: {time_diff:.2f}秒, 失败计数: {self.heartbeat_failures}")
+            else:
+                # 心跳成功，重置失败计数
+                if self.heartbeat_failures > 0:
+                    lprint(f"心跳恢复正常，重置失败计数")
+                    self.heartbeat_failures = 0
+            
+            # 如果失败次数达到阈值，触发重连
+            if self.heartbeat_failures >= self.max_heartbeat_failures:
+                lprint(f"心跳检测失败次数达到{self.max_heartbeat_failures}次，尝试重新连接")
+                self.connection_status.emit(False)
+                # 重置心跳失败计数，避免重复触发重连
+                self.heartbeat_failures = 0
+                self.connection_state["heartbeat_failures"] = 0
+                # 启动重连机制
+                await self._handle_connection_error()
+            
+        except Exception as e:
+            lprint(f"发送心跳包失败: {str(e)}")
+            self.heartbeat_failures += 1
+            if self.heartbeat_failures >= self.max_heartbeat_failures:
+                lprint(f"心跳检测失败次数达到{self.max_heartbeat_failures}次，尝试重新连接")
+                self.connection_status.emit(False)
+                # 重置心跳失败计数，避免重复触发重连
+                self.heartbeat_failures = 0
+                self.connection_state["heartbeat_failures"] = 0
+                # 启动重连机制
+                await self._handle_connection_error()
+
     async def close(self):
         """关闭连接"""
         try:
@@ -788,4 +1059,131 @@ class ChatHandler(QObject):
                 self.connection_status.emit(False)
         except Exception as e:
             lprint(f"关闭连接失败: {str(e)}")
+            traceback.print_exc()
+
+    def set_token(self, token: str) -> None:
+        """设置认证令牌
+        
+        Args:
+            token: JWT令牌
+        """
+        self.token = token
+        lprint(f"已设置token: {token[:10]}...")
+        
+        # 设置token后尝试连接
+        asyncio.create_task(self.connect_to_server())
+
+    def get_connection_status(self) -> ConnectionState:
+        """获取连接状态信息
+        
+        Returns:
+            ConnectionState: 连接状态信息
+        """
+        try:
+            # 返回连接状态结构体的副本
+            status = self.connection_state.copy()
+            
+            # 确保连接时间字段存在
+            if not status.get("connection_time") and self.is_connected:
+                status["connection_time"] = time.time()
+                
+            return status
+        except Exception as e:
+            lprint(f"获取连接状态信息失败: {str(e)}")
+            traceback.print_exc()
+            return {
+                "connected": False,
+                "connecting": False,
+                "connection_time": None,
+                "last_heartbeat_time": None,
+                "heartbeat_failures": 0,
+                "reconnect_attempts": 0,
+                "sid": "",
+                "device_id": ""
+            }
+
+    def _add_connection_log(self, message: str) -> None:
+        """添加连接日志记录"""
+        log_entry = f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - {message}"
+        self.connection_logs.append(log_entry)
+        
+        # 移除过期日志记录
+        if len(self.connection_logs) > self.max_log_entries:
+            self.connection_logs.pop(0)
+
+    def get_connection_logs(self) -> list[str]:
+        """获取连接日志记录
+        
+        Returns:
+            list[str]: 连接日志记录列表
+        """
+        return self.connection_logs.copy()
+
+    def get_device_id(self) -> str:
+        """获取设备ID"""
+        try:
+            return self.device_id
+        except Exception as e:
+            lprint(f"获取设备ID失败: {str(e)}")
+            traceback.print_exc()
+            return ""
+
+
+    def _register_handlers(self):
+        """注册Socket.IO事件处理器"""
+        try:
+            @self.sio.event(namespace=self.namespace)
+            async def connect():
+                await self._on_connect()
+                
+            @self.sio.event(namespace=self.namespace)
+            async def disconnect():
+                await self._on_disconnect()
+                
+            @self.sio.event(namespace=self.namespace)
+            async def connect_error(data):
+                lprint(f"连接错误: {data}")
+                self.is_connected = False
+                self.is_connecting = False
+                self.connection_status.emit(False)
+                
+            @self.sio.on('message', namespace=self.namespace)
+            async def on_message(data):
+                lprint(f"收到消息: {data}")
+                await self._on_message(data)
+                
+            @self.sio.on('heartbeat_response', namespace=self.namespace)
+            async def on_heartbeat_response(data):
+                current_time = time.time()
+                lprint(f"收到心跳响应: {data}")
+                # 使用服务器返回的当前时间戳，而不是连接时间
+                if 'timestamp' in data:
+                    self.last_heartbeat_response_time = data['timestamp']
+                    # 更新连接状态结构体中的最后心跳时间
+                    self.connection_state["last_heartbeat_time"] = data['timestamp']
+                    time_diff = current_time - self.last_heartbeat_response_time
+                    lprint(f"更新心跳响应时间: {self.last_heartbeat_response_time}, 本地时间: {current_time}, 时差: {time_diff:.2f}秒")
+                else:
+                    self.last_heartbeat_response_time = current_time
+                    # 更新连接状态结构体中的最后心跳时间
+                    self.connection_state["last_heartbeat_time"] = current_time
+                    lprint("服务器未返回时间戳，使用本地当前时间")
+        
+                self.heartbeat_failures = 0  # 重置心跳失败计数
+                # 更新连接状态结构体中的心跳失败次数
+                self.connection_state["heartbeat_failures"] = 0
+                # 移除发送连接状态信号的代码，不再每次心跳响应都触发菜单更新
+                # self.connection_status.emit(True)  
+                
+            @self.sio.on('authentication_response', namespace=self.namespace)
+            async def on_auth_response(data):
+                if data.get('success'):
+                    lprint('认证成功')
+                else:
+                    lprint(f'认证失败: {data.get("error")}')
+                    
+            lprint("Socket.IO事件处理器注册完成")
+            
+        except Exception as e:
+            lprint(f"注册Socket.IO事件处理器失败: {str(e)}")
             traceback.print_exc()

@@ -2,8 +2,8 @@
 菜单相关代码
 """
 from PySide6.QtCore import QPropertyAnimation, QPoint, QTimer, QEasingCurve, QRect, Qt, Signal, QThread, QObject
-from PySide6.QtWidgets import QMenu, QMessageBox, QWidget, QMainWindow, QLabel, QInputDialog, QLineEdit
-from PySide6.QtGui import QScreen, QGuiApplication, QIcon, QAction
+from PySide6.QtWidgets import QMenu, QMessageBox, QWidget, QMainWindow, QLabel, QInputDialog, QLineEdit, QStyle
+from PySide6.QtGui import QIcon, QAction, QCursor, QGuiApplication, QScreen
 import os
 import re
 import json
@@ -18,11 +18,13 @@ import time
 import yaml
 import subprocess
 from functools import partial
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from ..vnc.vnc_connector import vnc_connector  # VNC连接器
 from ..vnc.vnc_installer import install_vnc  # VNC安装器
 from ..handlers.chat_handler import ChatHandler  # 改为新的类名
-
+from ..types.types import ConnectionState  # 导入ConnectionState类型
 
 if TYPE_CHECKING:
     from clientend.pyqt_chatroom import MainWindow
@@ -90,9 +92,9 @@ class HoverMenu(QMenu):
                 lprint(f"用户名: {username}")
                 if username:
                     # 创建用户信息动作
-                    lprint(os.path.exists(os.path.join(iconDir, 'user.svg')))
-                    self.user_action = QAction(QIcon(os.path.join(iconDir, 'user.svg')), 
-                                        "等待连接", self)  
+                    user_icon_path=iconDir+'/user.svg'
+                    self.user_action = QAction(QIcon(user_icon_path), 
+                                        f"等待连接 {main_window.nickname}", self)  
                     
                     # 设置工具提示
                     project_info = getattr(main_window, 'project_info', {})
@@ -196,9 +198,58 @@ class HoverMenu(QMenu):
     def setup_menu_actions(self):
         # NOTE """设置菜单动作"""
         try:
+            # 添加设备ID和会话ID菜单项
+            main_window = self.get_main_window()
+            if main_window and hasattr(main_window, 'project_info'):
+                project_info = main_window.project_info
+                if isinstance(project_info, dict):
+                    # 添加设备ID菜单项
+                    device_id = project_info.get('device_id', '待获取')
+                    self.device_id_action = QAction(self.style().standardIcon(QStyle.SP_ComputerIcon), 
+                                             f"设备ID: {device_id}", self)
+                    self.device_id_action.setEnabled(False)  # 设置为不可点击
+                    self.addAction(self.device_id_action)
+                    
+                    # 添加会话ID菜单项
+                    sid = self.chat_handler.get_sid() or "未连接"
+                    self.session_id_action = QAction(self.style().standardIcon(QStyle.SP_DialogYesButton), 
+                                             f"会话ID: {sid}", self)
+                    self.session_id_action.setEnabled(False)  # 设置为不可点击
+                    self.addAction(self.session_id_action)
+                    
+                    # 添加连接时间菜单项
+                    conn_status = self.chat_handler.get_connection_status()
+                    last_heartbeat_time = conn_status.get("connection_time")  # 使用连接时间而不是心跳时间
+                    conn_time_str = "未连接"
+                    if last_heartbeat_time:
+                        conn_time = datetime.fromtimestamp(last_heartbeat_time, ZoneInfo('Asia/Shanghai')).strftime('%Y-%m-%d %H:%M:%S')
+                        conn_time_str = conn_time
+                    
+                    # 创建连接时间子菜单
+                    self.connection_time_menu = QMenu(f"连接时间: {conn_time_str}", self)
+                    self.connection_time_menu.setIcon(self.style().standardIcon(QStyle.SP_DialogYesButton))
+                    
+                    # 添加连接日志记录
+                    logs = self.chat_handler.get_connection_logs()
+                    if logs:
+                        for log in logs:
+                            log_action = QAction(log, self.connection_time_menu)
+                            log_action.setEnabled(False)  # 设置为不可点击
+                            self.connection_time_menu.addAction(log_action)
+                    else:
+                        no_log_action = QAction("暂无连接记录", self.connection_time_menu)
+                        no_log_action.setEnabled(False)
+                        self.connection_time_menu.addAction(no_log_action)
+                    
+                    # 将连接时间子菜单添加到主菜单
+                    self.addMenu(self.connection_time_menu)
+                    
+                    # 添加分隔线
+                    self.addSeparator()
+            
             # 创建控制子菜单
             self.control_menu = QMenu("主动控制", self)
-            self.control_menu.setIcon(QIcon(os.path.join(os.path.dirname(__file__), '..', '..', 'icons', 'control.svg')))
+            self.control_menu.setIcon(self.style().standardIcon(QStyle.SP_ComputerIcon))
             self.addMenu(self.control_menu)
             
             # 从yaml配置文件读取远程控制选项
@@ -210,7 +261,7 @@ class HoverMenu(QMenu):
                     for option in config['remote_control_options']:
                         try:
                             lprint(f"添加远程控制选项: {option['label']}")
-                            action = QAction(QIcon(os.path.join(os.path.dirname(__file__), '..', '..', 'icons', 'remote.svg')), 
+                            action = QAction(self.style().standardIcon(QStyle.SP_ComputerIcon), 
                                         option['label'], self)
                             # 邀请控制列表
                             if option['action'] == 'request':
@@ -235,24 +286,24 @@ class HoverMenu(QMenu):
             self.addSeparator()
 
             # 添加显示/隐藏按钮
-            self.show_action = QAction(QIcon(os.path.join(os.path.dirname(__file__), '..', '..', 'icons', 'show.svg')), 
+            self.show_action = QAction(QIcon(os.path.join(iconDir, 'show.svg')), 
                                      "显示", self)
             self.show_action.triggered.connect(self.show_window)
             self.addAction(self.show_action)
 
-            self.hide_action = QAction(QIcon(os.path.join(os.path.dirname(__file__), '..', '..', 'icons', 'hide.svg')), 
+            self.hide_action = QAction(QIcon(os.path.join(iconDir, 'hide.svg')), 
                                      "隐藏", self)
             self.hide_action.triggered.connect(self.hide_window)
             self.addAction(self.hide_action)
             
             # 添加登录/登出按钮
-            self.login_action = QAction(QIcon(os.path.join(os.path.dirname(__file__), '..', '..', 'icons', 'login.svg')), 
+            self.login_action = QAction(QIcon(os.path.join(iconDir, 'login.svg')), 
                                       "登录/重新登录", self)
             self.login_action.triggered.connect(self.handle_login)
             self.addAction(self.login_action)
             
             # 添加重启按钮
-            self.restart_action = QAction(QIcon(os.path.join(os.path.dirname(__file__), '..', '..', 'icons', 'restart.svg')), 
+            self.restart_action = QAction(QIcon(os.path.join(iconDir, 'restart.svg')), 
                                         "重启", self)
             self.restart_action.triggered.connect(self.restart_application)
             self.addAction(self.restart_action)
@@ -261,7 +312,7 @@ class HoverMenu(QMenu):
             self.addSeparator()
 
             # 添加"退出"动作
-            self.exit_action = QAction(QIcon(os.path.join(os.path.dirname(__file__), '..', '..', 'icons', 'exit.svg')), 
+            self.exit_action = QAction(QIcon(os.path.join(iconDir, 'exit.svg')), 
                                 "退出", self)
             if main_window := self.get_main_window():
                 if hasattr(main_window, 'exit_application'):
@@ -317,6 +368,8 @@ class HoverMenu(QMenu):
             traceback.print_exc()
             
     def update_menu_items(self):
+        #TODO 这个设置是有问题的, 加入代办事项
+        return
         """更新菜单项显示"""
         try:
             for action in self.actions():
@@ -329,7 +382,7 @@ class HoverMenu(QMenu):
                             new_text = f"{text} ({count})"
                             action.setText(new_text)
                             # 设置高亮样式
-                            icon_path = os.path.join(os.path.dirname(__file__), '..', '..', 'icons', 'message.svg')
+                            icon_path = os.path.join(iconDir, 'message.svg')
                             action.setIcon(QIcon(icon_path))
         except Exception as e:
             lprint(f"更新菜单项显示错误: {str(e)}")
@@ -358,7 +411,21 @@ class HoverMenu(QMenu):
             if self._parent_window and hasattr(self._parent_window, 'chat_handler'):
                 is_connected = self._parent_window.chat_handler.is_connected
                 self.update_login_status(is_connected)
-                    
+            
+            # 确保会话ID是最新的
+            if hasattr(self, 'session_id_action') and self.chat_handler:
+                sid = self.chat_handler.get_sid() or "未连接"
+                self.session_id_action.setText(f"会话ID: {sid}")
+                
+            # 确保设备ID是最新的
+            if hasattr(self, 'device_id_action') and self.chat_handler:
+                device_id = self.chat_handler.get_device_id() or "未连接"
+                self.device_id_action.setText(f"设备ID: {device_id}")
+                
+            # 更新连接时间菜单
+            if hasattr(self, 'connection_time_menu') and self.chat_handler:
+                self.update_connection_time_menu()
+                
         except Exception as e:
             lprint(f"显示菜单事件处理失败: {str(e)}")
             traceback.print_exc()
@@ -383,16 +450,30 @@ class HoverMenu(QMenu):
             lprint(f"处理登录/登出操作失败: {str(e)}")
             traceback.print_exc()
 
-
     def update_login_status(self, is_connected: bool):
         """更新用户状态显示"""
         try:
             if hasattr(self, 'user_action'):
                 if is_connected:
-                    self.user_action.setText(f"{self._parent_window.userName}   已连接")
+                    self.user_action.setText(f"{self._parent_window.nickname}   已连接")
                     self.update_tooltip()  # 更新工具提示
                 else:
                     self.user_action.setText("等待连接")
+                    
+            # 更新会话ID菜单项
+            if hasattr(self, 'session_id_action'):
+                sid = self.chat_handler.get_sid() or "未连接"
+                self.session_id_action.setText(f"会话ID: {sid}")
+                
+            # 更新设备ID菜单项
+            if hasattr(self, 'device_id_action'):
+                device_id = self.chat_handler.get_device_id() or "未连接"
+                self.device_id_action.setText(f"设备ID: {device_id}")
+                
+            # 更新连接时间菜单
+            if hasattr(self, 'connection_time_menu'):
+                self.update_connection_time_menu()
+                
         except Exception as e:
             lprint(f"更新登录状态失败: {str(e)}")
             traceback.print_exc()
@@ -414,14 +495,62 @@ class HoverMenu(QMenu):
                         tooltip_text += f"<tr><td><b>用户组:</b></td><td style='padding-left:10px'>{', '.join(group['name'] for group in project_info.get('userGroups', []))}</td></tr>"
                         tooltip_text += f"<tr><td><b>自定义组:</b></td><td style='padding-left:10px'>{', '.join(project_info.get('customGroups', []))}</td></tr>"
                         # 添加设备ID信息
-                        device_id = project_info.get('device_id', '待获取')
+                        device_id = self.chat_handler.get_device_id() or "未连接"
                         if device_id:
                             tooltip_text += f"<tr><td><b>设备ID:</b></td><td style='padding-left:10px'>{device_id}</td></tr>"
+                        
+                        # 添加会话ID和连接时间信息
+                        if self.chat_handler:
+                            # 获取会话ID
+                            sid = self.chat_handler.get_sid() or "未连接"
+                            tooltip_text += f"<tr><td><b>会话ID:</b></td><td style='padding-left:10px'>{sid}</td></tr>"
+                            
+                            # 获取连接状态信息
+                            conn_status: ConnectionState = self.chat_handler.get_connection_status()
+                            last_heartbeat_time = conn_status.get("connection_time")  # 使用连接时间而不是心跳时间
+                            if last_heartbeat_time:
+                                # 格式化连接时间
+                                conn_time = datetime.fromtimestamp(last_heartbeat_time, ZoneInfo('Asia/Shanghai')).strftime('%Y-%m-%d %H:%M:%S')
+                                tooltip_text += f"<tr><td><b>连接时间:</b></td><td style='padding-left:10px'>{conn_time}</td></tr>"
+                        
                         tooltip_text += "</table>"
                         tooltip_text += "</body></html>"
                         self.user_action.setToolTip(tooltip_text)
         except Exception as e:
             lprint(f"更新工具提示失败: {str(e)}")
+            traceback.print_exc()
+
+    def update_connection_time_menu(self):
+        """更新连接时间菜单"""
+        try:
+            if hasattr(self, 'connection_time_menu') and self.chat_handler:
+                # 获取连接状态信息
+                conn_status: ConnectionState = self.chat_handler.get_connection_status()
+                last_heartbeat_time = conn_status.get("connection_time")  # 使用连接时间而不是心跳时间
+                conn_time_str = "未连接"
+                if last_heartbeat_time:
+                    conn_time = datetime.fromtimestamp(last_heartbeat_time, ZoneInfo('Asia/Shanghai')).strftime('%Y-%m-%d %H:%M:%S')
+                    conn_time_str = conn_time
+                
+                # 更新连接时间菜单标题
+                self.connection_time_menu.setTitle(f"连接时间: {conn_time_str}")
+                
+                # 清除原有菜单项
+                self.connection_time_menu.clear()
+                
+                # 添加连接日志记录
+                logs = self.chat_handler.get_connection_logs()
+                if logs:
+                    for log in logs:
+                        log_action = QAction(log, self.connection_time_menu)
+                        log_action.setEnabled(False)  # 设置为不可点击
+                        self.connection_time_menu.addAction(log_action)
+                else:
+                    no_log_action = QAction("暂无连接记录", self.connection_time_menu)
+                    no_log_action.setEnabled(False)
+                    self.connection_time_menu.addAction(no_log_action)
+        except Exception as e:
+            lprint(f"更新连接时间菜单失败: {str(e)}")
             traceback.print_exc()
 
     def popup(self, pos):
@@ -538,7 +667,9 @@ class HoverMenu(QMenu):
                 
                 reply = msg_box.exec()
                 if reply == QMessageBox.StandardButton.Yes:
-                    lprint("用户确认退出")
+                    import multiprocessing
+                    for process in multiprocessing.active_children():
+                        process.terminate()  # 终止所有子进程
                     self.handle_action_in_thread("退出", main_window.exit_application)
                 else:
                     lprint("用户取消退出")
