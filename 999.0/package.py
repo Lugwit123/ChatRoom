@@ -9,6 +9,7 @@ requires = [
     "python-3.12+<3.13",
     "Lugwit_Module",
     "l_notepad",
+    "lugwit_auth",
 ]
 
 build_command = False
