@@ -1,2 +1,13 @@
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+*.exe
+*.dll
+*.so
+*.zip
+*.7z
+*.whl
+*.egg-info/
+.venv/
+py_312/
